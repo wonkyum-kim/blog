@@ -1,6 +1,5 @@
 import PageLayout from '@/components/page-layout';
 import { allBlogs } from 'contentlayer/generated';
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function BlogPage() {
@@ -15,20 +14,10 @@ export default function BlogPage() {
             className='flex py-5 items-start justify-between gap-2'
           >
             <div className='flex flex-col gap-1 flex-1'>
-              <span className='font-bold text-lg break-keep'>
-                {' '}
-                {blog.title}
-              </span>
+              <span className='font-bold text-lg break-keep'>{blog.title}</span>
               <span>{blog.description}</span>
               <time className='text-xs text-gray-500 mt-1'>{blog.date}</time>
             </div>
-            <Image
-              width={150}
-              height={150}
-              src={blog.thumbnailUrl}
-              alt={blog.title}
-              className='object-cover w-32 h-24 rounded'
-            />
           </Link>
         ))}
     </PageLayout>

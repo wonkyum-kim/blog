@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { allBlogs } from 'contentlayer/generated';
 import type { Metadata } from 'next';
 import { Mdx } from './components/mdx';
-// import metadata from '@/util/metadata';
+import metadata from '@/util/metadata';
 
 interface DocProps {
   params: {
@@ -19,9 +19,7 @@ export default async function DocPage({ params }: DocProps) {
 
   return (
     <div className='flex flex-col w-full'>
-      <h1 className='text-3xl font-black bg-gradient-to-r from-slate-600 via-slate-300 to-slate-700 inline-block text-transparent bg-clip-text'>
-        {post.title}
-      </h1>
+      <h1 className='text-3xl font-black text-blue-500'>{post.title}</h1>
       <time className='text-gray-500 text-sm mt-2 ml-auto'>{post.date}</time>
       <Mdx code={post.body.code} />
     </div>
@@ -40,19 +38,18 @@ export async function generateStaticParams() {
   }));
 }
 
-// export async function generateMetadata({
-//   params,
-// }: DocProps): Promise<Metadata> {
-//   const doc = await getDocFromParams({ params });
+export async function generateMetadata({
+  params,
+}: DocProps): Promise<Metadata> {
+  const doc = await getDocFromParams({ params });
 
-//   if (!doc) {
-//     return {};
-//   }
+  if (!doc) {
+    return {};
+  }
 
-//   return metadata({
-//     title: doc.title,
-//     description: doc.description,
-//     path: `/blog/${doc.slug}`,
-//     image: `/${doc.thumbnailUrl}`,
-//   });
-// }
+  return metadata({
+    title: doc.title,
+    description: doc.description,
+    path: `/blog/${doc.slug}`,
+  });
+}
