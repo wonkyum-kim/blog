@@ -1,6 +1,7 @@
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import rehypeCodeTitles from 'rehype-code-titles';
 import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeHighlight from 'rehype-highlight';
 
 export const Blog = defineDocumentType(() => ({
   name: 'Blog',
@@ -34,6 +35,8 @@ export default makeSource({
           defaultLang: 'plaintext',
         },
       ],
+      // @ts-ignore
+      // rehypeHighlight,
     ],
   },
 });
