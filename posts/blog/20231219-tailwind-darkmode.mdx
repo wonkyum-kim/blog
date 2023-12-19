@@ -18,9 +18,13 @@ module.exports = {
 
 ## 2. ToggleTheme 컴포넌트 작성
 
+![](/posts/20231219-tailwind-darkmode/tailwind-darkmode.gif)
+
 테마를 변경하는 것은 사용자의 클릭 이벤트에서 이루어지기 때문에 클라이언트 컴포넌트에서 이루어집니다.
 
 따라서 `document.documentElement`에 접근할 수 있게 됩니다.
+
+다크모드 css를 적용하려면 `dark:`를 붙여서 사용합니다.
 
 ```tsx
 'use client';
@@ -39,12 +43,4 @@ function ToggleTheme() {
     </Button>
   );
 }
-```
-
-## 3. dark: 적용
-
-다크모드 css를 적용하려면 `dark:`를 붙여서 사용합니다.
-
-```tsx
-<div className='bg-dark dark:bg-white' />
 ```
