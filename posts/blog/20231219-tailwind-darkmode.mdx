@@ -1,0 +1,51 @@
+---
+title: tailwind에서 다크 모드 쉽게 적용하기
+date: 2023-12-19
+description: 라이브러리 설치하지 말기
+thumbnailUrl: /posts/thumbnail/profile.jpg
+---
+
+## 1. tailwind.config.ts 설정
+
+[tailwind 공식 문서](https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually)에 나와있는 것 처럼 `tailwind.config.ts`를 작성합니다.
+
+```ts:ts.config.ts
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  // ...
+};
+```
+
+## 2. ToggleTheme 컴포넌트 작성
+
+테마를 변경하는 것은 사용자의 클릭 이벤트에서 이루어지기 때문에 클라이언트 컴포넌트에서 이루어집니다.
+
+따라서 `document.documentElement`에 접근할 수 있게 됩니다.
+
+```tsx
+'use client';
+
+import { Button } from './ui/button';
+import { Moon, Sun } from 'lucide-react';
+
+function ToggleTheme() {
+  function toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+  }
+  return (
+    <Button type='button' variant='outline' size='icon' onClick={toggleTheme}>
+      <Sun className='h-5 w-5 dark:hidden' />
+      <Moon className='h-5 w-5 hidden dark:block' />
+    </Button>
+  );
+}
+```
+
+## 3. dark: 적용
+
+다크모드 css를 적용하려면 `dark:`를 붙여서 사용합니다.
+
+```tsx
+<div className='bg-dark dark:bg-white' />
+```
