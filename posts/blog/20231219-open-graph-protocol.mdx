@@ -1,0 +1,58 @@
+---
+title: Open Graph Protocol (a.k.a OG Tag)
+date: 2023-12-19
+description: 웹 페이지 미리보기
+---
+
+## Open Graph Protocol란
+
+`Open Graph Protocol`는 링크 공유 시 해당 웹페이지에 대한 정보를 미리보기 형태로 제공해줍니다.
+
+html의 meta 태그에 사용할 수 있습니다.
+
+- `og:title` - The title of your object as it should appear within the graph, e.g., "The Rock".
+- `og:type` - The [type](https://ogp.me/#types) of your object, e.g., "video.movie". Depending on the type you specify, other properties may also be required.
+- `og:image` - An image URL which should represent your object within the graph.
+- `og:url` - The canonical URL of your object that will be used as its permanent ID in the graph, e.g., "https://www.imdb.com/title/tt0117500/".
+
+더 많은 태그들은 https://ogp.me/ 에서 살펴볼 수 있습니다.
+
+## Next.js에서 적용하는 방법
+
+`openGraph`를 Metadata에 추가하면 됩니다. [공식 문서](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#opengraph)
+
+```ts
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  openGraph: {
+    title: 'Next.js',
+    description: 'The React Framework for the Web',
+    url: 'https://nextjs.org',
+    siteName: 'Next.js',
+    images: [
+      {
+        url: 'https://nextjs.org/og.png',
+        width: 800,
+        height: 600,
+      },
+      {
+        url: 'https://nextjs.org/og-alt.png',
+        width: 1800,
+        height: 1600,
+        alt: 'My custom alt',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+};
+
+export default function Page() {}
+```
+
+## 미리 확인해보는 방법
+
+![](/posts/20231219-open-graph-protocol/openGraph.png)
+
+컴퓨터에서 미리 확인해보려면 [크롬 확장 프로그램](https://chromewebstore.google.com/detail/ograph-previewer/ggcfeakcnodgcmmllfdbmngekljbhiim)을 설치하면 됩니다.
