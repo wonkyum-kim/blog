@@ -20,7 +20,7 @@ export default function metadata({
   // const images = image ?? defaultImage;
 
   return {
-    metadataBase: new URL('blog-wonkyum-kim.vercel.app'),
+    metadataBase: new URL('http://blog-wonkyum-kim.vercel.app'),
     title,
     description,
     openGraph: {
