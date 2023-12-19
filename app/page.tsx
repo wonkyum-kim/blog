@@ -1,5 +1,10 @@
-import Image from 'next/image';
+import PageLayout from '@/components/page-layout';
+import RecentPosts from './components/recent-posts';
 
 export default function Home() {
-  return <div>hello</div>;
+  return (
+    <PageLayout>
+      <RecentPosts />
+    </PageLayout>
+  );
 }

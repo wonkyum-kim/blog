@@ -10,7 +10,7 @@ export const Blog = defineDocumentType(() => ({
     title: { type: 'string', required: true },
     date: { type: 'string', required: true },
     description: { type: 'string', required: true },
-    thumbnailUrl: { type: 'string', required: false },
+    thumbnailUrl: { type: 'string', required: true },
   },
   computedFields: {
     slug: {
