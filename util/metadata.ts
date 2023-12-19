@@ -8,10 +8,7 @@ interface MetadataProps {
 }
 
 // TODO: 배포 후 수정하기
-const webUrl = 'http://localhost:3000';
-
-// TODO: 배포 후 수정하기
-const defaultImage = `.`;
+const defaultImage = ``;
 
 export default function metadata({
   title,
@@ -21,15 +18,16 @@ export default function metadata({
 }: MetadataProps): Metadata {
   const description = desc + ' | wonkyum';
 
-  const images = webUrl + (image ?? defaultImage);
+  const images = image ?? defaultImage;
 
   return {
+    metadataBase: new URL('http://localhost:3000'),
     title,
     description,
     openGraph: {
       title,
       description,
-      url: webUrl + path,
+      url: path,
       siteName: 'wonkyum',
       images,
       locale: 'ko_KR',
