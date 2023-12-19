@@ -3,6 +3,7 @@ import { allBlogs } from 'contentlayer/generated';
 import type { Metadata } from 'next';
 import { Mdx } from './components/mdx';
 import metadata from '@/util/metadata';
+import Giscus from '@/app/components/giscus';
 
 interface DocProps {
   params: {
@@ -22,6 +23,7 @@ export default async function DocPage({ params }: DocProps) {
       <h1 className='text-3xl font-black text-blue-500'>{post.title}</h1>
       <time className='text-gray-500 text-sm mt-2 ml-auto'>{post.date}</time>
       <Mdx code={post.body.code} />
+      <Giscus />
     </div>
   );
 }

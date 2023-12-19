@@ -2,6 +2,7 @@
 
 import { Button } from '../../components/ui/button';
 import { Moon, Sun } from 'lucide-react';
+import { useThemeStore } from '../hooks/useThemeStore';
 
 export default function Header() {
   return (
@@ -13,8 +14,12 @@ export default function Header() {
 }
 
 function ToggleTheme() {
+  const setTheme = useThemeStore((state) => state.setTheme);
+
   function toggleTheme() {
     document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
   }
   return (
     <Button type='button' variant='outline' size='icon' onClick={toggleTheme}>
