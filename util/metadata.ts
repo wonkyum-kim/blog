@@ -7,8 +7,7 @@ interface MetadataProps {
   image?: string;
 }
 
-// TODO: 배포 후 수정하기
-const defaultImage = ``;
+// const defaultImage = ``;
 
 export default function metadata({
   title,
@@ -18,10 +17,10 @@ export default function metadata({
 }: MetadataProps): Metadata {
   const description = desc + ' | wonkyum';
 
-  const images = image ?? defaultImage;
+  // const images = image ?? defaultImage;
 
   return {
-    metadataBase: new URL('http://localhost:3000'),
+    metadataBase: new URL('blog-wonkyum-kim.vercel.app'),
     title,
     description,
     openGraph: {
@@ -29,7 +28,7 @@ export default function metadata({
       description,
       url: path,
       siteName: 'wonkyum',
-      images,
+      // images,
       locale: 'ko_KR',
     },
   };
