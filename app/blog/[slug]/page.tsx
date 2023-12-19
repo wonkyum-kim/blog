@@ -18,7 +18,7 @@ export default async function DocPage({ params }: DocProps) {
   }
 
   return (
-    <div className='flex flex-col w-full'>
+    <div className='flex flex-col w-full gap-4'>
       <h1 className='text-3xl font-black text-blue-500'>{post.title}</h1>
       <time className='text-gray-500 text-sm mt-2 ml-auto'>{post.date}</time>
       <Mdx code={post.body.code} />
