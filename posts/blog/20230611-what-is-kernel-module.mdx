@@ -1,0 +1,169 @@
+---
+title: 커널 모듈(Kernel Module) 이란?
+date: 2023-06-11
+description: 커널 모듈에 대해 공부하고 기록
+---
+
+## 리눅스 관련 글
+
+- [Windows WSL2에서 리눅스 커널 설치해보기](https://blog-gray-omega-81.vercel.app/blog/20230610-wsl-linux-kernel)
+- [커널 모듈(Kernel Module) 이란?](https://blog-gray-omega-81.vercel.app/blog/20230611-what-is-kernel-module)
+
+## 커널 모듈이란?
+
+`커널 모듈`은 필요에 따라 커널에 로드 및 언로드할 수 있는 코드 조각을 의미합니다.
+
+시스템을 재부팅하지 않고도 커널의 기능을 확장할 수 있다는 장점을 가지고 있습니다.
+
+## 현재 로드된 모듈을 확인하는 방법
+
+`lsmod` 명령을 사용해서 확인해 볼 수 있습니다.
+
+```shell
+sudo lsmod
+```
+
+모듈은 `/proc` 파일 시스템에도 저장되므로 확인해 볼 수 있습니다.
+
+```shell
+sudo cat /proc/modules
+```
+
+## 커널 모듈 적재, 제거하기
+
+아래와 같은 커널 모듈 코드가 있습니다.
+
+```c:simple.c
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+
+/* This function is called when the module is loaded. */
+static int simple_init(void)
+{
+  printk(KERN_INFO "Loading Module\n");
+  return 0;
+}
+
+/* This function is called when the module is removed. */
+static void simple_exit(void) {
+	printk(KERN_INFO "Removing Module\n");
+}
+
+/* Macros for registering module entry and exit points. */
+module_init( simple_init );
+module_exit( simple_exit );
+```
+
+모듈이 컴파일되면 다음 명령으로 컴파일이 되었는지 확인해 볼 수 있습니다.
+
+```shell
+modinfo simple.ko
+```
+
+이제 이 모듈을 커널에 로드해봅시다.
+
+```shell
+sudo insmod simple.ko
+```
+
+커널에서 해당 모듈을 제거하려면 다음 명령을 입력합니다.
+
+```shell
+sudo rmmod simple
+```
+
+그 후, `dmesg | tail`를 입력하면 `simple_init()`과 `simple_exit()`에서 `printk`를 사용하여 작성한 문자열이 나타나게 됩니다.
+
+## 프린트 매크로
+
+위의 모듈 코드에서는 `printk`를 사용하였습니다.
+
+더 간단한 방법으로 `프린트 매크로`를 사용해 볼 수 있습니다.
+
+```c:simple.c
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/printk.h> /* pr_info()에 필요 */
+
+/* This function is called when the module is loaded. */
+static int simple_init(void)
+{
+	pr_info("Loading Module\n");
+	return 0;
+}
+
+/* This function is called when the module is removed. */
+static void simple_exit(void) {
+	pr_info("Removing Module\n");
+}
+
+/* Macros for registering module entry and exit points. */
+module_init( simple_init );
+module_exit( simple_exit );
+```
+
+## 모듈 매크로
+
+초기 커널 버전에서는 `init_module`과 `cleanup_module`라는 이름으로 함수를 작성해야 했지만,
+
+요즘에는 `module_init` `module_exit` 매크로를 사용하여 원하는 대로 이름을 지정할 수 있다고 합니다.
+
+## 라이선스 및 모듈 문서
+
+라이선스와 저자, 모듈에 대한 설명을 추가할 수도 있습니다.
+
+```c:simple.c
+#include <linux/init.h> /* 매크로에 필요 */
+#include <linux/module.h> /* 모든 모듈에 필요 */
+#include <linux/printk.h> /* pr_info()에 필요 */
+#include <linux/kernel.h>
+
+...
+
+MODULE_LICENSE("GPL");                // 라이센스
+MODULE_AUTHOR("micrite");             // 저자
+MODULE_DESCRIPTION("simple module");  // 모듈 설명
+```
+
+## 명령줄로 인수 전달하기
+
+`argc/argv`는 사용할 수 없고 `module_param()` 매크로를 사용하여 인수를 전달할 수 있습니다.
+
+```shell
+sudo insmod simple.ko arg=10
+```
+
+소스 코드에서는 아래와 같이 전역 변수를 선언하고 매크로를 사용합니다.
+
+매크로는 변수 이름, 변수 타입, sysfs의 해당 파일에 대한 사용 권한을 인수로 받습니다.
+
+```c:simple.c
+int arg = 0;
+module_param(arg, int, 0);
+```
+
+정수 또는 문자열 배열을 사용하려면 `module_param_array()`및 `module_param_string()`을 사용합니다.
+
+## make 파일 살펴보기
+
+```Makefile
+obj-m += simple.o
+all:
+	make -C ../WSL2-Linux-Kernel M=`pwd` modules
+clean:
+	make -C ../WSL2-Linux-Kernel M=`pwd` clean
+```
+
+`obj-m += simple.o`를 사용해 커널 모듈을 추가합니다.
+
+make 명령의 `-C 플래그`는 Makefile이 있는 디렉터리를 지정하는데 사용됩니다.
+
+`pwd`는 print working directory의 약자로 현재 작업 디렉토리를 출력하는 명령어입니다.
+
+Makefile을 다 작성했으면 터미널에 `make`를 입력하여 커널 모듈을 컴파일 할 수 있습니다.
+
+## References
+
+https://wikidocs.net/196795
