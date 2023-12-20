@@ -1,0 +1,130 @@
+---
+title: Windows WSL2에서 리눅스 커널 설치해보기
+date: 2023-06-10
+description: 커널 모듈을 설치해보기 위한 사전 작업
+---
+
+## 주의 사항
+
+프로젝트는 Windows11 `WSL2` 환경에서 진행하였습니다.
+
+한 가지 주의해야 할 점은 윈도우 계정 이름이 영어여야 한다는 것입니다.
+
+만약 한글이라면 구글링을 통해 영어로 변경하는 법을 찾아보거나, 새로운 계정을 만들어야 합니다.
+
+## 1. Install WSL2
+
+먼저 wsl2를 설치합니다.
+
+```shell
+wsl --install
+```
+
+## 2. Donwload Ubuntu
+
+다음으로 마이크로소프트 스토어에 접속하여 최신 버전의 Ubuntu를 설치합니다.
+
+## 3. Install required packages
+
+그리고 필요한 패키지들을 설치합니다.
+
+```shell
+sudo apt update
+sudo apt upgrade
+sudo apt install build-essential flex libssl-dev bison flex libelf-dev
+sudo apt install bc
+sudo apt install dwarves
+```
+
+## 4. Download the latest kernel for WSL2
+
+wsl2에서 작동하는 [최신 리눅스 커널](https://github.com/microsoft/WSL2-Linux-Kernel)을 설치합니다.
+
+현재 글을 쓰는 시점에서는 6.1y가 최신 버전이므로 설치해줍니다.
+
+```shell
+git clone --depth 1 --branch linux-msft-wsl-6.1.y https://github.com/microsoft/WSL2-Linux-Kernel
+```
+
+## 5. Kernel compile
+
+다음으로 커널을 컴파일 해야합니다.
+
+`WSL2-Linux-Kernel` 디렉터리로 이동한 다음, 여러분의 CPU의 코어 개수를 확인합니다.
+
+```shell
+grep -c processor /proc/cpuinfo
+```
+
+만약 코어 개수가 12개라면, 아래와 같이 입력합니다.
+
+```shell
+make KCONFIG_CONFIG=Microsoft/config-wsl -j 12
+```
+
+이 과정은 코어 개수가 적으면 매우 오래 걸릴 수 있습니다.
+
+## 6. Copy the kernel image file and create .wslconfig
+
+`PowerShell` 또는 `Windows Terminal`로 가서 사용자 이름을 쉽게 확인할 수 있습니다.
+
+```shell
+PS C:\Users\[yourUserName]>
+```
+
+커널 이미지를 복사합니다.
+
+```shell
+cp vmlinux /mnt/c/Users/[yourUserName]
+```
+
+`.wslconfig` 파일을 생성하고 씁니다.
+
+```shell
+sudo vim /mnt/c/Users/[yourUserName]/.wslconfig
+
+[wsl2]
+kernel=C:\\Users\\[yourUserName]\\vmlinux
+```
+
+## 7. Shut down WSL and check your kernel.
+
+우분투를 종료하고 PowerShell 또는 Windows Terminal로 이동합니다.
+
+```shell
+wsl --shutdown
+```
+
+다시 우분투로 가서 커널이 설치되었는지 확인합니다.
+
+```shell
+uname -r
+// 6.1.21.2-microsoft-standard-WSL2+
+```
+
+## 8. Make a directory and compile the kernel module.
+
+마지막으로 간단한 커널 모듈을 컴파일해보는 작업을 진행 해보겠습니다.
+
+`simple` 이라는 이름의 디렉터리를 만들고, 공룡책에 있는 [샘플 커널 모듈 코드](https://github.com/wonkyum-kim/Operating_System_Concepts/tree/main/chapter%202)를 넣어줍니다.
+
+```text:폴더_구조
+|- WSL2-Linux-Kernel
+|- simple
+     |- Makefile
+     |- simple.c
+```
+
+그리고 터미널에서 다음 명령어를 입력하고 순서대로 눌러줍니다.
+
+```shell
+sudo apt-get install libncurses-dev
+make menuconfig
+exit -> enter -> yes
+```
+
+드디어 커널 모듈을 컴파일 할 수 있게 되었습니다.
+
+```shell
+make
+```
