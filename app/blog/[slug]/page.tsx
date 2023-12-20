@@ -21,8 +21,12 @@ export default async function DocPage({ params }: DocProps) {
 
   return (
     <div className='flex flex-col gap-4 relative'>
-      <h1 className='text-3xl font-black text-blue-500'>{post.title}</h1>
-      <time className='text-gray-500 text-sm mt-2 ml-auto'>{post.date}</time>
+      <h1 className='text-3xl font-bold tracking-tight md:text-5xl'>
+        {post.title}
+      </h1>
+      <time className='text-gray-500 text-sm mt-2 ml-auto dark:text-white'>
+        {post.date}
+      </time>
       <Mdx code={post.body.code} />
       <Giscus />
       {post.toc ? (
