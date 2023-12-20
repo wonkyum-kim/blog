@@ -110,3 +110,8 @@
 .prose figure :where(code):not(:where([class~='not-prose'] *))::after {
   content: '';
 }
+
+.prose :where(h2):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  padding-top: 4rem;
+  padding-bottom: 1rem;
+}

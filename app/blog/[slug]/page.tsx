@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Mdx } from './components/mdx';
 import metadata from '@/util/metadata';
 import Giscus from '@/app/components/giscus';
+import Link from 'next/link';
 
 interface DocProps {
   params: {
@@ -19,11 +20,27 @@ export default async function DocPage({ params }: DocProps) {
   }
 
   return (
-    <div className='flex flex-col w-full gap-4'>
+    <div className='flex flex-col gap-4 relative'>
       <h1 className='text-3xl font-black text-blue-500'>{post.title}</h1>
       <time className='text-gray-500 text-sm mt-2 ml-auto'>{post.date}</time>
       <Mdx code={post.body.code} />
       <Giscus />
+      {post.toc ? (
+        <div className='fixed right-8 top-20 hidden min-[1440px]:flex min-[1440px]:flex-col gap-2'>
+          {post.headings.map((heading: any) => {
+            return (
+              <Link
+                key={`#${heading.slug}`}
+                className='data-[level=two]:pl-2 data-[level=three]:pl-4 hover:text-blue-500'
+                data-level={heading.level}
+                href={`#${heading.slug}`}
+              >
+                {heading.text}
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }
