@@ -19,7 +19,7 @@ export default function List({ posts, page }: ListProps) {
           key={blog.slug}
           className='flex py-5 items-start justify-between gap-2'
         >
-          <div className='flex flex-col gap-1 flex-1'>
+          <div className='flex flex-col gap-1 flex-1 hover:text-blue-500'>
             <span className='font-bold text-lg break-keep'>{blog.title}</span>
             <span>{blog.description}</span>
             <time className='text-xs text-gray-500 mt-1'>{blog.date}</time>
