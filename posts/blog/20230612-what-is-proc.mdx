@@ -1,0 +1,122 @@
+---
+title: proc 파일 시스템이란?
+date: 2023-06-12
+description: proc 파일 시스템에 대해 공부하고 기록
+---
+
+## 리눅스 관련 글
+
+- [Windows WSL2에서 리눅스 커널 설치해보기](https://blog-gray-omega-81.vercel.app/blog/20230610-wsl-linux-kernel)
+- [커널 모듈(Kernel Module) 이란?](https://blog-gray-omega-81.vercel.app/blog/20230611-what-is-kernel-module)
+- [proc 파일 시스템이란?](https://blog-gray-omega-81.vercel.app/blog/20230612-what-is-proc)
+
+## /proc 파일 시스템
+
+리눅스에는 커널과 커널 모듈로부터 프로세스로 정보를 전송하기 위한 메커니즘인 `/proc` 파일 시스템이 존재합니다.
+
+`/proc` 파일 시스템은 가상 파일 시스템으로 디스크가 아닌 커널 메모리에서만 존재합니다.
+
+## /proc 읽기 예제
+
+아래 예제의 `proc_init`에서 `/proc/hello` 파일을 만들게 되고, 이를 읽을 때마다 `proc_read` 함수가 호출됩니다.
+
+마지막으로 `proc_exit`에서 파일을 지우게 됩니다.
+
+```c:hello.c
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/proc_fs.h>
+#include <asm/uaccess.h>
+
+#define BUFFER_SIZE 128
+
+#define PROC_NAME "hello"
+#define MESSAGE "Hello World\n"
+
+/**
+ * Function prototypes
+ */
+static ssize_t proc_read(struct file *file, char *buf, size_t count, loff_t *pos);
+
+static struct proc_ops proc_file_fops = {
+	.proc_read = proc_read,
+};
+
+
+/* This function is called when the module is loaded. */
+static int proc_init(void)
+{
+
+	// creates the /proc/hello entry
+	// the following function call is a wrapper for
+	// proc_create_data() passing NULL as the last argument
+	proc_create(PROC_NAME, 0, NULL, &proc_file_fops);
+
+	printk(KERN_INFO "/proc/%s created\n", PROC_NAME);
+
+	return 0;
+}
+
+/* This function is called when the module is removed. */
+static void proc_exit(void) {
+
+	// removes the /proc/hello entry
+	remove_proc_entry(PROC_NAME, NULL);
+
+	printk( KERN_INFO "/proc/%s removed\n", PROC_NAME);
+}
+
+/**
+ * This function is called each time the /proc/hello is read.
+ *
+ * This function is called repeatedly until it returns 0, so
+ * there must be logic that ensures it ultimately returns 0
+ * once it has collected the data that is to go into the
+ * corresponding /proc file.
+ *
+ * params:
+ *
+ * file:
+ * buf: buffer in user space
+ * count:
+ * pos:
+ */
+static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
+{
+	int rv = 0;
+	char buffer[BUFFER_SIZE];
+	static int completed = 0;
+
+	if (completed) {
+		completed = 0;
+		return 0;
+	}
+
+	completed = 1;
+
+	rv = sprintf(buffer, "Hello World\n");
+
+	// copies the contents of buffer to userspace usr_buf
+	if (copy_to_user(usr_buf, buffer, rv)) {
+		return -1;
+	}
+
+	return rv;
+}
+
+
+/* Macros for registering module entry and exit points. */
+module_init( proc_init );
+module_exit( proc_exit );
+```
+
+읽으려면 커널 모듈을 로드한 이후 다음 명령어를 입력합니다.
+
+```shell
+cat /proc/hello
+```
+
+## References
+
+https://wikidocs.net/196798

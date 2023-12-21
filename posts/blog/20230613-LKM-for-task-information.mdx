@@ -1,0 +1,116 @@
+---
+title: Task 정보를 위한 LKM 만들어보기
+date: 2023-06-12
+description: task 정보를 불러오는 간단한 LKM 만들어보기
+---
+
+## 작동 예시
+
+이번에는 task의 정보를 `/proc` 파일에 쓰고 읽어볼 수 있도록 코드를 작성해봅니다.
+
+```shell
+ps
+...
+
+// 입력 결과 예시
+echo "1395" > /proc/pid
+
+// 출력 결과 예시
+cat /proc/pid
+command = [bash] pid = [1395] state = [1]
+```
+
+`echo` 명령어는 `pid`를 `/proc/pid` 파일에 쓰게 되고 `cat` 명령어를 사용하여 이 값을 읽게 됩니다.
+
+`echo` 명령어와 함께 전달할 `pid`(e.g. 1395)는 `ps` 명령어를 사용해 알아낼 수 있습니다.
+
+커널 모듈은 `pid` 값을 활용해 `task_struct`를 불러오고 `command, pid, status` 정보를 출력하게 됩니다.
+
+## /proc 파일 시스템에 쓰기
+
+대부분의 코드는 /proc에서 값을 읽는 코드와 같습니다.
+
+이번에 추가적으로 `proc_write` 코드를 작성해 봅시다.
+
+```c
+static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos)
+{
+    char *k_mem;
+
+    // allocate kernel memory
+    k_mem = kmalloc(count, GFP_KERNEL);
+
+    /* copies user space usr_buf to kernel buffer */
+    if (copy_from_user(k_mem, usr_buf, count)) {
+        printk( KERN_INFO "Error copying from user\n");
+        return -1;
+    }
+
+    /**
+     * kstrol() will not work because the strings are not guaranteed
+     * to be null-terminated.
+     *
+     * sscanf() must be used instead.
+     */
+
+    sscanf(k_mem, "%d", &pid);
+
+    kfree(k_mem);
+
+    return count;
+}
+
+
+static struct proc_ops proc_file_fops = {
+    .proc_read = proc_read,
+    .proc_write = proc_write,
+};
+```
+
+`kamlloc()` 함수는 `malloc()`과 거의 동일하지만 커널 메모리를 할당하는 점이 다릅니다.
+
+`GFP_KERNEL` 플래그는 메모리 할당이 항상 성공하도록 요구합니다.
+
+충분한 메모리가 없을 경우 호출한 프로세스를 멈추고 메모리가 할당할 수 있는 상태가 될 때까지 대기하게 됩니다.
+
+`copy_from_user()` 함수는 `usr_buf`(/proc/pid에 쓰여진 것)을 커널 메모리에 복사하게 됩니다.
+
+우리가 읽은 값은 문자열(`k_mem`)을 정수로 형 변환해서 사용해야 합니다.
+
+null 문자 문제로 인해 `sscanf()` 함수를 사용하여 정수로 형 변환을 진행하였습니다.
+
+마지막으로, 이전에 `kmalloc()`으로 할당된 메모리를 `kfree()`를 호출하여 커널로 반환해야 한다는 점을 반드시 주의하도록 합니다.
+
+## /proc 파일 시스템에서 읽기
+
+/proc/pid에 저장된 프로세스 식별자를 통해 `PCB`를 불러올 수 있습니다.
+
+`PCB`는 리눅스에서 `task_struct`로 표현되고 `<linux/sched.h>`에서 찾아볼 수 있습니다.
+
+`pid`를 사용해 해당하는 `task_struct`를 불러오는 방법은 다음과 같습니다.
+
+```c
+struct task_struct *tsk = NULL;
+tsk = pid_tsk(find_vpid(pid), PIDTYPE_PID);
+```
+
+유효한 `pid`를 전달하였다면, `pid_tsk()`는 `task_struct`를 반환합니다.
+
+유효하지 않은 `pid`를 전달할 경우 반드시 에러 처리를 해야 하는 것을 주의 해야합니다.
+
+```c
+if (!tsk) {
+    printk(KERN_INFO "Error\n");
+    return 0;
+}
+```
+
+이후 task의 정보를 출력하면 됩니다.
+
+```c
+printk(KERN_INFO "command = [%s] pid = [%d] state = [%d]\n", tsk->comm, tsk->pid, tsk->__state
+```
+
+## 전체 코드
+
+https://github.com/wonkyum-kim/Operating_System_Concepts/blob/main/chapter%203/Project2-Linux_Kernel_Module_for_Task_Information/pid.c
