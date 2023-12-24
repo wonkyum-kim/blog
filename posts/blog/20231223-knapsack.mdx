@@ -41,7 +41,7 @@ int knapsack(int n, int k)
 {
 	vector<int> dp(vector<int>(k + 1));
 	for (int i = 1; i <= n; ++i) {
-		auto [weight, value] = stuff[i];
+		auto [weight, value] = item[i];
 		for (int j = k; j >= weight; --j) {
 			dp[j] = max(dp[j], dp[j - weight] + value);
 		}
@@ -97,7 +97,7 @@ void knapsack(int c, int n)
 
 ## 응용: 값을 만들 수 있는 방법의 개수를 세는 경우
 
-[동전](https://www.acmicpc.net/problem/9084) 문제는 물건의 가치와 무게 사이를 고려해서 푸는 문제가 아닙니다.
+[동전](https://www.acmicpc.net/problem/9084) 문제는 물건의 가치와 무게 사이의 관계를 고려해서 푸는 문제가 아닙니다.
 
 단지 특정 금액을 만드는 방법이 몇 개 인지만 구하면 됩니다.
 
