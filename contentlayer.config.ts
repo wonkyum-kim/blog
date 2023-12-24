@@ -4,6 +4,8 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
 import GithubSlugger from 'github-slugger';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
 
 export const Blog = defineDocumentType(() => ({
   name: 'Blog',
@@ -51,7 +53,10 @@ export default makeSource({
   contentDirPath: 'posts',
   documentTypes: [Blog],
   mdx: {
+    remarkPlugins: [remarkMath],
     rehypePlugins: [
+      // @ts-ignore
+      rehypeKatex,
       rehypeCodeTitles,
       rehypeSlug,
       [
