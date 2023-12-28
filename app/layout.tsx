@@ -15,6 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang='ko'>
+      <meta
+        name='google-site-verification'
+        content='093XRa0f1ge2KpRQmji4SNW-fW64Je5-ngk41Q0ywM0'
+      />
       <body className='max-w-screen-md min-w-[320px] mx-auto'>
         <Header />
         <main className='flex flex-col'>{children}</main>
