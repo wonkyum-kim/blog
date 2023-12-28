@@ -1,6 +1,16 @@
 import { MetadataRoute } from 'next';
+import { allBlogs } from 'contentlayer/generated';
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const posts = allBlogs.sort(
+    (a, b) => Number(new Date(b.date)) - Number(new Date(a.date))
+  );
+  const postsSitemap = posts.map((post) => {
+    return {
+      url: `https://blog-wonkyum-kim.vercel.app/${post.slug}`,
+    };
+  });
+
   return [
     {
       url: 'https://blog-wonkyum-kim.vercel.app',
@@ -8,5 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 1,
     },
+    ...postsSitemap,
   ];
 }
