@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   );
   const postsSitemap = posts.map((post) => {
     return {
-      url: `https://blog-wonkyum-kim.vercel.app/${post.slug}`,
+      url: `https://blog-wonkyum-kim.vercel.app/blog/${post.slug}`,
     };
   });
 
