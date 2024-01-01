@@ -5,6 +5,7 @@ import { Mdx } from './components/mdx';
 import metadata from '@/util/metadata';
 import Giscus from '@/app/components/giscus';
 import Link from 'next/link';
+import Toc from './components/toc';
 
 interface DocProps {
   params: {
@@ -29,22 +30,7 @@ export default async function DocPage({ params }: DocProps) {
       </time>
       <Mdx code={post.body.code} />
       <Giscus />
-      {post.toc ? (
-        <div className='fixed left-[calc(50%+550px)] -translate-x-2/4 hidden min-[1440px]:flex min-[1440px]:flex-col gap-2'>
-          {post.headings.map((heading: any) => {
-            return (
-              <Link
-                key={`#${heading.slug}`}
-                className='data-[level=two]:pl-2 data-[level=three]:pl-4 hover:text-blue-500'
-                data-level={heading.level}
-                href={`#${heading.slug}`}
-              >
-                {heading.text}
-              </Link>
-            );
-          })}
-        </div>
-      ) : null}
+      {post.toc ? <Toc headings={post.headings} /> : null}
     </div>
   );
 }
