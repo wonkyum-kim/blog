@@ -30,7 +30,7 @@ export default async function DocPage({ params }: DocProps) {
       <Mdx code={post.body.code} />
       <Giscus />
       {post.toc ? (
-        <div className='fixed right-8 top-20 hidden min-[1440px]:flex min-[1440px]:flex-col gap-2'>
+        <div className='fixed left-[calc(50%+550px)] -translate-x-2/4 hidden min-[1440px]:flex min-[1440px]:flex-col gap-2'>
           {post.headings.map((heading: any) => {
             return (
               <Link
