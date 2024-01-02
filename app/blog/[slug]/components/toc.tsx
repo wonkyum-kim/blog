@@ -24,7 +24,7 @@ export default function Toc({ headings }: TocProps) {
       prevYposition = window.scrollY;
     };
 
-    const options: IntersectionObserverInit = { rootMargin: '-25%' };
+    const options: IntersectionObserverInit = { rootMargin: '-300px' };
     const callback: IntersectionObserverCallback = (entries) => {
       entries.forEach((entry) => {
         scrollDirection(prevYposition);
@@ -32,7 +32,6 @@ export default function Toc({ headings }: TocProps) {
           (direction === 'down' && !entry.isIntersecting) ||
           (direction === 'up' && entry.isIntersecting)
         ) {
-          console.log(entry.target.id);
           setSelected(entry.target.id);
         }
       });
@@ -43,6 +42,7 @@ export default function Toc({ headings }: TocProps) {
     headingsElement.forEach((header) => {
       observer.observe(header);
     });
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -56,6 +56,7 @@ export default function Toc({ headings }: TocProps) {
               selected === heading.slug && 'text-blue-500'
             )}
             data-level={heading.level}
+            onClick={() => setSelected(heading.slug)}
             href={`#${heading.slug}`}
           >
             {heading.text}
