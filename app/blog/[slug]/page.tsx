@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 import { Mdx } from './components/mdx';
 import metadata from '@/util/metadata';
 import Giscus from '@/app/components/giscus';
-import Link from 'next/link';
 import Toc from './components/toc';
 
 interface DocProps {
