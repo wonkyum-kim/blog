@@ -1,0 +1,153 @@
+---
+title: Intersection Observer API를 사용한 TOC 만들기
+date: 2024-01-02
+description: Intersection Observer API에 대해 공부하고 TOC를 만들어 보기
+tags:
+  - React
+  - JavaScript
+---
+
+## Intersection Observer API
+
+`Intersection Observer API`를 사용하면 최상위 문서의 viewport와 target으로 설정한 요소 사이의 변화를 비동기적으로 관찰할 수 있습니다.
+
+```js
+const callback = (entries) => {
+  entries.forEach((entry) => {
+    // 각 엔트리는 관찰된 하나의 교차 변화을 설명합니다.
+    // 대상 요소:
+    //   entry.boundingClientRect
+    //   entry.intersectionRatio
+    //   entry.intersectionRect
+    //   entry.isIntersecting
+    //   entry.rootBounds
+    //   entry.target
+    //   entry.time
+  });
+};
+
+const observer = new IntersectionObserver(callback);
+observer.observe(document.querySelector('.card'));
+```
+
+`entries` 파라미터를 받아들이는 이 callback 함수는 intersection 상태가 변하는 각 요소의 정보들을 반환합니다.
+
+- boundingClientRect: entry의 사각형 정보
+- intersectionRatio: 루트 요소에서 보이는 현재 요소의 비율을 나타내는 0.0에서 1.0사이의 값
+- intersectionRect: entry가 현재 노출된 영역을 나타내는 값
+- isIntersecting: entry의 교차 상태
+- rootBounds: 루트 요소의 사각형 정보
+- target: 관찰 대상 요소
+- time: 변경이 발생한 시간
+
+## IntersectionObserver Options
+
+### threshold
+
+`threshold` 값을 설정해서 대상 요소가 루트와 얼만큼 교차할 때 콜백 함수를 실행할 것인지를 나타낼 수 있습니다.
+
+```js
+const options = {
+  threshold: 0,
+};
+
+const observer = new IntersectionObserver(callback, options);
+```
+
+예를 들어 0으로 설정했다면, 박스의 가장 윗부분이 보일 때 콜백 함수가 실행됩니다.
+
+![](/posts/20240102-toc-intersection-observer/intersection2.gif)
+
+하지만 값을 1로 설정했다면, 박스의 가장 아랫부분이 보일 때 콜백 함수가 실행됩니다.
+
+![](/posts/20240102-toc-intersection-observer/intersection3.gif)
+
+### rootMargin
+
+루트 요소의 마진을 설정할 수 있습니다. 마진에 따라서 대상 요소에 콜백 함수가 적용되는 시점이 달라지게 됩니다.
+
+```js
+const options = {
+  rootMargin: '50px',
+};
+
+const observer = new IntersectionObserver(callback, options);
+```
+
+루트 요소 기준으로 아래 50px에 대상 요소가 닿게 되면 콜백 함수가 적용되는 것을 볼 수 있습니다.
+
+![](/posts/20240102-toc-intersection-observer/intersection4.gif)
+
+### root
+
+관찰될 대상의 루트 요소를 직접 설정하는 옵션입니다.
+
+### Intersection Observer 적용하기
+
+id를 얻을 수 있다면, 그 id에 해당하는 TOC 목차에 하이라이트를 해줍니다.
+
+이는 위에서 살펴보았던 Intersection Observer API로 진행하게 됩니다.
+
+먼저 교차된 h태그의 id를 저장하는 useState를 만들어줍니다.
+
+```tsx
+const [selectedId, setSelectedId] = useState('');
+```
+
+그리고 현재 스크롤 방향에 따라서 heading 엘리먼트의 id를 선택합니다.
+
+DOM 요소의 현재 스크롤 상태(스크롤에 의해 가려진 영역에 대한 정보)는 다음과 같은 방법들로 얻을 수 있습니다.
+
+- document.documentElement.scrollTop
+- window.scrollY
+- window.pageYOffset
+
+전부 같은 값을 반환하는데, 스크롤 상태를 얻기 위한 방법이 왜 3가지나 있어야 하는지는 잘 모르겠지만 `window.scrollY`를 사용하도록 하겠습니다.
+
+`entry.isIntersecting`은 요소가 아직 교차되지 않았다면 false, 교차되었다면 true를 반환합니다.
+
+아래 방향으로 이동할 때는 아직 교차되지 않은 엘리먼트를, 위 방향으로 이동할 때는 이미 교차된 엘리먼트의 id를 설정합니다.
+
+```tsx
+useEffect(() => {
+  let direction: 'down' | 'up' | '' = '';
+  let prevYposition = 0;
+
+  const scrollDirection = (prevY: number) => {
+    if (window.scrollY === 0 && prevY === 0) return;
+    else if (window.scrollY > prevY) direction = 'down';
+    else direction = 'up';
+    prevYposition = window.scrollY;
+  };
+
+  const options: IntersectionObserverInit = { rootMargin: '-300px' };
+  const callback: IntersectionObserverCallback = (entries) => {
+    entries.forEach((entry) => {
+      scrollDirection(prevYposition);
+      if (
+        (direction === 'down' && !entry.isIntersecting) ||
+        (direction === 'up' && entry.isIntersecting)
+      ) {
+        setSelectedId(entry.target.id);
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver(callback, options);
+  const headingsElement = Array.from(document.querySelectorAll('h2, h3'));
+  headingsElement.forEach((header) => {
+    observer.observe(header);
+  });
+  return () => observer.disconnect();
+}, []);
+```
+
+`useEffect` 내에서 observer를 disconnect하는 클린업 함수를 잊지 않도록 합니다.
+
+## References
+
+https://thisyujeong.dev/blog/toc-generator#%EC%8A%A4%ED%81%AC%EB%A1%A4-%EB%B0%A9%ED%96%A5-%EC%B2%B4%ED%81%AC
+
+https://tech.kakaoenterprise.com/149
+
+https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
