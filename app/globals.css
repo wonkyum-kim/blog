@@ -150,8 +150,7 @@
 /* Fenced Code block - line hightlight */
 .prose code span[data-highlighted-line] {
   @apply border-l-2 border-y-0 border-transparent bg-opacity-10 
-         border-blue-400 bg-indigo-400 dark:border-blue-500 dark:bg-slate-700
-         pl-[calc(0.5rem-2px)] md:pl-[calc(1rem-2px)];
+         border-blue-400 bg-indigo-400 dark:border-blue-500 dark:bg-slate-700;
 }
 
 ::selection {
