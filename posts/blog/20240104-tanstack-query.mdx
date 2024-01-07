@@ -400,8 +400,6 @@ export const notifyManager = createNotifyManager()
 
 `batch` 메서드를 살펴 보면 `transactions` 라는 변수가 사용됩니다.
 
-이것은 운영체제에서 semaphore와 같다고 생각하면 됩니다.
-
 `QueryObserver`와 `QueryClient`가 모두 notify라는 메서드를 호출하면서 batch도 두 번 호출되는데, 클로저의 특성을 이용하여 `flush()`를 한 번만 실행시키도록 하는 재밌는 아이디어입니다.
 
 `flush` 메서드는 queue에 쌓인 함수들을 한 번에 실행시켜서 재렌더링을 줄이는 효과를 얻을 수 있게 됩니다.
