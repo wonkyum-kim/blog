@@ -156,3 +156,7 @@
 ::selection {
   @apply bg-blue-300;
 }
+
+p > img {
+  margin: auto;
+}
