@@ -1,0 +1,28 @@
+---
+title: word-break
+date: 2024-01-09
+description: 언어에 따른 개행 차이
+tags:
+  - CSS
+---
+
+## 언어에 따른 개행 차이
+
+비 아시아 언어는 단어(공백 없이 연속된 글자)를 기준으로 개행이 적용되기 때문에 영역을 초과하더라도 단어라면 개행이 적용되지 않습니다.
+
+하지만 아시아 언어(Chinese, Japanese, Korean)는 단어와 상관 없이 영역을 초과하면 강제로 개행이 적용됩니다.
+
+![](/posts/20240109-word-break/img.png)
+
+## word-break
+
+아시아, 비 아시아 언어의 개행을 제어하려면 CSS `word-break` 프로퍼티를 사용해야 합니다.
+
+- normal : 언어의 차이에 따른 기본 값이 적용됨
+- break-all : 글자 기준으로 개행
+- keep-all : 단어 기준으로 개행
+- break-word : `word-break: normal`과 `overflow-wrap: anywhere` 프로퍼티를 적용한 것과 같다. (deprecated)
+
+`break-word`는 오버플로를 방지하기 위해 임의의 지점에서 개행이 적용되지만
+
+`break-all`은 오버플로가 발생하는 정확한 지점에서 개행이 적용된다는 차이가 있습니다.
