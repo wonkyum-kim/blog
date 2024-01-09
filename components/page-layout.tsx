@@ -10,7 +10,7 @@ export default function PageLayout({
   description,
 }: PageLayoutProps) {
   return (
-    <div className='px-5 pt-7 pb-16 flex flex-col gap-5'>
+    <div className='px-5 pt-7 pb-16 flex flex-col gap-5 break-all'>
       {(title || description) && (
         <div className='flex flex-col gap-1'>
           {title && <h1 className='text-2xl font-bold'>{title}</h1>}
