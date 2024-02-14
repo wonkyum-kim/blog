@@ -1,0 +1,219 @@
+---
+title: 원근감(perspective)
+date: 2024-01-09
+description: perspective에 대해 알아보기
+tags:
+  - memo
+  - CSS
+---
+
+## 원근감이란?
+
+원근감(perspective)은 멀고 가까운 거리에 대한 느낌을 의미합니다.
+
+CSS에서 `perspective`는 원근감을 나타내기 위해 z = 0인 평면과 사용자간의 거리를 설정합니다.
+
+따라서 perspective를 작게 주면 커 보이고 크게 주면 작게 보이게 됩니다.
+
+## 원근감을 주는 두 가지 방법
+
+CSS로 원근감을 주는 방법은 두 가지가 있습니다.
+
+- transform 프로퍼티의 perspective() 함수 사용하기
+
+```css
+.panel--red {
+  transform: perspective(400px) rotateY(45deg);
+}
+```
+
+![](/posts/20240109-perspective/red-1.png)
+
+- perspective 프로퍼티 사용하기
+
+```css
+.scene--blue {
+  perspective: 400px;
+}
+
+.panel--blue {
+  transform: rotateY(45deg);
+}
+```
+
+![](/posts/20240109-perspective/blue-1.png)
+
+두 방법 모두 하나의 요소에 대해서는 같은 효과를 나타내지만, 여러 요소에 대해서는 차이점이 발생합니다.
+
+## 개별 요소마다 원근감 부여하기
+
+각 요소마다 원근감을 부여한다면, 각 요소가 각각의 `소실 점(vanishing point)`을 가지게 됩니다.
+
+```css
+.panel--separate {
+  transform: perspective(400px) rotateY(45deg);
+}
+```
+
+![](/posts/20240109-perspective/red-2.png)
+
+## 부모 요소에만 원근감 부여하기
+
+부모 요소에만 원근감을 부여한다면, 모든 자식 요소들이 하나의 소실 점을 가지게 됩니다.
+
+```css
+.scene--together {
+  perspective: 400px;
+}
+
+.panel--together {
+  transform: rotateY(45deg);
+}
+```
+
+![](/posts/20240109-perspective/blue-2.png)
+
+## Card Flip
+
+![](/posts/20240109-perspective/flip.gif)
+
+카드를 눌러서 앞 뒤로 뒤집을 수 있는 효과를 만들어봅시다.
+
+기본 구조는 아래와 같습니다.
+
+```tsx
+export default function CardFlip() {
+  const [isFront, setIsFront] = useState(true);
+
+  const handleFlip = () => {
+    setIsFront((prev) => !prev);
+  };
+
+  return (
+    <Scene>
+      <Card handleFlip={handleFlip} isFront={isFront}>
+        <CardFace side='front' />
+        <CardFace side='back' />
+      </Card>
+    </Scene>
+  );
+}
+```
+
+`Scene` 컴포넌트에 원근감을 설정합니다.
+
+z = 0 평면과의 거리를 600px로 설정하였습니다.
+
+```css
+.scene {
+  width: 200px;
+  height: 260px;
+  border-width: 2px;
+  perspective: 600px;
+}
+```
+
+`Card` 컴포넌트에는 `transform-style: preserve-3d;`를 적용하여 요소의 하위 요소들을 3D 공간에 배치하도록 합니다.
+
+그리고 클릭 시 y방향으로 180도 회전을 적용합니다.
+
+```css
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 1s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.card.is-flipped {
+  transform: rotateY(180deg);
+}
+```
+
+`CardFace` 컴포넌트에서 카드의 뒷면은 처음에는 뒤집은 상태로 있어야하고 보이지 않아야 합니다.
+
+`backface-visibility: hidden`을 적용하면, 뒤집혀있는 요소는 보이지 않게 됩니다.
+
+```css
+.card__face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  line-height: 260px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-size: 40px;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.card__face--front {
+  background: red;
+}
+
+.card__face--back {
+  background: blue;
+  transform: rotateY(180deg);
+}
+```
+
+## Slide Flip
+
+![](/posts/20240109-perspective/slide.gif)
+
+`transform-origin: center right;` 속성을 적용하여 회전 축을 오른쪽으로 옮기고,
+
+`translateX(-100%)`를 적용하여 원하는 위치로 이동시킵니다.
+
+```css {7, 12}
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform-origin: center right;
+  transition: transform 1s;
+}
+
+.card.is-flipped {
+  transform: translateX(-100%) rotateY(-180deg);
+}
+```
+
+조금 더 자세하게 살펴보도록 하겠습니다.
+
+`transform-origin: center right;`을 적용시키면 우측 가운데가 기준이 됩니다.
+
+![](/posts/20240109-perspective/ex-1.png)
+
+여기서 이제 `rotateY`로 조금씩 돌리면 다음과 같이 변하게 됩니다.
+
+- -30deg
+
+![](/posts/20240109-perspective/ex-2.png)
+
+- -60deg
+
+![](/posts/20240109-perspective/ex-3.png)
+
+- -120deg
+
+![](/posts/20240109-perspective/ex-4.png)
+
+- -180deg
+
+![](/posts/20240109-perspective/ex-5.png)
+
+이제 X 방향으로 옮겨주면 제자리에서 뒤집어진 모습을 확인할 수 있게 됩니다.
+
+![](/posts/20240109-perspective/ex-6.png)
+
+## References
+
+https://3dtransforms.desandro.com
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin
