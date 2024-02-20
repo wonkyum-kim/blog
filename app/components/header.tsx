@@ -8,9 +8,12 @@ import Link from 'next/link';
 export default function Header() {
   return (
     <header className='h-14 px-5 sticky top-0 z-50 w-full border-b dark:border-b-white flex justify-between items-center bg-background'>
-      <div className='flex items-center'>
+      <div className='flex items-center gap-6'>
         <Link href='/blog' className='font-bold hover:text-blue-500'>
           Blog
+        </Link>
+        <Link href='/practice' className='font-bold hover:text-blue-500'>
+          Practice
         </Link>
       </div>
       <ToggleTheme />

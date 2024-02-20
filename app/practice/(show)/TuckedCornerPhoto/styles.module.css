@@ -1,0 +1,41 @@
+.background {
+  background: repeating-linear-gradient(30deg, #fff2 0 10%, #fff0 0 24%),
+    repeating-linear-gradient(-23deg, #fff2 0 4%, #fff0 0 14%) gold;
+  width: 100%;
+  min-block-size: 100dvh;
+  display: grid;
+  place-content: center;
+}
+
+.photo {
+  --c: 50px;
+  --p: 30px;
+  --d: 10px;
+
+  padding: var(--p);
+  background: radial-gradient(farthest-side at 0 0, #000, #0000) 0 0 / var(--c)
+      var(--c),
+    radial-gradient(farthest-side at 100% 100%, #000, #0000) 100% 100% /
+      var(--c) var(--c),
+    radial-gradient(farthest-side at 0 100%, #00000018, #0000)
+      calc(100% - var(--d) * 0.5) calc(var(--d) * 0.5) / var(--d) var(--d),
+    radial-gradient(farthest-side at 100% 0, #00000018, #0000)
+      calc(var(--d) * 0.5) calc(100% - var(--d) * 0.5) / var(--d) var(--d),
+    /* padding */ linear-gradient(#fff 0 0) 50% 50% / calc(100% - var(--p))
+      calc(100% - var(--p)),
+    /* shadow (top) */ linear-gradient(#0000, #000 25% 75%, #0000) 50% 50% /
+      calc(100% - var(--p)) calc(100% - var(--d)),
+    /* shadow (right) */ linear-gradient(90deg, #0000, #000 25% 75%, #0000) 50%
+      50% / calc(100% - var(--d)) calc(100% - var(--p));
+  background-repeat: no-repeat;
+
+  /* cutting corner */
+  clip-path: polygon(
+    0 var(--c),
+    var(--c) 0,
+    100% 0,
+    100% calc(100% - var(--c)),
+    calc(100% - var(--c)) 100%,
+    0 100%
+  );
+}
