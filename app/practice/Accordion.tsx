@@ -56,7 +56,7 @@ function AccordionList({
     <div
       className={clsx(
         'h-[52px] transition-all duration-300',
-        selected === name && 'md:h-[302px] min-[0px]:h-[350px]'
+        selected === name && 'md:h-auto min-[0px]:h-auto'
       )}
     >
       <div
@@ -76,17 +76,17 @@ function AccordionList({
         />
       </div>
       {selected === name && (
-        <div className='min-h-[250px] w-full px-10 flex flex-col gap-2 items-center md:flex-row '>
+        <div className='min-h-[250px] w-full flex flex-col gap-2 items-center md:flex-row '>
           {img !== '' && (
             <Image
               alt={name}
               src={img}
               width={250}
               height={250}
-              className='py-4 object-cover'
+              className='p-4 object-cover'
             />
           )}
-          <ul className='w-full h-[20px] flex items-center justify-center gap-6'>
+          <ul className='w-full h-[20px] flex items-center justify-center gap-3 md:gap-6'>
             {see !== '' && (
               <li className='flex items-center justify-center gap-2 cursor-pointer'>
                 <Eye />
