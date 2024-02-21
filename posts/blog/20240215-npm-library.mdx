@@ -1,0 +1,152 @@
+---
+title: npm 라이브러리 제작해보기 (useClickAway)
+date: 2024-02-15
+description: 라이브러리를 제작해보고 배포까지 해보는 과정
+tags:
+  - npm
+---
+
+## 사전 준비
+
+[npmjs.com](npmjs.com)에서 계정을 생성합니다.
+
+그리고 터미널에서 로그인을 합니다.
+
+```shell
+npm login
+npm whoami
+```
+
+## vite로 프로젝트 생성
+
+vite를 사용해 리액트 프로젝트를 생성합니다.
+
+```shell
+npm create vite@latest
+npm i
+```
+
+`src` 경로 아래에 있는 모든 파일을 지우고 `src/lib/index.ts`을 생성하여 라이브러리 파일들을 export 하게 해줄 것입니다.
+
+```
+파일 구성 예시
+src
+  |- hooks
+	 foo.tsx
+  |- index.ts
+```
+
+`hooks/foo.tsx`에서 라이브러리의 코드를 작성하고 내보내고, `index.ts`에서 불러오고 바로 내보내면 됩니다.
+
+```ts:index.ts
+export { bar } from './hooks/foo'
+```
+
+## tsconfig.json
+
+기존의 `tsconfig.json`에서 몇 가지를 수정해봅시다.
+
+타입 정의 파일인 `d.ts` 파일을 생성해야 하므로 `"declaration": true`로 설정합니다.
+
+그리고 컴파일하여 만든 자바스크립트 파일과 타입 정의 파일이 놓여질 곳을 설정하기 위해 `"outDir": "dist"`로 설정합니다.
+
+자바스크립트 파일을 만들어야 하므로 `"noEmit": false`로 설정하고, `allowImportingTsExtensions` 필드를 삭제합니다.
+
+그리고 컴파일할 파일의 경로를 `"include": ["./src/lib/**/*.tsx", "./src/lib/**/*.ts"]`로 설정합니다.
+
+이제 터미널에서 `tsc`를 입력하면 `dist` 폴더에 자바스크립트 파일들이 생성됩니다.
+
+## package.json
+
+컴파일을 간단히 하기 위해서 `package.json`의 `scripts` 필드에 다음과 같이 추가합니다.
+
+```json:package.json {6}
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "compile": "rm -rf dist && mkdir dist && tsc"
+  },
+```
+
+만약 윈도우즈 터미널을 사용한다면 `rm -rf dist` 대신에 `rmdir /s /q dist`를 사용합니다.
+
+그리고 npm에 올릴 것이기 때문에 `private` 필드를 false로 설정합니다.
+
+프로그램의 기본 진입 점은 `main` 필드로 설정하고, `types` 필드에 타입 정의 파일의 위치를 명시합니다.
+
+추가적으로 다음과 같은 패키지에 들어갈 정보들을 입력할 수 있습니다.
+
+- version: 패키지의 버전
+- description: 패키지에 대한 설명
+- keywords: 패키지에 대한 키워드들
+- license: 라이센스
+- author: 작성자
+- repository: 코드가 있는 레포지토리 주소
+
+## 커스텀 훅 제작해보기 (useClickAway)
+
+이제 진짜로 커스텀 훅 라이브러리를 만들기 위해서 코드를 작성해보도록 하겠습니다.
+
+만들고자 하는 훅은 `useClickAway`라는 이름이며 요소의 밖을 클릭했을 때 이벤트가 발생하도록 합니다.
+
+```tsx
+function Foo() {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const onClickAway = () => {
+    console.log('외부를 클릭하였습니다.');
+    setIsOpen(false);
+  };
+
+  const ref = useClickAway<HTMLDivElement>(onClickAway);
+
+  // 컴포넌트의 외부를 클릭하면 사라집니다.
+  return <div>{isOpen && <div ref={ref}>Click Me!</div>}</div>;
+}
+```
+
+`mouseup` 이벤트에서 개발자가 넘겨준 함수를 실행시키도록 합니다.
+
+이때 요소를 클릭하거나 자식 요소들을 클릭한 경우 무시하도록 합니다.
+
+> `elemA.contains(elemB)`는 `elemB`가 `elemA`에 속하거나(`elemB`가 `elemA`의 후손인 경우) `elemA==elemB`일 때, 참을 반환합니다.
+
+```tsx
+import { useRef, useEffect } from 'react';
+
+export function useClickAway<T extends HTMLElement>(onClickAway: () => void) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const handleClickAway = (event: MouseEvent) => {
+      if (!ref.current || ref.current.contains(event.target as T)) {
+        return;
+      }
+      onClickAway();
+    };
+
+    document.addEventListener('mouseup', handleClickAway);
+    return () => {
+      document.removeEventListener('mouseup', handleClickAway);
+    };
+  }, [onClickAway]);
+
+  return ref;
+}
+```
+
+## 테스트
+
+## 배포
+
+```shell
+npm publish
+```
+
+이제 `npm` 홈페이지에 들어가면 자신이 배포한 라이브러리를 확인해 볼 수 있습니다.
+
+## 버전 관리
+
+`major`, `minor`, `patch`

@@ -27,4 +27,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=3T-RETzcqpU&t=700s',
     description: '',
   },
+  {
+    name: 'Star rating',
+    img: '/posts/20240221-star-rating/rating.gif',
+    see: '/practice/starRating',
+    source: 'https://www.youtube.com/watch?v=oiai47goI6A',
+    description: '',
+  },
 ];
