@@ -1,0 +1,60 @@
+.background {
+  min-block-size: 100dvh;
+  overflow: hidden;
+  background-color: black;
+  display: grid;
+  place-items: center;
+}
+
+.aura::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 350px;
+  height: 300px;
+  background: white;
+  filter: blur(2rem);
+}
+
+.aura::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, lime, transparent 30%),
+    conic-gradient(
+      red,
+      blue,
+      green,
+      yellow,
+      purple,
+      magenta,
+      cyan,
+      yellow,
+      orangered,
+      red
+    );
+  mix-blend-mode: color-burn;
+  animation: rotateHue 30s linear;
+}
+
+.box {
+  position: absolute;
+  color: white;
+  padding: 10px;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 300px;
+  height: 250px;
+  background-color: black;
+  border-radius: 1rem;
+  mix-blend-mode: initial;
+}
+
+@keyframes rotateHue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}

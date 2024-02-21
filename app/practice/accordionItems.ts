@@ -34,4 +34,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=oiai47goI6A',
     description: '',
   },
+  {
+    name: 'Aura box',
+    img: '/posts/20240221-aura/aura.gif',
+    see: '/practice/auraBox',
+    source: 'https://www.youtube.com/watch?v=VqSz7myU5iE&t=65s',
+    description: '',
+  },
 ];
