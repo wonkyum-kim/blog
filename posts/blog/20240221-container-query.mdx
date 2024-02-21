@@ -1,0 +1,83 @@
+---
+title: Container 쿼리에 대해서 알아보기
+date: 2024-02-21
+description: Media 쿼리와의 차이점
+tags:
+  - css
+  - memo
+---
+
+## Media 쿼리와 Container 쿼리의 차이점
+
+`Media 쿼리`는 viewport를 기준으로 적용하지만, `Container 쿼리`는 요소의 콘테이너의 크기에 따라서 요소의 스타일을 적용 시킬 수 있습니다.
+
+![](/posts/20240221-container-query/diff.png)
+
+## Container 쿼리를 사용하는 방법
+
+컨테이너로 지정하고 싶은 요소에 `containment context`를 선언해야 합니다.
+
+cards 요소는 card 요소들을 여러 개 담고 있는 컨테이너입니다.
+
+```css
+.cards {
+  container-type: inline-size;
+}
+
+.card {
+  font-size: 1rem;
+}
+```
+
+`container-type`에는 다음과 같은 값들이 들어갈 수 있습니다.
+
+- size: inline과 block 방향에 따라 쿼리를 적용
+- inline-size: inline 방향에 따라 쿼리를 적용
+- normal: 쿼리를 적용하지 않음
+
+`inline`과 `block` 방향이란 아래 그림을 의미합니다.
+
+![](/posts/20240221-container-query/direction.png)
+
+이제 컨테이너인 `cards` 요소가 700px 보다 커진다면 적용할 쿼리를 작성할 수 있습니다.
+
+```css
+.cards {
+  container-type: inline-size;
+}
+
+.card {
+  font-size: 1rem;
+}
+
+/* Container query */
+@container (700px < width) {
+  .card {
+    font-size: 2rem;
+  }
+}
+```
+
+만약 여러 개의 컨테이너가 있고 그 중에 특정 컨테이너에만 쿼리를 적용하고 싶다면, `container-name` 프로퍼티를 사용할 수 있습니다.
+
+```css
+.cards {
+  container-type: inline-size;
+  container-name: cards;
+}
+
+.card {
+  font-size: 1rem;
+}
+
+/* Container query */
+@container cards (700px < width) {
+  .card {
+    font-size: 2rem;
+  }
+}
+```
+
+## References
+
+- https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries#naming_containment_contexts
