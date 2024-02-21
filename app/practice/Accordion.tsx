@@ -100,9 +100,14 @@ function AccordionList({
           )}
           <ul className='w-full h-[20px] flex items-center justify-center gap-3 md:gap-6'>
             {see !== '' && (
-              <li className='flex items-center justify-center gap-2 cursor-pointer'>
-                <Eye />
-                <Link href={see}>See</Link>
+              <li className='cursor-pointer'>
+                <Link
+                  href={see}
+                  className='flex items-center justify-center gap-2 '
+                >
+                  <Eye />
+                  See
+                </Link>
               </li>
             )}
             {source !== '' && (
