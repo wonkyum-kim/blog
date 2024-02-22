@@ -41,4 +41,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=VqSz7myU5iE&t=65s',
     description: '',
   },
+  {
+    name: 'Text with shadow',
+    img: '/posts/20240222-effects/text-shadow.png',
+    see: '/practice/textWithShadow',
+    source: 'https://www.youtube.com/watch?v=pbD55DJgOlw&t=806s',
+    description: '',
+  },
 ];
