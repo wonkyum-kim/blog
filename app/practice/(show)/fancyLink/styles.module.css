@@ -1,0 +1,31 @@
+.background {
+  min-block-size: 100dvh;
+  background-color: black;
+  display: grid;
+  place-items: center;
+  color: white;
+}
+
+.container {
+  padding-inline: 1rem;
+  line-height: 2rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.fancy-link-1 {
+  color: violet;
+  text-decoration: none;
+  background-image: linear-gradient(90deg, red, blue);
+  background-size: 0% 3px;
+  background-position: left 0.9lh;
+  background-repeat: no-repeat;
+  padding-block-end: 0.25em;
+  transition: color 500ms, background-size 500ms;
+}
+
+.fancy-link-1:hover,
+.fancy-link-1:focus {
+  color: white;
+  background-size: 100% 3px;
+}

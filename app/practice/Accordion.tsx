@@ -93,8 +93,8 @@ function AccordionList({
             <Image
               alt={name}
               src={img}
-              width={250}
-              height={250}
+              width={300}
+              height={300}
               className='p-4 object-cover'
             />
           )}
@@ -111,15 +111,25 @@ function AccordionList({
               </li>
             )}
             {source !== '' && (
-              <li className='flex items-center justify-center gap-2 cursor-pointer'>
-                <BookMarked />
-                <Link href={source}>source</Link>
+              <li className='cursor-pointer'>
+                <Link
+                  href={source}
+                  className='flex items-center justify-center gap-2 '
+                >
+                  <BookMarked />
+                  source
+                </Link>
               </li>
             )}
             {description !== '' && (
-              <li className='flex items-center justify-center gap-2 cursor-pointer'>
-                <NotebookPen />
-                <Link href={description}>description</Link>
+              <li className='cursor-pointer'>
+                <Link
+                  href={description}
+                  className='flex items-center justify-center gap-2 '
+                >
+                  <NotebookPen />
+                  description
+                </Link>
               </li>
             )}
           </ul>

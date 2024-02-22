@@ -48,4 +48,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=pbD55DJgOlw&t=806s',
     description: '',
   },
+  {
+    name: 'Fancy link',
+    img: '/posts/20240222-effects/link.gif',
+    see: '/practice/fancyLink',
+    source: 'https://www.youtube.com/watch?v=pbD55DJgOlw&t=806s',
+    description: '',
+  },
 ];
