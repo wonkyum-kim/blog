@@ -7,13 +7,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   );
   const postsSitemap = posts.map((post) => {
     return {
-      url: `https://blog-wonkyum-kim.vercel.app/blog/${post.slug}`,
+      url: `https://blog-gray-omega-81.vercel.app/blog/${post.slug}`,
     };
   });
 
   return [
     {
-      url: 'https://blog-wonkyum-kim.vercel.app',
+      url: 'https://blog-gray-omega-81.vercel.app',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,

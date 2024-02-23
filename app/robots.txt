@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://blog-wonkyum-kim.vercel.app/sitemap.xml
+Sitemap: https://blog-gray-omega-81.vercel.app/sitemap.xml
