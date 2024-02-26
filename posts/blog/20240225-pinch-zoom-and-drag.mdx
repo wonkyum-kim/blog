@@ -104,7 +104,7 @@ useEffect(() => {
             width={320}
             height={320}
             alt='test'
-            className='w-[320px] h-[320px]'
+            className='w-[320px] h-[320px] object-scale-down'
           />
         </div>
 ```
@@ -134,7 +134,7 @@ useEffect(() => {
 
 ## 핀치 줌 - 핸들러
 
-[기존 게시물](https://fe-developers.kakaoent.com/2023/230310-webview-pinch-zoom/)에서는 touchstart와 touchend 이벤트도 사용하였는데, 코드를 계속 보면서 필요가 없다는 것을 알게 되었습니다.
+[기술 블로그](https://fe-developers.kakaoent.com/2023/230310-webview-pinch-zoom/)에서는 touchstart와 touchend 이벤트도 사용하였는데, 코드를 계속 보면서 필요가 없다는 것을 알게 되었습니다.
 
 즉, touchmove 이벤트만으로도 충분히 핀치 줌을 다룰 수 있습니다.
 
@@ -144,7 +144,7 @@ useEffect(() => {
 
 반대로, 두 손가락의 거리가 더 가까워졌다면, 축소 중임을 알 수 있습니다.
 
-확대하는 중심 지점을 기준으로 확대하기 위해서 다음의 공식을 적용합니다. [참고](https://fe-developers.kakaoent.com/2023/230310-webview-pinch-zoom/)
+확대하는 중심 지점을 기준으로 확대하기 위해서 블로그의 공식을 적용합니다.
 
 이 부분이 잘 예상이 안 가서 힘들었는데, 그림을 따라서 생각해보니 알 수 있었습니다.
 
@@ -152,7 +152,7 @@ useEffect(() => {
 const prevDiff = useRef(0);
 const [touchState, setTouchState] = useState({ x: 0, y: 0, scale: 1 });
 // ...
-const handlePinch = (zoom: number) => {
+const handlePinch = (zoom: number, centerX: number, centerY: number) => {
   if (zoom === 0) return;
   const zoomWeight = 0.02;
   setTouchState((prev) => {
