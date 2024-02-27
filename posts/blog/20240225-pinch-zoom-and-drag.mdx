@@ -1,7 +1,7 @@
 ---
-title: 핀치 줌과 드래그 기능 구현해보기
+title: 기록 인증 사진 만들기
 date: 2024-02-25
-description: 직접 구현해보기
+description: Keep Running 2.0 개발 일기 - 1
 tags:
   - React
 ---
@@ -267,7 +267,160 @@ const dragHandler = (event: TouchEvent) => {
 };
 ```
 
+## 이미지 업로드하기
+
+사용자가 원하는 사진을 업로드하는 기능은 `input` 태그를 사용합니다.
+
+기본으로 제공되는 input 태그를 사용하면 파일 선택 버튼이 나타나기 때문에 `display: hidden` 을 적용하여 지웁니다.
+
+`accept=image/*`를 사용하여 이미지 파일을 업로드할 것이라는 것을 알려줄 수 있고, 모바일 환경에서 클릭하면 바로 갤러리가 나타나게 됩니다.
+
+```tsx {8-9}
+<label htmlFor='upload'>
+	사진 업로드
+</label>
+<input
+	type='file'
+	onChange={handleUpload}
+	id='upload'
+	className='hidden'
+	accept='image/*'
+/>
+```
+
+그리고 사용자가 사진을 업로드했다면, `onChange` 이벤트가 발생합니다.
+
+```tsx {6-8, 10}
+const handleUpload: ChangeEventHandler<HTMLInputElement> = (event) => {
+  if (event.target.files && event.target.files.length) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    // 읽기 동작이 성공적으로 완료 되었을 때마다 발생합니다.
+    reader.onload = (e) => {
+      uploadImageLink(e.target!.result as string);
+    };
+    // 파일 객체를 읽어 base64 형태의 문자열로 변환
+    reader.readAsDataURL(file);
+  }
+};
+```
+
+`FileReader` 객체를 생성하고 `readAsDataURL`를 통해 비동기적으로 파일을 읽어서 `base64` 문자열로 반환해줍니다.
+
+`URL.createObjectURL`은 동기적으로 실행된다는 차이점이 있습니다.
+
+[FileReader.readAsDataURL vs URL.createObjectURL](https://velog.io/@chaeduk/%EA%B0%9C%EB%B0%9C-%EA%B8%B0%EB%A1%9D-FileReader.readAsDataURL-vs-URL.createObjectURL)
+
+파일을 성공적으로 읽었다면, `onload` 이벤트가 실행되고 base64 문자열을 저장합니다.
+
+## 이미지 다운로드하기
+
+이제 사용자가 선택한 부분을 캡쳐해서 이미지 파일로 저장하는 기능을 구현해보려고 합니다.
+
+예전에 velog를 사용할 때 썸네일을 만들어주던 사이트가 생각나서 들어가서 찾아보니
+
+[html2canvas](https://html2canvas.hertzen.com/)를 사용하고 있었습니다.
+
+[썸네일 메이커(Thumbnail Maker) 만들기 | Toy Project](https://velog.io/@oneook/%EC%8D%B8%EB%84%A4%EC%9D%BC-%EB%A9%94%EC%9D%B4%EC%BB%A4Thumbnail-Maker-Toy-Project)
+
+이 라이브러리의 원리는 실제로 페이지의 스크린샷을 찍는 것이 아니라 DOM에서 읽은 속성들을 기반으로 `canvas`에 그리고 `blob`으로 만드는 것입니다.
+
+마지막으로 이 생성된 blob을 [file-saver](https://www.npmjs.com/package/file-saver)를 사용해 저장하면 됩니다.
+
+## 마지막에 발견한 문제점
+
+이제 핀치 줌이랑 드래그 기능도 구현했고, 이미지를 다운로드만 하면 되기 때문에 다 끝났다고 생각했을 때, 문제를 발견하게 되었습니다.
+
+html2canvas가 모든 css 속성들을 지원하는 것이 아니기 때문에 원하는 대로 캡쳐가 되지 않았습니다.
+
+이때부터 다시 원점으로 돌아가 코드를 뜯어 고치기 시작했습니다.
+
+## 다른 관점으로 바라보기
+
+고민을 하던 도중 '그동안 핀치 줌을 구현하겠다는 생각 때문에 잘못된 길을 온 것이 아닐까?' 라는 생각이 들었습니다.
+
+핀치 줌이 중요한 것이 아니라 사용자가 원하는 부분의 사진을 제공할 수 있으면 되는 것이기 때문에, 사진 편집 기능 라이브러리를 찾아보게 되었습니다.
+
+[Cropper.js](https://fengyuanchen.github.io/cropperjs/)
+
+그러다가 제가 딱 원하던 라이브러리를 찾았습니다.
+
+모바일 환경에서 핀치 줌과 드래그 뿐만 아니라, pc 환경에서도 스크롤을 통한 줌 기능도 제공하고 있어서 더 편리했습니다.
+
+`Cropper.js`를 사용해서 리액트 컴포넌트로 사용할 수 있는 [react-easy-crop](https://www.npmjs.com/package/react-easy-crop)를 기존 코드에 적용시켜 보았습니다.
+
+## 절반의 성공?
+
+[react-easy-crop 예제](https://codesandbox.io/p/sandbox/react-easy-crop-demo-with-cropped-output-q8q1mnr01w?file=%2Fsrc%2FcropImage.js%3A8%2C5)를 통해 원하는 부분의 이미지를 추출하는데 성공하였고, 저장하는 것 까지도 성공했습니다.
+
+하지만, 제가 만들고 싶었던 것은 그저 이미지를 잘라내는 것 뿐만 아니라 아래 그림처럼 사용자가 입력한 기록을 겹쳐서 저장하는 것 이었습니다.
+
+![](/posts/20240225-pinch-zoom-and-drag/final.png)
+
+## 약간의 꼼수
+
+일단 사용자가 입력한 기록이 적힌 div 엘리먼트와 추출한 사진 일부분을 겹치게 한 다음, 아까와 같은 방법(html2canvas)으로 캡쳐하여 저장하는 방식을 사용했습니다.
+
+단순히 이미지와 텍스트 관련 css만 있는 DOM이기 때문에 이번에는 캡쳐가 성공적으로 진행됐습니다.
+
+이때, 캡쳐를 진행할 때에는 어딘가에는 반드시 화면에 출력이 되어야 했습니다.
+
+```tsx
+useEffect(() => {
+  if (croppedImageSrc === '/test.png') return;
+
+  const download = async () => {
+    if (!ref.current) return;
+    // 캡처를 할 때는 반드시 화면에 출력되어야한다.
+    ref.current.style.display = 'block';
+    // 캡쳐를 진행한다.
+    const canvas = await html2canvas(ref.current);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        saveAs(blob, 'result.png');
+      }
+    });
+    // 캡쳐가 완료되면 다시 화면에서 지운다.
+    ref.current.style.display = 'none';
+  };
+
+  download();
+}, [croppedImageSrc]);
+```
+
+하지만, 잠깐 사라지고 지워지는 이미지가 상당히 거슬리게 느껴졌고, 사용자에게 보여질 필요도 없었습니다.
+
+그래서 이미지를 잠깐 숨길 수 있으면서, 전체 레이아웃을 변경시키지 않는 곳을 찾아야 했습니다.
+
+![](/posts/20240225-pinch-zoom-and-drag/recordFinal.png)
+
+고민 끝에 cropper 컴포넌트 뒤에 숨겼습니다.
+
+사용자가 이미지 다운로드 버튼을 누르면 cropper 컴포넌트 뒤에서 잠깐 나타났다가 사라지게 됩니다.
+
+```tsx
+export const HiddenImage = forwardRef(function HiddenImage(
+  { croppedImageSrc, record }: HiddenImageProps,
+  ref: ForwardedRef<HTMLDivElement>
+) {
+  return (
+    <div
+      className='w-[320px] h-[320px] absolute top-[92px] left-1/2 translate-x-[-50%] hidden z-[-1]'
+      ref={ref}
+    >
+      <Image src={croppedImageSrc} width={320} height={320} alt='test' />
+      <RecordText record={record} />
+    </div>
+  );
+});
+```
+
+결과는 만족스럽게 나왔지만, 더 좋은 방법이 떠오르면 나중에 고쳐보면 좋을 것 같습니다.
+
+![](/posts/20240225-pinch-zoom-and-drag/finalPlay.gif)
+
 ## References
 
 - [https://fe-developers.kakaoent.com/2023/230310-webview-pinch-zoom/](https://fe-developers.kakaoent.com/2023/230310-webview-pinch-zoom/)
 - [https://ko.javascript.info/default-browser-action#ref-1104](https://ko.javascript.info/default-browser-action#ref-1104)
+- [https://velog.io/@chaeduk/%EA%B0%9C%EB%B0%9C-%EA%B8%B0%EB%A1%9D-FileReader.readAsDataURL-vs-URL.createObjectURL](https://velog.io/@chaeduk/%EA%B0%9C%EB%B0%9C-%EA%B8%B0%EB%A1%9D-FileReader.readAsDataURL-vs-URL.createObjectURL)
