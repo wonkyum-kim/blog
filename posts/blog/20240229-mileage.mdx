@@ -1,0 +1,144 @@
+---
+title: 신발 마일리지 기록 기능 만들기
+date: 2024-02-29
+description: Keep Running 2.0 개발 일기 - 2
+tags:
+  - React
+  - project
+---
+
+## IndexedDB를 사용한 신발 관리 시스템을 만들게 된 이유
+
+이전에 만들어 둔 Keep Running 1.0에서는 Prisma와 MongoDB Atlas를 활용해서 신발 마일리지를 기록하는 기능이 있었습니다.
+
+하지만 무료로 데이터베이스를 사용하다 보니, 느리기도 하고 이용 기간도 계속 갱신해줘야 해서, 브라우저 내장 데이터베이스인 `IndexedDB`를 사용하였습니다.
+
+이것을 사용해도 되겠다고 생각한 이유는, 러너들은 GPS를 활용해 거리를 측정하기 위해서 휴대폰을 들고 뛰기 때문입니다.
+
+즉, 이 사이트에 사용자가 생긴다면 PC가 아닌 주로 휴대폰을 사용할 것이고 자주 바뀌지 않을 것이기에 적당하다고 느꼈습니다.
+
+## React, Next.js에서 IndexedDB 사용하기
+
+`IndexedDB`는 브라우저 내장 데이터베이스이기 때문에 클라이언트 컴포넌트에서만 사용 가능합니다.
+
+데이터베이스를 생성하고 사용하는 과정은 아래와 같습니다.
+
+- 만들고 싶은 데이터베이스 이름과, 버전을 명시한다.
+- 버전이 다르다면 onupgradeneeded 이벤트가 발생하는데, 이때 새로운 객체 저장소(object store)을 만들 수 있다.
+- 객체 저장소에 데이터를 삭제, 추가하는 과정은 하나의 트랜잭션(transaction) 내에서 이뤄지도록 한다.
+
+데이터를 추가, 삭제를 해도 재렌더링은 발생하지 않으므로 `useState` 훅이나, `zustand`같은 상태 관리 라이브러리도 같이 사용하여 진행합니다.
+
+IndexedDB에 Promise를 적용하여 async/await 사용할 수도 있습니다.
+
+[리액트 - Indexed DB로 로컬에 데이터 저장하기 (How to use Indexed DB in React)](https://bloodstrawberry.tistory.com/1265)
+
+```ts
+// 데이터베이스 열기
+function openIndexedDB() {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const idb = window.indexedDB;
+
+    const request = idb.open(DB_NAME, 2);
+
+    request.onerror = () => {
+      reject('IndexedDB 접근 오류');
+    };
+
+    request.onsuccess = () => {
+      const db = request.result;
+      resolve(db);
+    };
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, {
+          keyPath: 'id',
+        });
+      }
+    };
+  });
+}
+
+// 데이터베이스에서 데이터 가져오기
+export async function addDataToIndexedDB<T>(data: T): Promise<boolean> {
+  const db = await openIndexedDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.put(data);
+
+    request.onsuccess = () => {
+      resolve(true);
+    };
+
+    request.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
+
+async 함수 내에서 Promise를 반환하여 await로 데이터를 받아올 수 있습니다.
+
+이때, 반환 값을 `unknown`으로 해도 되지만, 제네릭을 적용하여 타입을 추론할 수 있도록 하였습니다.
+
+## 모서리가 종이에 끼인듯한 카드 효과 만들기
+
+![](/posts/20240229-mileage/corner.png)
+
+이전에 유튜브를 보면서 따라 만든 [Tucked Corner Photo](https://blog-gray-omega-81.vercel.app/practice/TuckedCornerPhoto) 컴포넌트를 신발 사진에 적용시켜 보면 재밌을 것 같아 진행 해보았습니다.
+
+저 모서리가 잘린듯한 효과는 css의 `clip-path: polygon()`을 사용해서 구현할 수 있습니다.
+
+그리고 잘린 모서리에 `background: radial-gradient()`를 사용하여 둥글게 그림자를 표현해주면 끼인듯한 효과를 넣을 수 있게 됩니다.
+
+[Can I recreate this tucked-corner photo effect with CSS?](https://www.youtube.com/watch?v=3T-RETzcqpU&t=700s)
+
+## 카드 플립 효과 만들기
+
+![](/posts/20240229-mileage/cardflip.gif)
+
+원근감을 사용한 카드 플립 효과를 적용해보면 재밌을 것 같아 만들어보았습니다.
+
+카드 플립 효과를 적용하는 과정은 저의 다른 글에 있으니 참고해보시면 좋습니다.
+
+[원근감(perspective)](https://blog-gray-omega-81.vercel.app/blog/20240109-perspective)
+
+## input 엘리먼트의 defaultValue이 재렌더링 안되는 문제 해결하기
+
+신발의 마일리지를 추가하고 다른 신발을 선택했을 때, 새로운 신발이 아닌 기존 신발의 값들이 `input` 엘리먼트에 그대로 남아있는 것을 발견하였습니다.
+
+아마도 defaultValue 속성에 넘겨준 값이 문제인 것 같아서 `useState`를 사용해서 재렌더링을 유발 해보았으나 꿈쩍도 하지 않았습니다.
+
+구글링을 통해 알아낸 해결책은 의외로 간단했습니다.
+
+`key` 속성을 넣어주면 바로 재렌더링이 발생하였습니다.
+
+`input` 엘리먼트는 통제되지 않는 컴포넌트로, 초기 렌더에서 입력된 defaultValue 값은 재렌더링이 되지 않는다고 합니다.
+
+[React input defaultValue doesn't update with state](https://stackoverflow.com/questions/30146105/react-input-defaultvalue-doesnt-update-with-state)
+
+```tsx
+<input
+  id='edit-goal'
+  name='edit-goal'
+  type='number'
+  step='0.01'
+  className='border-2 max-w-[50%] border-blue-300 focus:outline-blue-500 rounded-lg pl-4'
+  defaultValue={goal}
+  key={`${id}${acc}${goal}`}
+/>
+```
+
+## References
+
+- [https://ko.javascript.info/indexeddb#ref-467](https://ko.javascript.info/indexeddb#ref-467)
+- [https://bloodstrawberry.tistory.com/1265](https://bloodstrawberry.tistory.com/1265)
+- [https://stackoverflow.com/questions/30146105/react-input-defaultvalue-doesnt-update-with-state](https://stackoverflow.com/questions/30146105/react-input-defaultvalue-doesnt-update-with-state)
