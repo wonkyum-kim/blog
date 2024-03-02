@@ -17,6 +17,8 @@ tags:
 
 즉, 이 사이트에 사용자가 생긴다면 PC가 아닌 주로 휴대폰을 사용할 것이고 자주 바뀌지 않을 것이기에 적당하다고 느꼈습니다.
 
+또한 `localStorage`의 용량이 5MB 밖에 되지 않기 때문에 더 적합하다고 생각되었습니다.
+
 ## React, Next.js에서 IndexedDB 사용하기
 
 `IndexedDB`는 브라우저 내장 데이터베이스이기 때문에 클라이언트 컴포넌트에서만 사용 가능합니다.
@@ -27,22 +29,29 @@ tags:
 - 버전이 다르다면 onupgradeneeded 이벤트가 발생하는데, 이때 새로운 객체 저장소(object store)을 만들 수 있다.
 - 객체 저장소에 데이터를 삭제, 추가하는 과정은 하나의 트랜잭션(transaction) 내에서 이뤄지도록 한다.
 
-데이터를 추가, 삭제를 해도 재렌더링은 발생하지 않으므로 `useState` 훅이나, `zustand`같은 상태 관리 라이브러리도 같이 사용하여 진행합니다.
+여기서 `버전`이라는 의미가 잘 와닿지 않았습니다.
 
-IndexedDB에 Promise를 적용하여 async/await 사용할 수도 있습니다.
+검색을 해봐도 그냥 버전을 명시하여 데이터베이스를 열라고만 적혀있지 어떻게 작동하는지는 잘 나와있지 않았습니다.
 
-[리액트 - Indexed DB로 로컬에 데이터 저장하기 (How to use Indexed DB in React)](https://bloodstrawberry.tistory.com/1265)
+개발을 하면서 새로운 기능을 추가하고 거기서 새로운 객체 저장소를 생성하려고 할 때 버전이 가지는 의미가 무엇인지 알 수 있었습니다.
+
+버전은 한 객체 저장소 내에서 단순히 데이터를 추가, 삭제한다고 바뀌지는 않으며, 새로운 객체 저장소를 생성할 때만 올라가게 됩니다.
+
+버전이 올라간다면, `onupgradeneeded` 이벤트가 발생하고 여기서 새로운 객체 저장소를 생성해줘야 합니다.
 
 ```ts
-// 데이터베이스 열기
+const DB_NAME = 'keep-running';
+const STORE_NAMES = ['mileage', 'calHeat'];
+
 function openIndexedDB() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const idb = window.indexedDB;
 
-    const request = idb.open(DB_NAME, 2);
+    // 지금은 버전이 1이지만, 나중에 새로운 객체 저장소를 만들려면 직접 버전을 2로 바꿔주어야 한다.
+    const request = idb.open(DB_NAME, 1);
 
     request.onerror = () => {
-      reject('IndexedDB 접근 오류');
+      reject(false);
     };
 
     request.onsuccess = () => {
@@ -50,18 +59,30 @@ function openIndexedDB() {
       resolve(db);
     };
 
+    // 초기 버전은 0으로 설정되어 있으므로, onupgradeneeded 이벤트가 발생한다.
+    // 새로운 객체 저장소를 추가해준다.
     request.onupgradeneeded = () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, {
-          keyPath: 'id',
-        });
-      }
+      STORE_NAMES.forEach((s) => {
+        if (!db.objectStoreNames.contains(s)) {
+          db.createObjectStore(s, {
+            keyPath: 'id',
+          });
+        }
+      });
     };
   });
 }
+```
 
-// 데이터베이스에서 데이터 가져오기
+데이터를 추가, 삭제를 해도 재렌더링은 발생하지 않으므로 `useState` 훅이나, `zustand`같은 상태 관리 라이브러리도 같이 사용하여 진행합니다.
+
+IndexedDB에 Promise를 적용하여 async/await 사용할 수도 있습니다.
+
+[리액트 - Indexed DB로 로컬에 데이터 저장하기 (How to use Indexed DB in React)](https://bloodstrawberry.tistory.com/1265)
+
+```ts
+// 데이터베이스에서 데이터 가져오기 예시
 export async function addDataToIndexedDB<T>(data: T): Promise<boolean> {
   const db = await openIndexedDB();
 
@@ -127,11 +148,7 @@ async 함수 내에서 Promise를 반환하여 await로 데이터를 받아올 �
 
 ```tsx
 <input
-  id='edit-goal'
-  name='edit-goal'
-  type='number'
-  step='0.01'
-  className='border-2 max-w-[50%] border-blue-300 focus:outline-blue-500 rounded-lg pl-4'
+  // ...
   defaultValue={goal}
   key={`${id}${acc}${goal}`}
 />
