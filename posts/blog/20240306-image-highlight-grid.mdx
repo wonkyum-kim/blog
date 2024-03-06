@@ -1,0 +1,133 @@
+---
+title: CSS grid로 이미지 하이라이트 기능 만들기
+date: 2024-03-06
+description: 자바스크립트 없이 CSS grid 만을 사용하여 만들기
+tags:
+  - CSS
+---
+
+## CSS grid
+
+[Can I clone this fun effect from CSS Day using modern CSS?I](https://www.youtube.com/watch?v=fs_5R8V4JCI)
+
+![](/posts/20240306-image-highlight-grid/grid.gif)
+
+프론트엔드 개발을 시작하고 나서 아직까지 CSS grid에 대해 제대로 알고 쓴 적이 없는 것 같아서 이번 기회에 알아보고자 찾던 중에 위 영상을 발견하게 되었고 따라 만들어보면서 알게 된 내용들을 정리해보겠습니다.
+
+CSS flex는 방향이 하나인 1차원적 레이아웃 시스템이고, CSS grid는 방향이 두 개인 2차원적 레이아웃 시스템입니다.
+
+grid 컨테이너에 각 행과 열의 길이를 지정하여 공간을 만들고, 그 안에 아이템들을 배치하게 됩니다.
+
+## grid-template-coumns, grid-template-rows
+
+```css
+.speakers-grid {
+  --column-count: 3;
+  --row-count: 5;
+  --column-size: 100px;
+  --row-size: 50px;
+
+  display: grid;
+  gap: 1rem;
+  grid-template-columns:
+    repeat(var(--column-count), var(--column-size))
+    60px [list-start] 1fr [list-end];
+  grid-template-rows:
+    [list-start] auto repeat(var(--row-count), var(--row-size))
+    auto [list-end];
+  position: relative;
+}
+```
+
+`grid-template-[columns/rows]`에 행/열의 길이를 지정해 줄 수 있습니다.
+
+`repeat(a, b)`는, b를 a번 반복한다는 의미고, `fr`은 fraction의 줄임말로 남은 공간에 대한 비율을 의미합니다.
+
+1fr이면 남은 공간 전부를 사용하겠다는 의미가 됩니다.
+
+그리고 대괄호로 각 행/열을 구분 짓는 선의 이름을 지을 수 있습니다.
+
+따라서 위 코드의 `grid-template-columns`는 각 열의 길이가 (100px, 100px, 100px, 60px, 1fr)이 되고, 마지막 열(1fr)의 양쪽 선의 이름이 각각 list-start, list-end가 됩니다.
+
+- ❗오타가 있습니다. 앞으로 나오는 그림의 line-start, line-end는 list-start, list-end로 생각하시면 됩니다.
+
+![](/posts/20240306-image-highlight-grid/pic1.png)
+
+`grid-template-rows`도 마찬가지로 적용 시켜보면 아래와 같이 나타나게 됩니다.
+
+![](/posts/20240306-image-highlight-grid/pic2.png)
+
+실제 모습은 아래와 같은 격자로 나타나게 됩니다.
+
+![](/posts/20240306-image-highlight-grid/pic3.png)
+
+## grid-area, grid-row, grid-column
+
+아이템들을 격자 안에 배치 시키는 속성들입니다.
+
+`grid-area`를 사용하면, 각 행과 열을 구분 짓는 선에 둘러싸인 곳에 배치하게 됩니다.
+
+```css
+.speakers-grid ul {
+  grid-area: list; /* list로 둘러싸인 곳에 배치 */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+```
+
+![](/posts/20240306-image-highlight-grid/pic4.png)
+
+`grid-row`, `grid-column`을 지정하여 배치할 수도 있습니다.
+
+`a / b`의 의미는 a번 라인에서 b번 라인까지를 차지하도록 배치하겠다는 의미가 됩니다.
+
+```css
+/* 1st column */
+.speakers-grid li:nth-child(3n + 1) img {
+  grid-column: 1 / 2;
+}
+
+/* 1st row */
+.speakers-grid li:nth-child(-n + 3) img {
+  grid-row: 2 / 3;
+}
+```
+
+![](/posts/20240306-image-highlight-grid/pic5.png)
+
+## z-index를 변경하는 트릭
+
+`is`와 `not`을 사용해 hover, focus 인 요소의 사진은 확대하고, 아닌 요소는 축소합니다.
+
+이때 z-index가 겹칠 수 있으므로 hover, focus를 벗어나면, animation을 사용해 줄이는 트릭을 사용합니다.
+
+```css
+.speakers-grid a:is(:hover, :focus) {
+  background-color: rgb(59 130 246);
+}
+
+.speakers-grid a:is(:hover, :focus) img {
+  scale: 2;
+  width: 100px;
+  height: 100px;
+  max-width: 100vw;
+  z-index: 2;
+}
+
+.speakers-grid a:not(:hover, :focus) img {
+  animation: z-index-hack 500ms;
+}
+
+@keyframes z-index-hack {
+  0%,
+  100% {
+    z-index: 1;
+  }
+}
+```
+
+## References
+
+- [Can I clone this fun effect from CSS Day using modern CSS?I](https://www.youtube.com/watch?v=fs_5R8V4JCI)
+- [이번에야말로 CSS Grid를 익혀보자](https://studiomeal.com/archives/533)

@@ -55,4 +55,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=pbD55DJgOlw&t=806s',
     description: '',
   },
+  {
+    name: 'Image Highlight',
+    img: '/posts/20240306-image-highlight-grid/grid.gif',
+    see: '/practice/imageHighlightGrid',
+    source: 'https://www.youtube.com/watch?v=fs_5R8V4JCI',
+    description: '/blog/20240306-image-highlight-grid',
+  },
 ];
