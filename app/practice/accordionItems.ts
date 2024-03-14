@@ -62,4 +62,11 @@ export const accordionItems = [
     source: 'https://www.youtube.com/watch?v=fs_5R8V4JCI',
     description: '/blog/20240306-image-highlight-grid',
   },
+  {
+    name: 'Progress bar',
+    img: '/posts/20240314-progressbar/bar.gif',
+    see: '/practice/progressbar',
+    source: 'https://www.youtube.com/watch?v=MXWP56LUI3g&t=1481s',
+    description: '',
+  },
 ];

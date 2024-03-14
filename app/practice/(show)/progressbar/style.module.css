@@ -1,0 +1,88 @@
+@property --progress {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.background {
+  --font-base: 'Space Mono', monospace;
+  --color-dark: #1f1a38;
+  --color-dark-glare: #989ea9;
+  --color-success: #76f7bf;
+  --color-success-dark: #2d7a59;
+
+  min-block-size: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-base);
+  color: var(--color-dark);
+}
+
+.testing-ground {
+  color: var(--color-success);
+  font-weight: bold;
+  background: var(--color-dark);
+  border: 5px solid var(--color-dark-glare);
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.testing-ground button {
+  cursor: pointer;
+  font: inherit;
+  background: white;
+  color: var(--color-dark);
+  border: 0;
+  padding: 0.5rem;
+}
+
+.testing-ground button:is(:hover, :focus-visible) {
+  background: var(--color-success);
+}
+
+.testing-ground button:focus-visible {
+  outline: 5px solid var(--color-dark-glare);
+}
+
+.progressbar {
+  --size: 132px;
+  --bar-width: 20px;
+  font-size: 2rem;
+  width: var(--size);
+  aspect-ratio: 1 / 1;
+  margin: 2rem auto;
+  background: conic-gradient(
+    var(--color-dark) var(--progress),
+    var(--color-dark-glare) 0%
+  );
+  border-radius: 50vmax;
+  display: grid;
+  place-items: center;
+  transition: --progress 500ms linear;
+}
+
+.progressbar::after {
+  content: attr(aria-valuenow) '%';
+  background: white;
+  width: calc(100% - var(--bar-width));
+  aspect-ratio: 1;
+  border-radius: inherit;
+  display: grid;
+  place-items: center;
+}
+
+.progressbar[aria-valuenow='100']::after {
+  animation: progressComplete 0s forwards;
+  animation-delay: 1000ms;
+}
+
+@keyframes progressComplete {
+  to {
+    content: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODUiIGhlaWdodD0iODUiIHZpZXdCb3g9IjUgMzAgNzUgMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0zNS40MjM3IDUzLjczMjdMNjcuOTc4NyAyMS4xNzc3TDcyLjk4OTUgMjYuMTg0MkwzNS40MTk1IDYzLjc1TDEyLjg4NiA0MS4yMTIyTDE3Ljg5MjUgMzYuMjAxNUwzNS40MjM3IDUzLjczMjdaIiBmaWxsPSIjMWYxYTM4Ii8+Cjwvc3ZnPgo=');
+    background: var(--color-success);
+  }
+}
