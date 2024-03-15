@@ -1,52 +1,33 @@
 'use client';
 
+import Progressbar from './progressbar';
 import styles from './style.module.css';
-import { MouseEventHandler, useRef, useState } from 'react';
+import { MouseEventHandler, useState } from 'react';
 
-export default function Progressbar() {
+export default function Page() {
   const [progress, setProgress] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const updateProgress = (p: number) => {
-    if (!ref.current) return;
-    ref.current.style.setProperty('--progress', p + '%');
-    setProgress(p);
-  };
 
   const clickHandler: MouseEventHandler<HTMLDivElement> = (event) => {
     const clickedElement = event.target as HTMLElement;
     const progressValue = clickedElement.getAttribute('data-progress');
     if (!progressValue) return;
-
-    if (isNaN(+progressValue)) {
-      simulateUpload();
-      return;
-    }
-
-    setProgress(+progressValue);
-    updateProgress(+progressValue);
+    if (isNaN(+progressValue)) simulateUpload();
+    else setProgress(+progressValue);
   };
 
   const simulateUpload = () => {
-    if (!ref.current) return;
     let p = 0;
-    updateProgress(p);
+    setProgress(p);
     const timerId = setInterval(() => {
       p += 5;
-      updateProgress(p);
+      setProgress(p);
       if (p == 100) clearInterval(timerId);
     }, 500);
   };
 
   return (
     <div className={styles.background}>
-      <div
-        className={styles.progressbar}
-        role='progressbar'
-        aria-valuenow={progress}
-        aria-live='polite'
-        ref={ref}
-      />
+      <Progressbar progress={progress} />
       <div className={styles['testing-ground']} onClick={clickHandler}>
         <h2>Testing ground</h2>
         <button data-progress='0'>0%</button>
