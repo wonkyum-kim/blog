@@ -1,0 +1,128 @@
+---
+title: CSS @property를 사용한 애니메이션 효과 만들기
+date: 2024-03-15
+description: 이제는 css 변수도 애니메이션이 가능하다.
+tags:
+  - CSS
+---
+
+![](/posts/20240314-progressbar/bar.gif)
+
+## 기본 구조
+
+코드의 기본 구조는 아래와 같습니다.
+
+`progress`에 진행도를 입력하면 그 만큼이 채워서 보이게 됩니다.
+
+```tsx
+'use client';
+
+import styles from './style.module.css';
+import { useRef, useEffect } from 'react';
+
+interface ProgressBarProps {
+  progress: number;
+  size?: number;
+  barWidth?: number;
+}
+
+export default function ProgressBar({
+  progress,
+  size,
+  barWidth,
+}: ProgressbarProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    ref.current.style.setProperty('--progress', progress + '%');
+    if (size) ref.current.style.setProperty('--size', size + 'px');
+    if (barWidth) ref.current.style.setProperty('--bar-width', barWidth + 'px');
+  }, [progress, size, barWidth]);
+
+  return (
+    <div
+      className={styles.progressbar}
+      role='progressbar'
+      aria-valuenow={progress}
+      aria-live='polite'
+      ref={ref}
+    />
+  );
+}
+```
+
+```tsx
+/* 25% */
+<ProgressBar progress={25} />
+```
+
+## @property
+
+CSS의 `@property`라는 새로운 기능을 사용하면 CSS 변수를 정의할 수 있습니다.
+
+```css
+@property --progress {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+```
+
+기존에도 `--var`과 같이 변수를 생성할 수 있었지만 @property를 사용하면 `transition`에 css 변수도 적용할 수 있게 됩니다.
+
+```css
+.progressbar {
+  transition: --progress 500ms linear;
+}
+```
+
+이렇게 하면 `--progress` 값이 변할 때, 500ms 동안 변하게 되는 애니메이션을 적용할 수 있습니다.
+
+## 전체 CSS 코드
+
+```css
+.progressbar {
+  --size: 132px;
+  --bar-width: 20px;
+  font-size: 2rem;
+  width: var(--size);
+  aspect-ratio: 1 / 1;
+  margin: 2rem auto;
+  background: conic-gradient(
+    var(--color-dark) var(--progress),
+    var(--color-dark-glare) 0%
+  );
+  border-radius: 50vmax;
+  display: grid;
+  place-items: center;
+  transition: --progress 500ms linear;
+}
+
+.progressbar::after {
+  content: attr(aria-valuenow) '%';
+  background: white;
+  width: calc(100% - var(--bar-width));
+  aspect-ratio: 1;
+  border-radius: inherit;
+  display: grid;
+  place-items: center;
+}
+
+.progressbar[aria-valuenow='100']::after {
+  animation: progressComplete 0s forwards;
+  animation-delay: 1000ms;
+}
+
+@keyframes progressComplete {
+  to {
+    content: url('...');
+    background: var(--color-success);
+  }
+}
+```
+
+## Reference
+
+- [@property](https://developer.mozilla.org/en-US/docs/Web/CSS/@property)
+- [Create an animated, circular progress bar](https://www.youtube.com/watch?v=MXWP56LUI3g&t=1481s)

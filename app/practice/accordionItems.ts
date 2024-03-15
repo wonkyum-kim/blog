@@ -67,6 +67,6 @@ export const accordionItems = [
     img: '/posts/20240314-progressbar/bar.gif',
     see: '/practice/progressbar',
     source: 'https://www.youtube.com/watch?v=MXWP56LUI3g&t=1481s',
-    description: '',
+    description: '/blog/20240315-property',
   },
 ];
