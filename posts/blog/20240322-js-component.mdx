@@ -1,0 +1,477 @@
+---
+title: 바닐라 자바스크립트로 Web Component 만들기
+date: 2024-03-22
+description: 컴포넌트를 만드는 방법들과 전역 상태 적용해보기
+tags:
+  - JavaScript
+---
+
+## Web Component를 만드는 방법들
+
+React는 JSX를 사용하여 함수형 컴포넌트를 합성(composition)하는 방식으로 웹 페이지를 구성합니다.
+
+```tsx
+function HelloWorld() {
+  return <div>Hello World!</div>;
+}
+```
+
+바닐라 자바스크립트에서는 3가지 방법을 사용하여 웹 컴포넌트를 만들 수 있습니다.
+
+1. Shadow DOM
+2. Template
+3. Custom elements
+
+### 1. Shadow DOM
+
+HTML 문서에서 `<input type='range'>`를 입력했을 때 출력 되는 것은 사실 하나가 아니라 여러 개의 숨겨진 `<div>` 태그로 이루어져 있습니다.
+
+이렇게 여러 개의 숨겨진 태그를 숨겨서 하나의 태그로 나타내는 방법을 Shadow DOM 이라고 합니다.
+
+### 2. Template
+
+재활용 가능한 DOM 구조를 HTML 어딘가에 적어두고
+
+```html
+<template id="my-template">
+  <div>Hello World!</div>
+</template>
+
+<div id="target"></div>
+```
+
+JS를 사용해 가져와서 재사용하는 방법입니다.
+
+```js
+const templateElement = document.getElementById('my-template);
+const contents = templateElement.content;
+document.getElementById('target').appendChild(contents.cloneNode(true));
+```
+
+### 3.Custom elements
+
+Custom elements는 HTML 태그 자체를 새로 만들어서 사용할 수 있도록 하는 방법입니다.
+
+```js
+class MyElement extends HTMLElement {
+  constructor() {
+    super();
+    // element created
+  }
+
+  connectedCallback() {
+    // browser calls this method when the element is added to the document
+    // (can be called many times if an element is repeatedly added/removed)
+  }
+
+  disconnectedCallback() {
+    // browser calls this method when the element is removed from the document
+    // (can be called many times if an element is repeatedly added/removed)
+  }
+
+  static get observedAttributes() {
+    return [
+      /* array of attribute names to monitor for changes */
+    ];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    // called when one of attributes listed above is modified
+  }
+
+  adoptedCallback() {
+    // called when the element is moved to a new document
+    // (happens in document.adoptNode, very rarely used)
+  }
+
+  // there can be other element methods and properties
+}
+```
+
+이후에, 이 엘리먼트를 브라우저에게 알려주면 새로운 커스텀 엘리먼트를 사용할 수 있습니다.
+
+```js
+customElment.defind('my-element', MyElement);
+```
+
+```html
+<my-element></my-element>
+```
+
+## Custom elements 자세히 살펴보기
+
+Shadow DOM, Template 보다는 Custom elements 만을 사용해도 웹 컴포넌트를 만들기에 충분하다고 생각됩니다.
+
+따라서 이번에는 커스텀 엘리먼트를 사용해서 웹 컴포넌트를 어떻게 만들 수 있는지 살펴보겠습니다.
+
+### constructor()
+
+생성자는 커스텀 엘리먼트가 생성될 때 호출됩니다.
+
+내부 상태 값들을 정의할 수 있습니다.
+
+### connectedCallback()
+
+엘리먼트가 문서에 추가될 때 브라우저가 호출하는 콜백 함수입니다.
+
+커스텀 엘리먼트를 렌더링하거나(`innerHTML`), 이벤트를 할당하는데 사용할 수 있습니다.
+
+### disconnectedCallback()
+
+엘리먼트가 문서에서 제거될 때 브라우저가 호출하는 콜백 함수입니다.
+
+할당된 이벤트를 지워주는데 사용할 수 있습니다.
+
+### adoptedCallback()
+
+parent node가 변경되면 호출 되는데, 거의 쓰이지 않습니다.
+
+### observedAttributes()
+
+커스텀 엘리먼트에 전달된 어트리뷰트 중 감시하고 싶은 목록을 배열로 반환시킵니다.
+
+### attributeChangedCallback(name, oldValue, newValue)
+
+위에서 반환한 목록 중에 변경 사항이 있으면 실행되는 콜백 함수입니다.
+
+### 이름 규칙
+
+커스텀 엘리먼트는 반드시 하이픈(-)이 포함되어야 한다는 규칙이 있습니다.
+
+```js
+customElements.define('my-element', MyElement);
+```
+
+## Counter 컴포넌트 만들어보기
+
+아래는 제가 만든 Counter 컴포넌트 입니다.
+
+![](/posts/20240322-js-component/counter.gif)
+
+```js
+export class Counter extends HTMLElement {
+  constructor() {
+    super();
+    this.count = 0;
+  }
+
+  render() {
+    this.innerHTML = `
+      <div class='counter'>count: ${this.count}</div>
+    `;
+  }
+
+  // this를 잃어버리지 않기 위해 화살표 함수로 정의한다.
+  handleClick = () => {
+    this.count++;
+    this.querySelector('div').innerHTML = `count: ${this.count}`;
+  };
+
+  addEvents() {
+    this.querySelector('div').addEventListener('click', this.handleClick);
+  }
+
+  removeEvents() {
+    this.querySelector('div').removeEventListener('click', this.handleClick);
+  }
+
+  connectedCallback() {
+    if (!this.rendered) {
+      this.render();
+      this.addEvents();
+      this.rendered = true;
+    }
+  }
+
+  disconnectedCallback() {
+    this.rendered = false;
+    this.removeEvents();
+  }
+}
+```
+
+생성자에서 내부 상태 값을 정의합니다.
+
+```js
+  constructor() {
+    super();
+    this.count = 0;
+  }
+```
+
+엘리먼트가 문서에 추가될 때 렌더링을 해줍니다.
+
+그리고 이벤트 핸들러도 달아줍시다.
+
+```js
+  render() {
+    this.innerHTML = `
+      <div class='counter'>count: ${this.count}</div>
+    `;
+  }
+
+  addEvents() {
+    this.querySelector('div').addEventListener('click', this.handleClick);
+  }
+
+  // this를 잃어버리지 않기 위해 화살표 함수로 정의한다.
+  handleClick = () => {
+    this.count++;
+    this.querySelector('div').innerHTML = `count: ${this.count}`;
+  };
+
+  connectedCallback() {
+    if (!this.rendered) {
+      this.render();
+      this.addEvents();
+      this.rendered = true;
+    }
+  }
+```
+
+이벤트 핸들러를 화살표 함수로 정의하는 이유는, 콜백 함수로 전달된 함수가 this를 잃어버리기 때문입니다.
+
+이를 해결하는 방법으로는 3가지가 있습니다.
+
+```js
+// 1. 래퍼 함수로 감싸기
+addEventListener('click', () => this.handleClick); // or
+addEventListener('click', function () {
+  this.handleClick();
+});
+
+// 2. bind를 사용하기
+addEventListener('click', this.handleClick.bind(this));
+
+// 3. 화살표 함수로 정의하기
+handleClick = () => {
+  this.count++;
+  this.querySelector('div').innerHTML = `count: ${this.count}`;
+};
+
+addEventListener('click', this.handleClick);
+```
+
+어느 방법을 써도 좋지만, 저는 3번째 방법으로 하는 것이 나중에 신경 쓸 일이 적어진다고 생각하여 진행하였습니다.
+
+[전체 코드](https://github.com/wonkyum-kim/VanillaJSComponent/tree/1.counter)
+
+## 전역 상태를 사용하여 Todo List 만들어보기
+
+### 내부 상태 업데이트와 재렌더링
+
+리액트에서의 useState와 마찬가지로 내부 상태를 만들고 값을 업데이트 시 재렌더링을 유발하도록 하려면 어떻게 해야할까요?
+
+위의 Counter 컴포넌트에서처럼 바닐라 자바스크립트에서는 그냥 innerHTML로 다시 렌더링하면 됩니다.
+
+```js
+handleClick = () => {
+  this.count++;
+  // 원하는 부분만 재렌더링한다.
+  this.querySelector('div').innerHTML = `count: ${this.count}`;
+};
+```
+
+render() 함수를 호출해도 같은 결과가 나오지만, render()는 컴포넌트 전체를 재렌더링하기 때문에, 복잡한 컴포넌트에서는 위와 같이 특정 부분만 선택해서 재렌더링을 하는 방법이 더 효율적일 수 있습니다.
+
+리액트에서는 가상 돔을 사용하여 변경된 부분만 재렌더링을 하지만, 바닐라 자바스크립트에서는 개발자가 직접 재렌더링을 해줄 부분을 찾아야 합니다.
+
+### 전역 상태의 필요성
+
+커스텀 엘리먼트를 사용하면 부모 컴포넌트에서 상태를 업데이트를 하고 자식 컴포넌트를 포함시켜 재렌더링을 할 수 있습니다.
+
+그냥 render()를 호출하면 자식 컴포넌트의 어트리뷰트에 상태의 최신 값을 전달 시켜 재렌더링이 가능하니까요...
+
+하지만, 자식 컴포넌트에서 부모 컴포넌트의 내부 상태를 업데이트 한다거나 형제 컴포넌트끼리 데이터를 공유하는 것은 힘듭니다.
+
+왜냐하면, 제가 만든 바닐라 자바스크립트 컴포넌트에서는 렌더링을 문자열을 기반으로 하기 때문입니다.
+
+아래는 앞으로 만들 todo list 앱의 구조입니다.
+
+`app-input`에서 `app-status`로 데이터를 전달하기 위해 전역 상태를 만들어 봅시다.
+
+![](/posts/20240322-js-component/structure1.png)
+
+### 전역 상태 만들어보기
+
+전역 상태는 `Pub-Sub 패턴`을 사용해서 구현할 수 있습니다.
+
+subscriber는 전역 상태가 변경될 때 실행되는 콜백 함수들을 store에 맡겨둡니다.
+
+그러면 publisher가 전역 상태를 변경하였을 때 subscriber가 맡겨둔 콜백 함수들을 전부 실행시켜주게 됩니다.
+
+이 콜백 함수들은 상태가 변경되었을 때 재렌더링을 하는 역할을 맡습니다.
+
+따라서 전역 상태가 변경되면, 자동으로 재렌더링을 유발 시킬 수 있는 것이죠.
+
+zustand의 코드를 참고해서 전역 상태를 만들어 봅시다.
+
+```js:vanillaStore.js {11}
+export function createStore(createState) {
+  let currState;
+  const listeners = new Set();
+
+  const getState = () => currState;
+
+  const setState = (partial) => {
+    const nextState = partial(currState);
+    const prevState = currState;
+    currState = Object.assign({}, currState, nextState);
+    listeners.forEach((listener) => listener(currState, prevState));
+  };
+
+  const subscribe = (listener) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  };
+
+  currState = createState(setState);
+
+  return { getState, setState, subscribe };
+}
+```
+
+전역 상태는 `currState`에 들어있습니다.
+
+클로저를 사용해서 상태를 가져오거나 수정할 수 있도록 하는 것이죠.
+
+상태가 변경되면(`setState`), listeners에 들어있는 모든 콜백 함수가 실행됩니다.
+
+```js:todoStore.js
+import { createStore } from '../state/vanillaStore.js';
+
+export const todoStore = createStore((set) => ({
+  items: [],
+  addItem: (item) => set((prev) => ({ items: [...prev.items, item] })),
+  deleteItem: (idx) =>
+    set((prev) => ({
+      items: [...prev.items.slice(0, idx), ...prev.items.slice(idx + 1)],
+    })),
+}));
+```
+
+이제 전역 상태인 todoStore를 만들었습니다.
+
+이제 각 컴포넌트에서 스토어로 재렌더링을 유발시키는 콜백 함수들을 전달하고, 스토어는 전역 상태를 변경 시킬 때 그 콜백 함수들을 실행시켜 재렌더링을 합니다.
+
+![](/posts/20240322-js-component/structure2.png)
+
+```js:app-input.js {6}
+import { todoStore } from '../store/todoStore.js';
+
+export class AppInput extends HTMLElement {
+  constructor() {
+    super();
+    todoStore.subscribe(this.renderList.bind(this));
+  }
+
+  render() {
+    this.innerHTML = `
+        <section class="app">
+        <h2 class="app__heading">오늘 할 일</h2>
+        <ul class="todo-items"></ul>
+        <form>
+            <label for="new-item-field">
+              할 일을 추가하세요
+            </label>
+            <input
+              type="text"
+              id="new-item-field"
+              autocomplete="off"
+            />
+            <button type='submit'>저장</button>
+            </div>
+        </form>
+        </section>
+    `;
+  }
+
+  renderList() {
+    const list = todoStore.getState().items.reduce((acc, item) => {
+      return acc + `<li>${item}<button class="rm">×</button></li>`;
+    }, '');
+
+    this.querySelector('.todo-items').innerHTML = list;
+
+    this.querySelectorAll('.rm').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        this.onDelete(idx);
+      });
+    });
+  }
+
+  onDelete = (idx) => {
+    todoStore.getState().deleteItem(idx);
+  };
+
+  onSubmit = (event) => {
+    event.preventDefault();
+
+    const inputElement = document.getElementById('new-item-field');
+    const item = inputElement.value.trim();
+    inputElement.value = '';
+
+    todoStore.getState().addItem(item);
+  };
+
+  connectedCallback() {
+    if (!this.rendered) {
+      this.render();
+      this.querySelector('form').addEventListener('submit', this.onSubmit);
+      this.rendered = true;
+    }
+  }
+
+  disconnectedCallback() {
+    this.querySelector('form').removeEventListener('submit', this.onSubmit);
+    this.rendered = false;
+  }
+}
+```
+
+다른 컴포넌트(app-input)에서 전역 상태를 변경시켰다면, 모든 콜백 함수들이 실행되므로 자동으로 이 컴포넌트(app-status)도 재렌더링이 됩니다.
+
+```js:app-status.js {6}
+import { todoStore } from '../store/todoStore.js';
+
+export class AppStatus extends HTMLElement {
+  constructor() {
+    super();
+    todoStore.subscribe(this.render.bind(this));
+  }
+
+  render() {
+    this.innerHTML = `
+        <aside class="app__status">
+            <div>
+                <small>오늘 할 일이</small>
+                <span>${todoStore.getState().items.length}</span>
+                <small>개 남았어요. 😢</small>
+            </div>
+        </aside>
+    `;
+  }
+
+  connectedCallback() {
+    if (!this.rendered) {
+      this.render();
+      this.rendered = true;
+    }
+  }
+
+  disconnectedCallback() {
+    this.rendered = false;
+  }
+}
+```
+
+![](/posts/20240322-js-component/todo.gif)
+
+[전체 코드](https://github.com/wonkyum-kim/VanillaJSComponent/tree/3.todo2)
+
+## References
+
+- [기존 web site를 components 로 다시 만들기 (No State management)](https://enumclass.tistory.com/228)
+- [Build a state management system with vanilla JavaScript](https://css-tricks.com/build-a-state-management-system-with-vanilla-javascript/)
+- [zustand](https://github.com/pmndrs/zustand)
+- [Custom elements](https://ko.javascript.info/custom-elements)
