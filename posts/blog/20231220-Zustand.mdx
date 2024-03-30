@@ -1,300 +1,383 @@
 ---
-title: Zustand 분석해보기
+title: Zustand create 분석해보기
 date: 2023-12-20
-description: 내 맘대로 분석하기
+description: create는 어떻게 동작하는가
 tags:
   - FE
   - Zustand
 ---
 
-## 분석하기 전에
+## 전체 구조
 
-실제 Zustand의 [코드](https://github.com/pmndrs/zustand)를 보면, 이어서 나올 제가 분석한 코드와는 조금 다를 수 있습니다.
+![](/posts/20231220-zustand/create6.png)
 
-그 이유는 어떻게 동작하는지 살펴보기 위해서 타입과 변수명을 조금 수정하거나 생략했기 때문입니다.
+## create
 
-## 상태 관리 라이브러리가 제공하는 주요 기능들
+zustand의 [문서](https://docs.pmnd.rs/zustand/guides/typescript)에 가보면 가장 기초적인 사용예제가 나온다.
 
-`Zustand`의 코드를 분석해 본 결과, 상태 관리 라이브러리는 다음과 같은 4가지 주요 기능들을 제공해야 합니다.
+```ts
+import { create } from 'zustand';
 
-1. 상태를 불러오기
-2. 상태를 수정하기
-3. 상태가 변하면 실행되는 함수를 구독하기
-4. 상태가 변하면 재렌더링을 유발하기
-
-1 - 3번은 리액트와 상관 없이 일어나는 과정이고, 4번에서만 리액트가 필요합니다.
-
-즉, zustand의 기본 동작들은 바닐라 자바스크립트에서도 동작합니다.
-
-## 1. 상태를 불러오기
-
-일단 상태를 어딘가에 상태를 저장해두고 `클로저`를 사용해 불러와야 합니다.
-
-즉, 함수는 호출된 곳이 아니라 정의된 곳의 상위 스코프를 참조하기 때문에 상태에 접근할 수 있게 됩니다.
-
-이렇게 상태가 저장되는 곳을 `스토어(store)`라고 합니다.
-
-```ts:myStore.ts
-type Store = {
-  count: number;
-};
-
-const store = createStore<Store>(function createState() {
-  return { count: 0 };
-});
-```
-
-스토어는 `createStore`라는 함수를 사용해 만들 수 있고, `createState` 함수를 전달하여 상태를 만들 수 있게 해줍니다.
-
-전달된 값은 상태의 초기 값으로 설정됩니다.
-
-```ts:vanilla.ts
-type CreateState<T> = () => T;
-
-function createStore<T>(creatState: CreateState<T>) {
-	let currState<T>;
-    // 상태를 불러오기
-	const getState = () => currState;
-	currState = createState();
-	return { getState };
+interface BearState {
+  bears: number;
+  increase: (by: number) => void;
 }
-```
 
-## 2. 상태를 수정하기
-
-사용자가 상태를 수정하려면 `useState`의 `setState` 함수처럼 작동해야 합니다.
-
-```ts:myStore.ts
-type Store = {
-  count: number;
-  increase: (num: number) => void;
-};
-
-const store = createStore<Store>(function createState(setState) {
-  return {
-    count: 0,
-    increase: (num) => setState((prev) => ({ count: prev.count + num })),
-  };
-});
-```
-
-내부적으로 setState는 다음과 같이 구현됩니다.
-
-```ts:vanilla.ts
-type CreateState<T> = (setState: SetState<T>) => T;
-type SetState<T> = (partial: (state: T) => Partial<T>) => void;
-
-function createStore<T>(createState: CreateState<T>) {
-	let currState<T>;
-
-	// 상태를 수정하기
-	const setState: SetState<T> = (partial) => {
-        const nextState = partial(currState);
-        const prevState = currState;
-        currState = Object.assign({}, currState, nextState);
-    };
-
-    // 상태를 불러오기
-	const getState = () => currState;
-
-	currState = createState(setState);
-	return { getState, setState };
-}
-```
-
-`createState`에 전달되는 `setState`의 함수는 수정된 상태를 반환하는 함수 `partial`을 받아서 `nextState`에 저장하게 됩니다.
-
-그리고 nextState와 currState를 하나로 합쳐서 다시 하나로 만들게 됩니다.
-
-## 3. 상태가 변하면 실행되는 함수를 구독하기
-
-상태가 변하는 것을 감지하는 함수를 `listener`라고 합니다.
-
-사용자는 아래와 같이 리스너를 추가할 수 있습니다. 이 과정을 구독(subscribe)한다고 합니다.
-
-```ts:myStore.ts
-type Store = {
-  count: number;
-  increase: (num: number) => void;
-};
-
-const store = createStore<Store>(function createState(setState) {
-  return {
-    count: 0,
-    increase: (num) => setState((prev) => ({ count: prev.count + num })),
-  };
-});
-
-store.subscribe(function listener(curr, prev) {
-  console.log(`변경 전: ${prev.count}`);
-  console.log(`변경 후: ${curr.count}`);
-});
-```
-
-이 추가된 리스너는 내부적으로 `Set`에 저장됩니다.
-
-```ts:vanilla.ts
-type CreateState<T> = (setState: SetState<T>) => T;
-type SetState<T> = (partial: (state: T) => Partial<T>) => void;
-type Listener<T> = (state: T, prevState: T) => void;
-type Subscribe<T> = (listener: Listener<T>) => () => void;
-
-function createStore<T>(createState: CreateState<T>) {
-	let currState<T>;
-	const listeners = new Set<Listener<T>>();
-
-	// 상태를 수정하기
-	const setState: SetState<T> = (partial) => {
-        const nextState = partial(currState);
-        const prevState = currState;
-        currState = Object.assign({}, currState, nextState);
-        listeners.forEach((listener) => listener(currState, prevState));
-    };
-
-    // 상태를 불러오기
-	const getState = () => currState;
-
-	// 상태가 변하면 실행되는 함수를 구독하기
-	const subscribe: Subscribe<T> = (listener) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-    };
-
-	currState = createState(setState);
-	return { getState, setState, subscribe };
-}
-```
-
-위에서는 설명하기 위해서 기명 함수를 사용했지만, 화살표 함수를 사용해서 더 간단히 사용해볼 수 있습니다.
-
-```ts:myStore.ts
-type Store = {
-  count: number;
-  increase: (num: number) => void;
-};
-
-const store = createStore<Store>((set) => ({
-  count: 0,
-  increase: (num) => set((state) => ({ count: state.count + num })),
+const useBearStore = create<BearState>()((set) => ({
+  bears: 0,
+  increase: (by) => set((state) => ({ bears: state.bears + by })),
 }));
+```
 
-store.subscribe((curr, prev) => {
-  console.log(`변경 전: ${prev.count}`);
-  console.log(`변경 후: ${curr.count}`);
-  console.log('-------------');
+`create`에 어떤 함수를 전달하는 것으로 `useBearStore`가 생성되어 반환된다.
+
+실제 구현으로 가보자.
+
+```ts
+// src/react.ts
+export const create = (<T>(createState: StateCreator<T, [], []> | undefined) =>
+  createState ? createImpl(createState) : createImpl) as Create;
+```
+
+복잡하니까 내가 이해하기 쉽게 변경해보겠다.
+
+```ts
+export function create(createState) {
+  return createState ? createImpl(createState) : createImpl;
+}
+```
+
+`createState`가 undefined가 아니라면, `createImpl` 함수의 반환 값을 전달하고, undefined라면 `createImple` 그 자체를 전달한다.
+
+위의 예제에서 `createState`는 아래와 같은 함수다.
+
+```ts
+const createState = (set) => ({
+  bears: 0,
+  increase: (by) => set((state) => ({ bears: state.bears + by })),
 });
-
-store.getState().increase(10);
-store.getState().increase(30);
-
-/*
-변경 전: 0
-변경 후: 10
--------------
-변경 전: 10
-변경 후: 40
--------------
-*/
 ```
 
-## 4. 상태가 변하면 재렌더링을 유발하기
+딱히 실수하지 않는 이상 `undefined`를 전달할 일은 없을 것이므로 아래와 같이 더 간단하게 생각해보자.
 
-외부 스토어의 상태 값이 아무리 바뀌어도 리액트에서는 재렌더링이 발생하지 않습니다.
-
-따라서 외부 스토어의 값에 따라서 재렌더링을 유발시키는 방법이 필요합니다.
-
-이를 위해 사용하는 것이 리액트의 [`useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore) 훅입니다.
-
-이 [과정](https://github.com/facebook/react/blob/493610f299ddf7d06e147e60dc4f2b97482982d2/packages/react-reconciler/src/ReactFiberHooks.js#L1549)은 다음과 같이 진행됩니다.
-
-```js:ReactFiberHooks.js
-function subscribeToStore<T>(
-  fiber: Fiber,
-  inst: StoreInstance<T>,
-  subscribe: (() => void) => () => void
-): any {
-  const handleStoreChange = () => {
-    // 스토어의 값이 바뀌었으면
-    if (checkIfSnapshotChanged(inst)) {
-      // 강제로 재렌더링을 실행한다.
-      forceStoreRerender(fiber);
-    }
-  };
-  return subscribe(handleStoreChange);
+```ts
+export function create(createState) {
+  return createImpl(createState);
 }
 ```
 
-하지만 이런식으로 진행한다면 스토어의 상태 일부만 바뀌어도 전체가 재렌더링 되므로, 전체 상태에서 어떤 값을 선택(select) 했는지 저장하고,
+결국 create는 `createImpl`의 단순 래퍼역할을 하고 있었다.
 
-비교하기 위해서 [`useSyncExternalStoreWithSelector`](https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js)를 사용합니다.
+![](/posts/20231220-zustand/create1.png)
 
-이 훅은 React에서 기본적으로 제공하지 않는 훅으로 따로 설치를 해야합니다. [npm](https://www.npmjs.com/package/use-sync-external-store)
+## createImpl
 
----
-
-스토어에서 `selector` 라는 개념은 다음과 같이 사용됩니다.
+그러면 `createImpl`은 무엇인가?
 
 ```ts
-const useMeals = create(() => ({
-  papaBear: 'large porridge-pot',
-  mamaBear: 'middle-size porridge pot',
-  littleBear: 'A little, small, wee pot',
-}));
-
-// 스토어에 있는 상태 값들 중에서 papaBear만 선택(select)해서 가져오기
-const bears = useMeals((state) => state.papaBear);
-// === 'large porridge-pot'
-```
-
-`useSyncExternalStoreWithSelector`에서는 내부적으로 선택한 값들을 useMemo를 사용해 저장해둡니다.
-
-그리고 내부적으로 `useSyncExternalStore`를 사용해 해당 값의 변화를 감지하여 재렌더링을 유발하게 됩니다.
-
-selector가 단순히 원시 값을 반환한다면, 상관 없지만 아니라면 useMemo가 쓸모 없을 수도 있습니다.
-
-```ts
-// 가져오는 값이 원시 값이 아닌 경우
-const names = useMeals((state) => Object.keys(state));
-```
-
-이를 위해 비교 함수(`equalityFn`)도 같이 전달해 얕은 깊이까지 비교를 할 수도 있습니다.
-
-```ts
-const names = useMeals(useShallow((state) => Object.keys(state)));
-```
-
-이제 코드를 작성하면 다음과 같이 됩니다.
-
-4번 동작을 유발할 수 있는 `create`는 내부적으로 1 - 3번 동작을 유발하는 `createStore`를 사용합니다.
-
-```ts:react.ts
-type StoreApi<T> = ReturnType<typeof createStore<T>> & { getServerState?: T };
-
-export function useStore<T, StateSlice>(
-  api: StoreApi<T>,
-  selector: (state: T) => StateSlice = api.getState as any,
-  equalityFn?: (a: StateSlice, b: StateSlice) => boolean
-) {
-  const slice = useSyncExternalStoreWithSelector(
-    api.subscribe,
-    api.getState,
-    api.getServerState || api.getState,
-    selector,
-    equalityFn
-  );
-  return slice;
-}
-
-function create<T>(createState: CreateState<T>) {
-  const api = createStore(createState);
+// src/react.ts
+const createImpl = <T>(createState: StateCreator<T, [], []>) => {
+  if (
+    import.meta.env?.MODE !== 'production' &&
+    typeof createState !== 'function'
+  ) {
+    console.warn(
+      "[DEPRECATED] Passing a vanilla store will be unsupported in a future version. Instead use `import { useStore } from 'zustand'`."
+    );
+  }
+  const api =
+    typeof createState === 'function' ? createStore(createState) : createState;
 
   const useBoundStore: any = (selector?: any, equalityFn?: any) =>
     useStore(api, selector, equalityFn);
 
-  return Object.assign(useBoundStore, api);
+  Object.assign(useBoundStore, api);
+
+  return useBoundStore;
+};
+```
+
+역시 복잡하므로 좀 더 단순화 시켜보자.
+
+```ts
+function createImpl(createState) {
+  const api = createStore(createState);
+
+  const useBoundStore = (selector?: any, equalityFn?: any) => {
+    return useStore(api, selector, equalityFn);
+  };
+
+  Object.assign(useBoundStore, api);
+
+  return useBoundStore;
 }
 ```
 
+`createStore`라는 함수가 등장하고, 이 함수는 `api`를 반환한다.
+
+`useBoundStore`라는 함수를 정의하는데, 이 함수는 `useStore`의 반환 값을 반환한다.
+
+그리고 이 둘을 합쳐서 반환한다.
+
+여기서 알아봐야 할 것이 두 개가 생겼다.
+
+1. api란 무엇인가?
+2. useStore란 무엇인가?
+
+![](/posts/20231220-zustand/create2.png)
+
+### 1-1. createStore
+
+먼저 `createStore`를 살펴보자. api란 무엇일까?
+
+```ts
+// src/vanilla.ts
+export const createStore = ((createState) =>
+  createState ? createStoreImpl(createState) : createStoreImpl) as CreateStore;
+```
+
+마찬가지로 복잡하니 단순화 시켜보면,
+
+```ts
+export function createStore(createState) {
+  return createStoreImpl(createState);
+}
+```
+
+마찬가지로 `createStoreImpl`의 단순 래퍼였다.
+
+zustand에서는 이런 식의 래퍼 함수를 많이 사용하고 있었다.
+
+### 1-2. createStoreImpl
+
+```ts
+// src/vanilla.ts
+const createStoreImpl: CreateStoreImpl = (createState) => {
+  type TState = ReturnType<typeof createState>;
+  type Listener = (state: TState, prevState: TState) => void;
+  let state: TState;
+  const listeners: Set<Listener> = new Set();
+
+  const setState: StoreApi<TState>['setState'] = (partial, replace) => {
+    // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
+    // https://github.com/microsoft/TypeScript/issues/37663#issuecomment-759728342
+    const nextState =
+      typeof partial === 'function'
+        ? (partial as (state: TState) => TState)(state)
+        : partial;
+    if (!Object.is(nextState, state)) {
+      const previousState = state;
+      state =
+        replace ?? (typeof nextState !== 'object' || nextState === null)
+          ? (nextState as TState)
+          : Object.assign({}, state, nextState);
+      listeners.forEach((listener) => listener(state, previousState));
+    }
+  };
+
+  const getState: StoreApi<TState>['getState'] = () => state;
+
+  const getInitialState: StoreApi<TState>['getInitialState'] = () =>
+    initialState;
+
+  const subscribe: StoreApi<TState>['subscribe'] = (listener) => {
+    listeners.add(listener);
+    // Unsubscribe
+    return () => listeners.delete(listener);
+  };
+
+  const destroy: StoreApi<TState>['destroy'] = () => {
+    if (import.meta.env?.MODE !== 'production') {
+      console.warn(
+        '[DEPRECATED] The `destroy` method will be unsupported in a future version. Instead use unsubscribe function returned by subscribe. Everything will be garbage-collected if store is garbage-collected.'
+      );
+    }
+    listeners.clear();
+  };
+
+  const api = { setState, getState, getInitialState, subscribe, destroy };
+  const initialState = (state = createState(setState, getState, api));
+  return api as any;
+};
+```
+
+복잡하니 단순화 시켜보면, 아래와 같다.
+
+```ts
+function createStoreImpl(createState) {
+  let state;
+  const listeners = new Set();
+
+  const setState = (partial) => {
+    const nextState = partial(state);
+
+    if (!Object.is(nextState, state)) {
+      const previousState = state;
+      state = Object.assign({}, state, nextState);
+      listeners.forEach((listener) => listener(state, previousState));
+    }
+  };
+
+  const getState = () => state;
+
+  const getInitialState = () => initialState;
+
+  const subscribe = (listener) => {
+    listeners.add(listener);
+    // Unsubscribe
+    return () => listeners.delete(listener);
+  };
+
+  const destroy = () => {
+    listeners.clear();
+  };
+
+  const api = { setState, getState, getInitialState, subscribe, destroy };
+
+  const initialState = (state = createState(setState, getState, api));
+
+  return api;
+}
+```
+
+![](/posts/20231220-zustand/create3.png)
+
+이제 하나씩 살펴보자.
+
+- getState : `state` 변수를 클로저를 사용해 불러오는 역할을 하는 함수다.
+- setState : `state` 를 `nextState`로 업데이트하고, 콜백 함수들을 실행하는 함수다.
+- subscribe: 콜백 함수들을 `listeners`에 등록하는 함수다.
+- destory: 콜백 함수들을 `listerners`에서 제거하는 함수다.
+- getIninitalState: 서버에서 사용할 상태를 만들고 가져오는 함수다.
+
+즉, api는 상태를 가져오거나 변경하는 함수들을 담아둔 객체다.
+
+![](/posts/20231220-zustand/create4.png)
+
+### 2-1. useStore
+
+`useBoundStore`를 다시 살펴보자.
+
+`useStore`의 반환 값을 반환하는 함수였다.
+
+```ts
+const useBoundStore = (selector?: any, equalityFn?: any) => {
+  return useStore(api, selector, equalityFn);
+};
+```
+
+`useStore`를 분석해보자.
+
+```ts
+// src/react.ts
+
+export function useStore<TState, StateSlice>(
+  api: WithReact<StoreApi<TState>>,
+  selector: (state: TState) => StateSlice = identity as any,
+  equalityFn?: (a: StateSlice, b: StateSlice) => boolean
+) {
+  if (
+    import.meta.env?.MODE !== 'production' &&
+    equalityFn &&
+    !didWarnAboutEqualityFn
+  ) {
+    console.warn(
+      "[DEPRECATED] Use `createWithEqualityFn` instead of `create` or use `useStoreWithEqualityFn` instead of `useStore`. They can be imported from 'zustand/traditional'. https://github.com/pmndrs/zustand/discussions/1937"
+    );
+    didWarnAboutEqualityFn = true;
+  }
+  const slice = useSyncExternalStoreWithSelector(
+    api.subscribe,
+    api.getState,
+    api.getServerState || api.getInitialState,
+    selector,
+    equalityFn
+  );
+  useDebugValue(slice);
+  return slice;
+}
+```
+
+마찬가지로 단순화 시켜보면, 아래와 같다.
+
+```ts
+export function useStore(api, selector, equalityFn) {
+  const slice = useSyncExternalStoreWithSelector(
+    api.subscribe,
+    api.getState,
+    api.getServerState || api.getInitialState,
+    selector,
+    equalityFn
+  );
+  useDebugValue(slice);
+  return slice;
+}
+```
+
+### 2-2. useSyncExternalStoreWithSelector
+
+`useSyncExternalStoreWithSelector`는 무엇인가?
+
+이를 알아보려면 먼저 `useSyncExternalStore`에 대해서 알아봐야한다.
+
+[리액트 문서](https://react.dev/reference/react/useSyncExternalStore)에서는 이렇게 소개하고 있다.
+
+> useSyncExternalStore is a React Hook that lets you subscribe to an external store.
+
+즉, 리액트 외부의 값에 대해서 구독하게 해주는 리액트 훅이라는 것인데
+
+쉽게 얘기하면 외부 값이 변하면 알아서 재렌더링을 유발시켜 준다는 의미다.
+
+zustand는 리액트 외부의 값이니 재렌더링을 하기 위해 이 훅을 사용해야 한다.
+
+`useSyncExternalStoreWithSelector`는 여기에 더해서 `selector`와 `equalityFn`을 받는다는 차이점이 있다.
+
+이 차이점이 대체 무엇을 의미할까?
+
+직접 [리액트 코드](https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js)를 살펴보자. 그런데 다 보는 것은 너무 기니까 조금 잘라서 보도록 하자.
+
+```ts
+// Same as useSyncExternalStore, but supports selector and isEqual arguments.
+```
+
+시작부터 주석으로 selector와 isEqual 빼고 동일하다고 적혀있다.
+
+```ts
+export function useSyncExternalStoreWithSelector<Snapshot, Selection>(
+  subscribe: (() => void) => () => void,
+  getSnapshot: () => Snapshot,
+  getServerSnapshot: void | null | (() => Snapshot),
+  selector: (snapshot: Snapshot) => Selection,
+  isEqual?: (a: Selection, b: Selection) => boolean,
+): Selection {
+  // ...
+
+  const [getSelection, getServerSelection] = useMemo(() => {
+    // 여기서 selector, isEqual 사용함
+  });
+
+  // ...
+
+  const value = useSyncExternalStore(
+    subscribe,
+    getSelection,
+    getServerSelection,
+  );
+
+  return value;
+}
+```
+
+selector로 값의 일부를 빼와서 useMemo에 저장하고, isEqual로 이전 값과 동일한지 비교하는 내부 동작을 거친다.
+
+그리고 이것을 다시 `useSyncExternalStore`에 넘겨준다.
+
+즉, 값의 일부만 비교하여 전체가 재렌더링 하지 않도록 최적화를 하기 위해 사용하고 있는 것으로 추정된다.
+
+![](/posts/20231220-zustand/create5.png)
+
 ## References
 
-https://github.com/pmndrs/zustand
+- [Zustand](https://github.com/pmndrs/zustand/tree/main)
+- [useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore)
+- [useSyncExternalStoreWithSelector](https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js)
