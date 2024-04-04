@@ -1,0 +1,248 @@
+---
+title: IndexedDB를 사용하는 방법
+date: 2024-04-04
+description: 템플릿 만들어두기
+tags:
+  - JavaScript
+---
+
+## IndexedDB
+
+`IndexedDB`(줄여서 idb)는 브라우저 내장 데이터베이스이기 때문에 클라이언트 컴포넌트에서만 사용가능하다.
+
+idb의 구조는 다음과 같다.
+
+![](/posts/20240404/idb1.png)
+
+- 하나의 데이터베이스 안에 여러 개의 객체 저장소가 존재할 수 있다.
+- 각 객체 저장소는 키와 값을 가지고 있다.
+
+idb를 생성하고 사용하는 과정은 아래와 같이 요약된다.
+
+- 만들고 싶은 데이터베이스 이름과 버전을 명시한다.
+- 버전이 다르다면 `onupgradeneeded` 이벤트가 발생하는데, 이때 새로운 객체 저장소(object store)를 만들 수 있다.
+- 객체 저장소에 데이터를 추가, 삭제하는 과정은 하나의 트랜잭션 내에서 이루어진다.
+
+여기서 버전은, 객체 저장소 내에서 단순히 데이터를 추가, 삭제한다고 바뀌는 것이 아니라 새로운 객체 저장소를 생성할 때만 올라가게 된다.
+
+```ts {17}
+function openIndexedDB(
+  dbName: string,
+  objectStoreName: string,
+  version: number
+) {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const idb = window.indexedDB;
+    const request = idb.open(dbName, version);
+
+    request.onerror = () => {
+      reject(false);
+    };
+
+    request.onsuccess = () => {
+      const db = request.result;
+      resolve(db);
+    };
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(objectStoreName)) {
+        db.createObjectStore(objectStoreName, { keyPath: 'id' });
+      }
+    };
+  });
+}
+// 처음 객체 저장소를 생성하면 버전을 1로 전달한다.
+openIndexedDB('my-db', 'my-object-store-1', 1);
+
+// 또 객체 저장소를 생성하려면 버전을 하나 더 늘린다.
+openIndexedDB('my-db', 'my-object-store-1', 2);
+openIndexedDB('my-db', 'my-object-store-2', 2);
+```
+
+keyPath를 설정하면, 객체 저장소에 데이터를 저장할 때 키를 적지 않아도 데이터에 있는 값에서 가져와 키를 자동으로 만들어줍니다.
+
+예를 들어 객체 저장소에 저장할 데이터가 아래와 같다고 했을 때, keyPath를 id로 설정하면 데이터의 id가 키가 됩니다.
+
+```ts
+const data = {
+  id: 'my-id',
+  bear: 0,
+  // ...
+};
+
+// [key: my-id, value: data]로 설정된다.
+```
+
+## 데이터 추가하기
+
+keyPath로 설정한 값(id)이 저장할 데이터에 포함되어야합니다.
+
+```ts
+export async function addDataToIndexedDB<T>(
+  dbName: string,
+  objectStoreName: string,
+  version: number,
+  data: T
+): Promise<boolean> {
+  const db = await openIndexedDB(dbName, objectStoreName, version);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readwrite');
+    const objectStore = transaction.objectStore(objectStoreName);
+    const request = objectStore.put(data);
+
+    request.onsuccess = () => {
+      resolve(true);
+    };
+
+    request.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
+
+## 데이터 수정하기
+
+```ts
+export async function editDataFromIndexedDB<T extends { id: string }>(
+  dbName: string,
+  objectStoreName: string,
+  version: number,
+  data: T
+): Promise<boolean> {
+  const db = await openIndexedDB(dbName, objectStoreName, version);
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readwrite');
+    const objectStore = transaction.objectStore(objectStoreName);
+
+    const getRequest = objectStore.get(data.id);
+
+    getRequest.onsuccess = () => {
+      // 이전 데이터를 가져온다.
+      const oldData = getRequest.result as T;
+      // 수정된 데이터를 만든다.
+      const newData = { ...oldData, ...data };
+      // 수정된 데이터를 저장한다.
+      const updateRequest = objectStore.put(newData);
+
+      updateRequest.onsuccess = () => {
+        resolve(true);
+      };
+
+      updateRequest.onerror = () => {
+        reject(new Error('idb error'));
+      };
+    };
+
+    getRequest.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
+
+## 데이터 가져오기
+
+```ts
+export async function getDataFromIndexedDB<T>(
+  dbName: string,
+  objectStoreName: string,
+  version: number,
+  key: string
+): Promise<T> {
+  const db = await openIndexedDB(dbName, objectStoreName, version);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readonly');
+    const objectStore = transaction.objectStore(objectStoreName);
+    const request = objectStore.get(key);
+
+    request.onsuccess = () => {
+      const data: T = request.result;
+      resolve(data);
+    };
+
+    request.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
+
+## 데이터 삭제하기
+
+```ts
+export async function deleteDataToIndexedDB(
+  dbName: string,
+  objectStoreName: string,
+  version: number,
+  key: string
+): Promise<boolean> {
+  const db = await openIndexedDB(dbName, objectStoreName, version);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readwrite');
+    const objectStore = transaction.objectStore(objectStoreName);
+
+    const request = objectStore.delete(key);
+
+    request.onsuccess = () => {
+      resolve(true);
+    };
+
+    request.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
+
+## 데이터 모두 가져오기
+
+```ts
+export async function getAllDataFromIndexedDB<T>(
+  dbName: string,
+  objectStoreName: string,
+  version: number
+): Promise<T[]> {
+  const db = await openIndexedDB(dbName, objectStoreName, version);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readonly');
+    const objectStore = transaction.objectStore(objectStoreName);
+
+    const request = objectStore.getAll();
+
+    request.onsuccess = () => {
+      const data: T[] = request.result;
+      resolve(data);
+    };
+
+    request.onerror = () => {
+      reject(new Error('idb error'));
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+```
