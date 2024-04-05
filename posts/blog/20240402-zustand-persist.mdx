@@ -448,9 +448,11 @@ zustand의 설계를 고치는 것은 처음부터 무리였던 것이었고...
 
 일단 indexedDB를 어떻게 사용해야하는지에 대해 살펴보아야 한다.
 
-이것에 대한 글은 블로그에 따로 작성했으니 참고한다.
+[이것에 대한 글은 블로그에 따로 작성했으니 참고한다.](https://blog-gray-omega-81.vercel.app/blog/20240404-indexedDB)
 
-먼저 스토어에 subscribe 함수를 작성한다.
+스토어에 하이드레이션을 하는 함수와, setState가 호출될 때마다 실행되는 콜백 함수를 작성하였다.
+
+이후 일반적인 zustand의 사용법과 똑같이 사용하면 된다.
 
 ```ts
 import { create } from 'zustand';
@@ -473,15 +475,38 @@ type Action = {
   addBear: (items: { [key: string]: Bear }) => void;
 };
 
-export const dbName = 'bear-db';
-export const objectStoreName = 'bear-store';
-export const version = 1;
+const dbName = 'bear-db';
+const objectStoreName = 'bear-store';
+const version = 1;
 
 export const useBearStore = create<State & Action>()((set) => ({
   bear: {},
   addBear: (items: { [key: string]: Bear }) =>
     set((state) => ({ bear: { ...state.bear, ...items } })),
 }));
+
+// Hydration
+async function hydrate() {
+  if (!globalThis.indexedDB) return;
+
+  const indexedDBData = await getAllDataFromIndexedDB<Bear>(
+    dbName,
+    objectStoreName,
+    version
+  );
+
+  const zustandState: { [key: string]: Bear } = {};
+
+  indexedDBData.forEach((item) => {
+    zustandState[item.id] = item;
+  });
+
+  useBearStore.setState((state) => ({
+    bear: { ...state.bear, ...zustandState },
+  }));
+}
+
+hydrate();
 
 // This callback function runs every time you store data.
 useCalHeatStore.subscribe(async (state, prevState) => {
@@ -513,57 +538,6 @@ useCalHeatStore.subscribe(async (state, prevState) => {
     }
   }
 });
-```
-
-하지만 여전히 하이드레이션은 직접 해줘야한다.
-
-```ts
-import { useEffect } from 'react';
-
-import {
-  Bear,
-  dbName,
-  version,
-  useCalHeatStore,
-  objectStoreName,
-} from '@/app/store/bearStore';
-import { getAllDataFromIndexedDB } from '@/lib/idb';
-
-export function useHydrateBearStore() {
-  const addBear = useBearStore((state) => state.addBear);
-
-  useEffect(() => {
-    const getAllData = async () => {
-      const indexedDBData = await getAllDataFromIndexedDB<Bear>(
-        dbName,
-        objectStoreName,
-        version
-      );
-
-      const zustandState: { [key: string]: Bear } = {};
-
-      indexedDBData.forEach((item) => {
-        zustandState[item.id] = item;
-      });
-      addBear(zustandState);
-    };
-
-    getAllData();
-  }, [addBear]);
-}
-```
-
-```tsx
-'use client';
-
-import { useHydrateBearStore } from '@/app/hooks/useHydrateBearStore';
-
-export default function Page() {
-  useHydrateCalHeatStore();
-  return (
-    // ...
-  );
-}
 ```
 
 ## References
