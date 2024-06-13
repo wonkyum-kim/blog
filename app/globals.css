@@ -11,6 +11,34 @@ body {
   overflow-x: hidden;
 }
 
+:root {
+  --gray-50: rgb(249 250 251);
+}
+
+.background-radish {
+  background-color: #fbe2e3;
+  position: absolute;
+  top: -6rem;
+  z-index: -10;
+  right: 11rem;
+  height: 31.25rem;
+  width: 31.25rem;
+  border-radius: 9999px;
+  filter: blur(10rem);
+}
+
+.background-blue {
+  background-color: #dbd7fb;
+  position: absolute;
+  top: -6rem;
+  z-index: -10;
+  left: -35rem;
+  height: 31.25rem;
+  width: 50rem;
+  border-radius: 9999px;
+  filter: blur(10rem);
+}
+
 pre {
   border-radius: 0 0 10px 10px;
   margin-top: 0 !important;
