@@ -2,8 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
-const rootDirectory = path.join(process.cwd(), 'app', 'posts')
-
 export function getHeadingsBySlug(slug: string) {
   if (slug === 'posts') return []
 
