@@ -6,6 +6,11 @@ import rehypeSlug from 'rehype-slug'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
+  experimental: {
+    outputFileTracingIncludes: {
+      '/app/posts': ['./app/posts/**/*'],
+    },
+  },
 }
 
 const withMDX = createMDX({
