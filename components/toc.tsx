@@ -31,14 +31,22 @@ export function TOC({ headings }: TOCProps) {
     <aside className={styles.toc}>
       {headings.map((item) => {
         const { level, heading } = item
+
+        // . / @ 문자는 삭제하고, 공백은 -로 대체한다.
+        const changed = heading
+          .replace(/[.\/@]/g, '')
+          .replace(/ /g, '-')
+          .toLowerCase()
+
+        console.log(changed)
         return (
           <Link
-            href={`#${heading.toLowerCase()}`}
+            href={`#${changed}`}
             key={heading}
-            onClick={() => setSelected(heading)}
+            onClick={() => setSelected(changed)}
             className={[
               level === 2 ? styles['second-level'] : styles['third-level'],
-              selected === heading.toLowerCase() ? styles.selected : '',
+              selected === changed ? styles.selected : '',
               styles.link,
             ].join(' ')}
           >
