@@ -8,6 +8,7 @@ export default function MdxLayout({ children }: { children: React.ReactNode }) {
   const pathname = (headers().get('x-pathname') || '').split('/')
   const slug = pathname[pathname.length - 1]
   const headings = getHeadingsBySlug(slug)
+
   return (
     <div className={styles.main}>
       {children}

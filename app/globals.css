@@ -24,6 +24,10 @@ h2 {
   margin-top: 5rem;
 }
 
+:is(hr, h2):nth-of-type(1) {
+  display: none;
+}
+
 /* 스크롤바 없애기 */
 ::-webkit-scrollbar {
   display: none;
