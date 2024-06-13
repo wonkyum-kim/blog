@@ -1,0 +1,38 @@
+.toc {
+  position: fixed;
+  left: calc(50% + 600px);
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  appearance: none;
+}
+
+@media (width < 1440px) {
+  .toc {
+    display: none;
+  }
+}
+
+.link {
+  text-decoration: none;
+  color: black;
+}
+
+.link.selected {
+  color: rgb(59 130 246);
+}
+
+.second-level {
+  padding-left: 0rem;
+}
+
+.third-level {
+  padding-left: 1rem;
+}
+
+@media (hover: hover) {
+  :is(.second-level, .third-level):hover {
+    color: rgb(59 130 246);
+  }
+}

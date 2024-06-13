@@ -1,57 +1,24 @@
 import fs from 'fs'
 import path from 'path'
-import { compileMDX } from 'next-mdx-remote/rsc'
-import rehypePrism from 'rehype-prism-plus'
-import remarkGfm from 'remark-gfm'
-import { serialize } from 'next-mdx-remote/serialize'
 
-export interface Meta {
-  title?: string
-  createdAt?: string
-  tags?: string[]
-  slug: string
-}
+const rootDirectory = path.join(process.cwd(), 'app', 'posts')
 
-const rootDirectory = path.join(process.cwd(), 'contents')
-
-export async function getSource(slug: string) {
-  const filePath = path.join(rootDirectory, `${slug}.mdx`)
-  const fileContent = fs.readFileSync(filePath, { encoding: 'utf8' })
-  return serialize(fileContent)
-}
-
-export async function getPostBySlug(slug: string) {
-  const realSlug = slug.replace(/\.mdx$/, '')
-
-  const filePath = path.join(rootDirectory, `${realSlug}.mdx`)
-
+export function getHeadingsBySlug(slug: string) {
+  if (slug === 'posts') return []
+  const filePath = path.join(rootDirectory, `${slug}`, `page.mdx`)
   const fileContent = fs.readFileSync(filePath, { encoding: 'utf8' })
 
-  const { frontmatter, content } = await compileMDX({
-    source: fileContent,
-    options: {
-      parseFrontmatter: true,
-      mdxOptions: {
-        remarkPlugins: [remarkGfm],
-        rehypePlugins: [rehypePrism],
-      },
-    },
+  const regXHeader = /\n(?<flag>#{1,3})\s+(?<content>.+)/g
+  const matches = Array.from(fileContent.matchAll(regXHeader))
+
+  const headings = matches.map(({ groups }) => {
+    const flag = groups?.flag
+    const content = groups?.content
+    return {
+      level: flag?.length ?? -1,
+      heading: content ?? '',
+    }
   })
 
-  const meta: Meta = { ...frontmatter, slug: realSlug }
-
-  return { meta, content }
-}
-
-export async function getAllPostsMeta() {
-  const files = fs.readdirSync(rootDirectory)
-
-  const posts = []
-
-  for (const file of files) {
-    const { meta } = await getPostBySlug(file)
-    posts.push(meta)
-  }
-
-  return posts
+  return headings
 }

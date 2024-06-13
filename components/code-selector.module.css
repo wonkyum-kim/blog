@@ -4,11 +4,13 @@
   gap: 2rem;
   height: 40px;
   padding-left: 1rem;
+  padding-right: 1rem;
   align-items: center;
   border-radius: 10px 10px 0 0;
   color: #087ea4;
   font-weight: 600;
   font-size: 1rem;
+  overflow: scroll;
 }
 
 .selected-bar {

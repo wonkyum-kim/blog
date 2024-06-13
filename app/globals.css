@@ -20,6 +20,15 @@ nav + pre {
   display: block;
 }
 
+h2 {
+  margin-top: 5rem;
+}
+
+/* 스크롤바 없애기 */
+::-webkit-scrollbar {
+  display: none;
+}
+
 /* theme */
 
 code[class*='language-'],
