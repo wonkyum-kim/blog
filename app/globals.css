@@ -1,6 +1,7 @@
 html,
 body {
   width: 100%;
+  min-height: 100dvh;
   margin: 0px;
   padding: 0px;
   position: relative;
@@ -49,8 +50,28 @@ nav + pre {
   display: block;
 }
 
-h2 {
+h2,
+h1 {
   margin-top: 5rem;
+}
+
+li::marker {
+  color: #cbd5e1;
+}
+
+li {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 중간 강조 */
+p > code {
+  padding: 2px 4px;
+  background-color: #f3f4f6;
+  font-size: 1rem;
+  color: #ec4899;
+  font-weight: 600;
+  border-radius: 5px;
 }
 
 /* svg transition */
@@ -255,4 +276,22 @@ pre[class*='language-'] {
   margin-left: -8px;
   color: rgb(156, 163, 175); /* Line number color */
   content: attr(line);
+}
+
+/* fancy link */
+a {
+  text-decoration: none;
+  background-image: linear-gradient(90deg, rgb(219 234 254), rgb(23 37 84));
+  background-size: 0% 5px;
+  background-position: left 1.4rem;
+  background-repeat: no-repeat;
+  padding-block-end: 0.25em;
+  transition: background-size 500ms;
+  color: rgb(59 130 246);
+}
+
+@media (hover: hover) {
+  a:is(:hover, :active) {
+    background-size: 100% 5px;
+  }
 }

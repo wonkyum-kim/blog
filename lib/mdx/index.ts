@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import matter from 'gray-matter'
 
 const rootDirectory = path.join(process.cwd(), 'app', 'posts')
 
@@ -24,11 +23,3 @@ export function getHeadingsBySlug(slug: string) {
 
   return headings
 }
-
-// export function getFrontmatterBySlug(slug: string) {
-//   if (slug === 'posts') return {}
-
-//   const filePath = path.join(rootDirectory, `${slug}`, `page.mdx`)
-//   const fileContent = fs.readFileSync(filePath, { encoding: 'utf8' })
-//   return matter(fileContent)
-// }

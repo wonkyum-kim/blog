@@ -2,6 +2,7 @@ import { getHeadingsBySlug } from '@/lib/mdx'
 import styles from './layout.module.css'
 import { headers } from 'next/headers'
 import { TOC } from '@/components/toc'
+import { Title } from '@/components/title'
 
 export default function MdxLayout({ children }: { children: React.ReactNode }) {
   // middleware 설정해서 서버 컴포넌트에서 현재 경로를 가져온다.
@@ -11,6 +12,7 @@ export default function MdxLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={styles.main}>
+      {slug !== 'posts' && <Title slug={slug} />}
       {children}
       <TOC headings={headings} />
     </div>

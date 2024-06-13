@@ -5,16 +5,16 @@ import styles from './code-selector.module.css'
 
 interface CodeSelectorProps {
   codes: string[]
-  x: string
+  desc: string
 }
 
-export function CodeSelector({ codes, x }: CodeSelectorProps) {
+export function CodeSelector({ codes, desc }: CodeSelectorProps) {
   const [prev, setPrev] = useState(0)
   const siblings = useRef<NodeListOf<Element>>()
 
   const handleClick = (index: number) => {
     if (!siblings.current) {
-      siblings.current = document.querySelectorAll(`nav[data-for=${x}] ~ *`)
+      siblings.current = document.querySelectorAll(`nav[data-for=${desc}] ~ *`)
     }
 
     if (codes.length === 1) return
@@ -29,7 +29,7 @@ export function CodeSelector({ codes, x }: CodeSelectorProps) {
   }
 
   return (
-    <nav className={styles.selector} data-for={x}>
+    <nav className={styles.selector} data-for={desc}>
       {codes.map((code, i) => {
         return (
           <div

@@ -38,7 +38,6 @@ export function TOC({ headings }: TOCProps) {
           .replace(/ /g, '-')
           .toLowerCase()
 
-        console.log(changed)
         return (
           <Link
             href={`#${changed}`}

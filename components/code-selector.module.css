@@ -20,6 +20,16 @@
   font-size: 1.2rem;
 }
 
+@media (width < 768px) {
+  .selector {
+    font-size: 0.6rem;
+  }
+
+  .selected-bar {
+    font-size: 0.8rem;
+  }
+}
+
 .bar {
   cursor: pointer;
   transition-property: opacity;

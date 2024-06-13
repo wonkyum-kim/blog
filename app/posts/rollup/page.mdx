@@ -17,13 +17,13 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 번들링 하는 과정에서 원본 코드보다 용량도 줄이고, 코드의 로딩 속도와 실행 속도도 높일 수 있기 때문이다.
 
-번들링을 하는 과정에서 등장하는 것이 tree-shaking이다.
+번들링을 하는 과정에서 등장하는 것이 `tree-shaking`이다.
 
 트리 쉐이킹은 살아있는 코드만을 포함시키는 것을 의미한다.
 
 즉, 쓰이지 않는 코드를 제거하여 용량을 줄이는 역할을 한다.
 
-그리고 함께 등장하는 것이 minification이다.
+그리고 함께 등장하는 것이 `minification`이다.
 
 개발자가 작성한 코드는 사람이 알아보기 쉽게 작성되어 있지만, 컴퓨터 입장에서는 전혀 상관 없으므로 알아볼 수 없을 정도로 최대한 코드를 줄이는 작업을 진행한다.
 
@@ -31,10 +31,9 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 package.json에서 필요한 옵션은 아래와 같다.
 
-<CodeSelector codes={['package.json']} x='package' />
+<CodeSelector codes={['package.json']} desc='package' />
 
-```json
-// package.json
+```json {2, 4, 6, 13} showLineNumbers
 {
   "type": "module",
   "scripts": {
@@ -51,17 +50,26 @@ package.json에서 필요한 옵션은 아래와 같다.
 }
 ```
 
-현재 프로젝트의 모듈 시스템을 ESM으로 설정하기 위해서 `"type": "module"`를 사용한다.
+- 현재 프로젝트의 모듈 시스템을 ESM으로 설정하기 위해서 `"type": "module"`를 사용한다.
+- `"rm -rf dist/* && tsc && rollup -c"`를 통해, 이전 빌드 출력 결과물을 지우고, 번들링한다.
+- `"exports"` 필드를 사용하여 실제 file system 상의 위치와 다른 모듈 지정자(module specifier)를 사용할 수 있게 된다.
+- `"browserslist"`에 Babel에서 지원할 브라우저를 명시한다.
 
-`npm run build`를 사용하면, 이전 빌드 출력 결과물을 지우고, 번들링한다.
+tsc는 각 파일에 해당하는 `.d.ts` 파일들을 `dist` 디렉터리에 생성하고, rollup은 `dist/esm`과 `dist/cjs`에 각각의 자바스크립트 파일을 생성한다.
 
-좀 더 설명하면, tsc는 각 파일에 해당하는 `.d.ts` 파일들을 `dist` 디렉터리에 생성하고, rollup은 `dist/esm`과 `dist/cjs`에 각각의 자바스크립트 파일을 생성한다.
+모듈 지정자란, `import ... from ...`에서 from 뒤에 나오는 부분을 의미한다.
 
-`browserslist`에 Babel에서 지원할 브라우저를 명시한다.
+exports 필드를 사용하면 같은 모듈 지정자를 사용해도 모듈 시스템에 맞는 자바스크립트 파일을 불러올 수 있다.
 
-package.json에 `exports` 필드를 사용하여 실제 filesystem 상의 위치와 다른 모듈 지정자를 사용할 수 있게 된다.
+<CodeSelector codes={['example.js']} desc='module-system-desc' />
 
-이에 대해서는 이 글의 마지막 부분과 [toss tech](https://toss.tech/article/commonjs-esm-exports-field)의 글을 참조하라.
+```js showLineNumbers
+// ESM, ./index.js을 불러온다.
+import { foo } from 'MyPackage'
+
+// CJS, ./index.cjs을 불러온다.
+const { foo } = require('MyPackage')
+```
 
 여기서 간단히 설명하면 아래와 같은 규칙이 적용된다.
 
@@ -78,9 +86,9 @@ package.json에 `exports` 필드를 사용하여 실제 filesystem 상의 위치
 
 tsconfig.json에서 필요한 옵션은 아래와 같다.
 
-<CodeSelector codes={['tsconfig.json']} x='tsconfig' />
+<CodeSelector codes={['tsconfig.json']} desc='tsconfig' />
 
-```json
+```json {3-6, 8} showLineNumbers
 {
   "compilerOptions": {
     "module": "esnext",
@@ -94,21 +102,23 @@ tsconfig.json에서 필요한 옵션은 아래와 같다.
 }
 ```
 
-module과 moduleResolution은 esnext와 bundler를 사용한다.
+- module은 `esnext`를 사용한다.
+- moduleResolution은 `bundler`를 사용한다.
+- tsc는 선언 파일만 출력하도록 한다.
+- esModuleInterop는 ESM에서 CJS 모듈을 사용하는 라이브러리를 불러오는 문제를 해결해준다.
 
-module은 컴파일되어 나온 자바스크립트가 사용할 모듈 시스템을 지정하는 옵션이다.
+`module`은 컴파일되어 나온 자바스크립트가 사용할 모듈 시스템을 지정하는 옵션이다.
 
-moduleResolution은 타입스크립트가 모듈 지정자(import나 require 뒤에 건내주는 문자열)를 디스크에 있는 파일에서 찾아내는 알고리즘을 지정하는 옵션이다.
+`moduleResolution`은 타입스크립트가 모듈 지정자를 디스크에 있는 파일에서 찾아내는 알고리즘을 지정하는 옵션이다.
 
-moduleResolution: bundler를 사용하는 이유는, tsc가 아니라 번들러가 파일들을 찾기 때문이다.
+moduleResolution을 bundler로 설정하는 이유는, tsc가 아니라 번들러가 파일들을 찾기 때문이다.
 
-bundler로 설정했을 때의 추가적으로 얻는 장점은 느슨한 import를 사용할 수 있다는 것이다.
+bundler로 설정했을 때의 추가적으로 얻는 장점은 `느슨한 import`를 사용할 수 있다는 것이다.
 
-예를 들어 상대 경로에 있는 파일들을 import 할 때, 파일의 확장자를 적지 않아도 된다.
-
-<CodeSelector codes={['exmaple.ts']} x='foo' />
+<CodeSelector codes={['exmaple.ts']} desc='bundler' />
 
 ```ts
+// 상대 경로에 있는 파일들을 import 할 때, 파일의 확장자를 적지 않아도 된다.
 import { foo } from './foo'
 ```
 
@@ -116,7 +126,7 @@ moduleResolution: bundler를 사용했다면 [반드시 module: esnext를 함께
 
 현재 프로젝트는 ESM이기 때문에 CJS 모듈 시스템을 사용하는 외부 라이브러리를 불러올 경우 문제가 발생할 수도 있다.
 
-따라서 esModuleInterop을 true로 설정해서 생길수도 있는 문제를 피할 수 있다.
+따라서 `esModuleInterop`을 true로 설정해서 생길수도 있는 문제를 피할 수 있다.
 
 ## babel.config.js
 
@@ -128,7 +138,7 @@ moduleResolution: bundler를 사용했다면 [반드시 module: esnext를 함께
 
 보통은 플러그인이 되게 많기 때문에 여러 플러그인이 합쳐진 프리셋을 사용한다.
 
-<CodeSelector codes={['']} x='babel/preset-env' />
+<CodeSelector codes={['shell']} desc='babel/preset-env' />
 
 ```shell
 npm i -D @babel/core @babel/preset-env
@@ -136,9 +146,9 @@ npm i -D @babel/core @babel/preset-env
 
 babel.config.js를 아래와 같이 작성한다.
 
-<CodeSelector codes={['babel.config.json']} x='babel.config' />
+<CodeSelector codes={['babel.config.json']} desc='babel.config' />
 
-```js
+```js showLineNumbers
 {
   "presets": [
     [
@@ -158,7 +168,7 @@ babel.config.js를 아래와 같이 작성한다.
 
 rollup을 설치한다.
 
-<CodeSelector codes={['shell']} x='install rollup' />
+<CodeSelector codes={['shell']} desc='install rollup' />
 
 ```shell
 npm install rollup --save-dev
@@ -166,11 +176,9 @@ npm install rollup --save-dev
 
 rollup.config.js 파일을 생성한다.
 
-아주 기본적인 설정 방법은 아래와 같다.
+<CodeSelector codes={['rollup.config.js(기본)', 'rollup.config.js(상세)']} desc='rollupconfigjs' />
 
-<CodeSelector codes={['rollup.config.js']} x='rollup.config.js' />
-
-```js
+```js showLineNumbers
 import pkg from './package.json' assert { type: 'json' }
 
 const external = Object.keys(pkg.dependencies)
@@ -188,15 +196,7 @@ export default {
 }
 ```
 
-- input에는 번들링할 코드의 진입점을 지정한다.
-- output.file에는 번들링 된 파일의 이름을 지정한다.
-- output.format에는 번들링된 파일이 사용할 모듈 시스템을 지정한다.
-- external에는 현재 사용하고 있는 외부 모듈(dependencies)을 명시해준다. 여기에 쓰여진 외부 모듈은 번들링된 코드에 직접 포함되지 않고 import 된다.
-- plugins에는 사용할 플러그인을 지정한다.
-
-ESM과 CJS 코드 모두 빌드하는 것이 목표이므로 위 코드를 기반으로 작성해본다.
-
-```js
+```js showLineNumbers
 import path from 'path';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
@@ -240,6 +240,14 @@ function buildJS(input) {
 export default [buildJS('index.ts')];
 ```
 
+- input에는 번들링할 코드의 진입점을 지정한다.
+- output.file에는 번들링 된 파일의 이름을 지정한다.
+- output.format에는 번들링된 파일이 사용할 모듈 시스템을 지정한다.
+- external에는 현재 사용하고 있는 외부 모듈(dependencies)을 명시해준다. 여기에 쓰여진 외부 모듈은 번들링된 코드에 직접 포함되지 않고 import 된다.
+- plugins에는 사용할 플러그인을 지정한다.
+
+ESM과 CJS 코드 모두 빌드하는 것이 목표이므로 상세 코드를 기반으로 작성해본다.
+
 아래부터는 이 프로젝트에서 사용할 플러그인들을 설명할 것이다.
 
 ### @rollup/plugin-typescript
@@ -247,6 +255,8 @@ export default [buildJS('index.ts')];
 Rollup과 Typescript 간의 원활한 통합을 위한 Rollup 플러그인이다.
 
 tsconfig.json에 적혀있는 옵션들을 사용해서 번들링을 하게 된다.
+
+<CodeSelector codes={['shell']} desc='plugintypescript' />
 
 ```shell
 npm i -D @rollup/plugin-typescript tslib
@@ -257,6 +267,8 @@ npm i -D @rollup/plugin-typescript tslib
 ### @rollup/plugin-babel
 
 rollup과 babel을 같이 진행하도록 해주는 플러그인이다.
+
+<CodeSelector codes={['shell']} desc='pluginbabel' />
 
 ```shell
 npm install @rollup/plugin-babel --save-dev
@@ -270,6 +282,8 @@ node_modules에서 외부 모듈을 사용하기 위해 Node resolution algorith
 
 tsconfig.json의 nodeResolution에 해당하는 부분이다.
 
+<CodeSelector codes={['shell']} desc='pluginnoderesolve' />
+
 ```shell
 npm install @rollup/plugin-node-resolve --save-dev
 ```
@@ -282,6 +296,8 @@ CJS 모듈을 ES6으로 변환하여 rollup 번들에 포함할 수 있는 롤�
 
 외부 모듈이 CJS인 경우 이 플러그인을 사용해야 번들에 포함시킬 수 있다.
 
+<CodeSelector codes={['shell']} desc='plugincommonjs' />
+
 ```shell
 npm install @rollup/plugin-commonjs --save-dev
 ```
@@ -292,15 +308,17 @@ npm install @rollup/plugin-commonjs --save-dev
 
 terser를 사용해 minification을 해주는 플러그인
 
+<CodeSelector codes={['shell']} desc='pluginterser' />
+
 ```shell
 npm i rollup-plugin-terser --save-dev
 ```
 
 - https://github.com/TrySound/rollup-plugin-terser
 
-## 추가 - declaration 파일에 대하여
+## declaration 파일에 대하여
 
-번들링을 하면서 가장 헷갈렸던 부분은 CJS와 ESM에 따라서 선언 파일도 달라지는가? 였다.
+번들링을 하면서 가장 헷갈렸던 부분은 CJS와 ESM에 따라서 타입스크립트 선언 파일도 달라지는가? 였다.
 
 타입스크립트 4.7 부터 tsc가 `.mts` 파일은 `.d.mts`를 출력하고, `.cts` 파일은 `.d.cts`를 출력한다.
 
