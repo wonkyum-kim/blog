@@ -23,8 +23,6 @@ interface TOCProps {
 export function TOC({ headings }: TOCProps) {
   const [selected, setSelected] = useState('')
 
-  console.log(headings)
-
   useTOCEffect(setSelected)
 
   if (headings.length === 0) return
