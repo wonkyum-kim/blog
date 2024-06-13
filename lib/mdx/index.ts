@@ -3,6 +3,7 @@ import path from 'path'
 import { compileMDX } from 'next-mdx-remote/rsc'
 import rehypePrism from 'rehype-prism-plus'
 import remarkGfm from 'remark-gfm'
+import { serialize } from 'next-mdx-remote/serialize'
 
 export interface Meta {
   title?: string
@@ -12,6 +13,12 @@ export interface Meta {
 }
 
 const rootDirectory = path.join(process.cwd(), 'contents')
+
+export async function getSource(slug: string) {
+  const filePath = path.join(rootDirectory, `${slug}.mdx`)
+  const fileContent = fs.readFileSync(filePath, { encoding: 'utf8' })
+  return serialize(fileContent)
+}
 
 export async function getPostBySlug(slug: string) {
   const realSlug = slug.replace(/\.mdx$/, '')

@@ -1,0 +1,56 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# Welcome
+
+## Welcome
+
+<CodeSelector codes={['App.tsx', 'Components.tsx', 'App.tsx']} x='sample' />
+
+```css showLineNumbers
+h1 {
+  background: red;
+}
+```
+
+```css {1-2} showLineNumbers
+html,
+body {
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+```
+
+```css showLineNumbers
+h1 {
+  background: red;
+}
+```
+
+진짜 완료!!!
+
+<CodeSelector codes={['b', 'c']} x='test' />
+
+```js {1-2} showLineNumbers
+import { useState } from 'react'
+const hi = 'foo'
+```
+
+```css {1-2} showLineNumbers
+html,
+body {
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+```
