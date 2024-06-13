@@ -9,7 +9,7 @@ interface CodeSelectorProps {
 }
 
 export function CodeSelector({ codes, x }: CodeSelectorProps) {
-  const [state, setState] = useState(0)
+  const [prev, setPrev] = useState(0)
   const siblings = useRef<NodeListOf<Element>>()
 
   const handleClick = (index: number) => {
@@ -17,13 +17,13 @@ export function CodeSelector({ codes, x }: CodeSelectorProps) {
       siblings.current = document.querySelectorAll(`nav[data-for=${x}] ~ *`)
     }
 
-    const prevElment = siblings.current[state] as HTMLPreElement
+    const prevElment = siblings.current[prev] as HTMLPreElement
     const currElement = siblings.current[index] as HTMLPreElement
 
     prevElment.style.display = 'none'
     currElement.style.display = 'block'
 
-    setState(index)
+    setPrev(index)
   }
 
   return (
@@ -33,7 +33,7 @@ export function CodeSelector({ codes, x }: CodeSelectorProps) {
           <div
             key={code}
             onClick={() => handleClick(i)}
-            className={[i === state ? styles['selected-bar'] : '', styles.bar].join(' ')}
+            className={[i === prev ? styles['selected-bar'] : '', styles.bar].join(' ')}
           >
             {code}
           </div>
