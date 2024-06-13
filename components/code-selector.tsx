@@ -17,6 +17,8 @@ export function CodeSelector({ codes, x }: CodeSelectorProps) {
       siblings.current = document.querySelectorAll(`nav[data-for=${x}] ~ *`)
     }
 
+    if (codes.length === 1) return
+
     const prevElment = siblings.current[prev] as HTMLPreElement
     const currElement = siblings.current[index] as HTMLPreElement
 

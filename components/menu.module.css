@@ -1,0 +1,36 @@
+@property --background-delay {
+  syntax: '<time>';
+  inherits: false;
+  initial-value: 0s;
+}
+
+@property --background-radius {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 30px;
+}
+
+@property --background-duration {
+  syntax: '<time>';
+  inherits: false;
+  initial-value: 500ms;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  padding: 20px;
+  background-color: rgba(173, 216, 230, 1);
+  clip-path: circle(var(--background-radius) at 40px 40px);
+  transition-duration: var(--background-duration);
+  transition-delay: var(--background-delay);
+}
+
+@media (width < 1500px) {
+  .background {
+    width: 100%;
+  }
+}
