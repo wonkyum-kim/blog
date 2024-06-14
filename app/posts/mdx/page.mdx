@@ -1,0 +1,69 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ToolTip } from '@/components/tooltip.tsx'
+
+## @next/mdx
+
+`MDX`는 markdown에 직접 JSX를 작성할 수 있도록 해준다.
+
+Next.js에서는 MDX를 렌더링 할 수 있도록 `@next/mdx` 패키지를 제공하고 있다.
+
+<CodeSelector names={['shell']} desc='nextmdx' />
+
+```shell
+npm install @next/mdx @mdx-js/loader @mdx-js/react @types/mdx
+```
+
+그리고 애플리케이션의 루트 경로에 `mdx-components.tsx`를 작성해주고 `next.config.mjs`를 업데이트 해준다.
+
+<CodeSelector names={['mdx-components.tsx', 'next.config.mjs']} desc='mdxsettings' />
+
+```tsx showLineNumbers
+import type { MDXComponents } from 'mdx/types'
+
+export function useMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...components,
+  }
+}
+```
+
+```js {10, 19, 20} showLineNumbers
+import remarkGfm from 'remark-gfm'
+import createMDX from '@next/mdx'
+import rehypePrism from 'rehype-prism-plus'
+import rehypeSlug from 'rehype-slug'
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
+  experimental: {
+    outputFileTracingIncludes: {
+      '/app/posts': ['./app/posts/**/*'],
+    },
+  },
+}
+
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [rehypePrism, rehypeSlug],
+  },
+})
+
+export default withMDX(nextConfig)
+```
+
+<ToolTip
+  name='mdxsettings'
+  codeIndex='1'
+  content={{
+    '10': 'outputFileTracingIncludes 옵션은 vercel에 배포 시 로컬 파일을 찾기 위해서 설정한다.',
+    '19': 'remark-gfm은 GitHub 스타일의 마크다운을 사용할 수 있도록 해주는 플러그인이다.',
+    '20': 'rehype-prism-plus은 코드 블럭 스타일링을 도와주고, rehype-slug은 헤더 태그에 id를 부여한다.',
+  }}
+/>
+
+## References
+
+- [Markdown and MDX](https://nextjs.org/docs/app/building-your-application/configuring/mdx)

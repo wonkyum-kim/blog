@@ -44,6 +44,7 @@ pre {
   border-radius: 0 0 10px 10px;
   margin-top: 0 !important;
   display: none;
+  padding-bottom: 24px !important;
 }
 
 nav + pre {
@@ -266,6 +267,22 @@ pre[class*='language-'] {
   margin-right: -16px;
   background-color: rgba(55, 65, 81, 0.5); /* Set highlight bg color */
   border-left: 4px solid rgb(59, 130, 246); /* Set highlight accent border color */
+  position: relative;
+  cursor: help;
+}
+
+/* 모바일은? */
+/* cursor-pointer 적용해야 하는데, */
+.highlight-line:hover::after {
+  content: attr(content);
+  position: absolute;
+  top: 24px;
+  z-index: 999;
+  background-color: #fff;
+  width: fit-content;
+  margin-left: 24px;
+  color: black;
+  padding: 0 8px;
 }
 
 .line-number::before {

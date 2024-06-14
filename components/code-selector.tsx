@@ -1,41 +1,51 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import styles from './code-selector.module.css'
 
 interface CodeSelectorProps {
-  codes: string[]
+  names: string[]
   desc: string
 }
 
-export function CodeSelector({ codes, desc }: CodeSelectorProps) {
-  const [prev, setPrev] = useState(0)
+export function CodeSelector({ names, desc }: CodeSelectorProps) {
+  const [curr, setCurr] = useState(0)
   const siblings = useRef<NodeListOf<Element>>()
 
-  const handleClick = (index: number) => {
+  const setNameAttribute = () => {
     if (!siblings.current) {
       siblings.current = document.querySelectorAll(`nav[data-for=${desc}] ~ *`)
     }
 
-    if (codes.length === 1) return
+    for (let i = 0; i < names.length; ++i) {
+      const pre = siblings.current[i]
+      const code = pre.firstChild as HTMLElement
+      code?.setAttribute('name', `${desc + i.toString()}`)
+    }
+  }
 
-    const prevElment = siblings.current[prev] as HTMLPreElement
+  useEffect(setNameAttribute, [desc, names])
+
+  const handleClick = (index: number) => {
+    if (names.length === 1 || !siblings.current) return
+
+    const prevElment = siblings.current[curr] as HTMLPreElement
     const currElement = siblings.current[index] as HTMLPreElement
 
     prevElment.style.display = 'none'
     currElement.style.display = 'block'
 
-    setPrev(index)
+    setCurr(index)
   }
 
   return (
     <nav className={styles.selector} data-for={desc}>
-      {codes.map((code, i) => {
+      {names.map((code, i) => {
         return (
           <div
             key={code}
             onClick={() => handleClick(i)}
-            className={[i === prev ? styles['selected-bar'] : '', styles.bar].join(' ')}
+            className={[i === curr ? styles['selected-bar'] : '', styles.bar].join(' ')}
           >
             {code}
           </div>
