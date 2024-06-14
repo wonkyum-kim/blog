@@ -14,7 +14,7 @@ body {
 
 body {
   padding-top: 25px;
-  word-break: keep-all;
+  word-break: break-all;
 }
 
 @media (width < 768px) {
