@@ -12,8 +12,24 @@ body {
   overflow-x: hidden;
 }
 
+body {
+  padding-top: 25px;
+  word-break: keep-all;
+}
+
+@media (width < 768px) {
+  body {
+    padding-top: 0px;
+  }
+}
+
 :root {
   --gray-50: rgb(249 250 251);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
 }
 
 .background-radish {

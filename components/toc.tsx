@@ -1,6 +1,5 @@
 'use client'
 
-import { useTOCEffect } from '@/hooks/useTOCEffect'
 /*
  * Test
  * heading에 따라서 padding-left가 잘 들어갔는지
@@ -10,6 +9,7 @@ import { useTOCEffect } from '@/hooks/useTOCEffect'
 import styles from './toc.module.css'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useTOCEffect } from '@/hooks/useTOCEffect'
 
 interface Heading {
   level: number
@@ -27,6 +27,19 @@ export function TOC({ headings }: TOCProps) {
 
   if (headings.length === 0) return
 
+  const handleClick = async (changed: string) => {
+    // @ts-expect-error
+    if (!document.startViewTransition) {
+      setSelected(changed)
+      return
+    }
+
+    // @ts-expect-error
+    await document.startViewTransition(() => {
+      setSelected(changed)
+    })
+  }
+
   return (
     <aside className={styles.toc}>
       {headings.map((item) => {
@@ -42,7 +55,7 @@ export function TOC({ headings }: TOCProps) {
           <Link
             href={`#${changed}`}
             key={heading}
-            onClick={() => setSelected(changed)}
+            onClick={() => handleClick(changed)}
             className={[
               level === 2 ? styles['second-level'] : styles['third-level'],
               selected === changed ? styles.selected : '',

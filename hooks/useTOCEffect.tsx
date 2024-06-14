@@ -14,7 +14,7 @@ export function useTOCEffect(setSelected: (value: SetStateAction<string>) => voi
       prevYposition = window.scrollY
     }
 
-    const options: IntersectionObserverInit = { rootMargin: '0px' }
+    const options: IntersectionObserverInit = { rootMargin: '-50px' }
     const callback: IntersectionObserverCallback = (entries) => {
       entries.forEach((entry) => {
         scrollDirection(prevYposition)

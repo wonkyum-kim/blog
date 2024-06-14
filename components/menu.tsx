@@ -1,41 +1,52 @@
 'use client'
 
-import { MouseEventHandler, useRef, useState } from 'react'
-import { Toggle } from './toggle'
 import styles from './menu.module.css'
-import { MenuList } from './menu-list'
+import { Toggle } from './toggle'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+const links = ['Home', 'Posts', 'GitHub', 'temp2']
+const urls = ['/', '/posts/rollup', '/posts/mdx', '/']
 
 export function Menu() {
-  const [isOpen, setIsOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
 
-  const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
-    // 원을 클릭한 위치
-    const x = event.clientX
-    const y = event.clientY
-
-    // 클릭한 위치부터 width와 height 중 먼 길이 + 200
-    let left = document.documentElement.clientWidth
-    if (left >= 1440) left = 300
-    const endRadius =
-      Math.hypot(Math.max(x, left - x), Math.max(y, document.documentElement.clientHeight - y)) +
-      200
-
-    setIsOpen((prev) => !prev)
-    document.body.style.overflow = isOpen ? '' : 'hidden'
-
-    const radius = isOpen ? '30px' : `${endRadius}px`
-    const transitionDelay = isOpen ? '1s' : '0s'
-
-    ref.current?.style.setProperty('--background-radius', radius)
-    ref.current?.style.setProperty('--background-delay', transitionDelay)
+  const handleOpen = () => {
+    setIsMenuOpen((prev) => !prev)
   }
 
+  const handleMove = (slug: string) => {
+    // @ts-expect-error
+    if (!document.startViewTransition) {
+      router.push(slug)
+      return
+    }
+    // @ts-expect-error
+    document.startViewTransition(() => {
+      router.push(slug)
+      router.refresh()
+    })
+  }
   return (
-    <nav>
-      <div className={styles['background']} ref={ref} />
-      <MenuList isOpen={isOpen} />
-      <Toggle onClick={handleClick} isOpen={isOpen} />
-    </nav>
+    <header className={styles.header}>
+      <Toggle isOpen={isMenuOpen} onClick={handleOpen} />
+      {links.map((link, i) => {
+        const delay = isMenuOpen ? `${i * 0.2 + 0.5}s` : `${(4 - i) * 0.2 + 0.5}s`
+        return (
+          <div
+            onClick={() => handleMove(urls[i])}
+            style={{ transitionDelay: delay }}
+            className={[
+              styles.link,
+              isMenuOpen ? styles['animate-in'] : styles['animate-out'],
+            ].join(' ')}
+            key={link}
+          >
+            {link}
+          </div>
+        )
+      })}
+    </header>
   )
 }

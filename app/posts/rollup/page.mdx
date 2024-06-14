@@ -31,7 +31,7 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 package.json에서 필요한 옵션은 아래와 같다.
 
-<CodeSelector codes={['package.json']} desc='package' />
+<CodeSelector names={['package.json']} desc='package' />
 
 ```json {2, 4, 6, 13} showLineNumbers
 {
@@ -61,7 +61,7 @@ tsc는 각 파일에 해당하는 `.d.ts` 파일들을 `dist` 디렉터리에 �
 
 exports 필드를 사용하면 같은 모듈 지정자를 사용해도 모듈 시스템에 맞는 자바스크립트 파일을 불러올 수 있다.
 
-<CodeSelector codes={['example.js']} desc='module-system-desc' />
+<CodeSelector names={['example.js']} desc='module-system-desc' />
 
 ```js showLineNumbers
 // ESM, ./index.js을 불러온다.
@@ -86,7 +86,7 @@ const { foo } = require('MyPackage')
 
 tsconfig.json에서 필요한 옵션은 아래와 같다.
 
-<CodeSelector codes={['tsconfig.json']} desc='tsconfig' />
+<CodeSelector names={['tsconfig.json']} desc='tsconfig' />
 
 ```json {3-6, 8} showLineNumbers
 {
@@ -115,7 +115,7 @@ moduleResolution을 bundler로 설정하는 이유는, tsc가 아니라 번들�
 
 bundler로 설정했을 때의 추가적으로 얻는 장점은 `느슨한 import`를 사용할 수 있다는 것이다.
 
-<CodeSelector codes={['exmaple.ts']} desc='bundler' />
+<CodeSelector names={['exmaple.ts']} desc='bundler' />
 
 ```ts
 // 상대 경로에 있는 파일들을 import 할 때, 파일의 확장자를 적지 않아도 된다.
@@ -138,7 +138,7 @@ moduleResolution: bundler를 사용했다면 [반드시 module: esnext를 함께
 
 보통은 플러그인이 되게 많기 때문에 여러 플러그인이 합쳐진 프리셋을 사용한다.
 
-<CodeSelector codes={['shell']} desc='babel/preset-env' />
+<CodeSelector names={['shell']} desc='babelpreset-env' />
 
 ```shell
 npm i -D @babel/core @babel/preset-env
@@ -146,7 +146,7 @@ npm i -D @babel/core @babel/preset-env
 
 babel.config.js를 아래와 같이 작성한다.
 
-<CodeSelector codes={['babel.config.json']} desc='babel.config' />
+<CodeSelector names={['babel.config.json']} desc='babelconfig' />
 
 ```js showLineNumbers
 {
@@ -168,7 +168,7 @@ babel.config.js를 아래와 같이 작성한다.
 
 rollup을 설치한다.
 
-<CodeSelector codes={['shell']} desc='install rollup' />
+<CodeSelector names={['shell']} desc='installrollup' />
 
 ```shell
 npm install rollup --save-dev
@@ -176,7 +176,7 @@ npm install rollup --save-dev
 
 rollup.config.js 파일을 생성한다.
 
-<CodeSelector codes={['rollup.config.js(기본)', 'rollup.config.js(상세)']} desc='rollupconfigjs' />
+<CodeSelector names={['rollup.config.js(기본)', 'rollup.config.js(상세)']} desc='rollupconfigjs' />
 
 ```js showLineNumbers
 import pkg from './package.json' assert { type: 'json' }
@@ -256,7 +256,7 @@ Rollup과 Typescript 간의 원활한 통합을 위한 Rollup 플러그인이다
 
 tsconfig.json에 적혀있는 옵션들을 사용해서 번들링을 하게 된다.
 
-<CodeSelector codes={['shell']} desc='plugintypescript' />
+<CodeSelector names={['shell']} desc='plugintypescript' />
 
 ```shell
 npm i -D @rollup/plugin-typescript tslib
@@ -268,7 +268,7 @@ npm i -D @rollup/plugin-typescript tslib
 
 rollup과 babel을 같이 진행하도록 해주는 플러그인이다.
 
-<CodeSelector codes={['shell']} desc='pluginbabel' />
+<CodeSelector names={['shell']} desc='pluginbabel' />
 
 ```shell
 npm install @rollup/plugin-babel --save-dev
@@ -282,7 +282,7 @@ node_modules에서 외부 모듈을 사용하기 위해 Node resolution algorith
 
 tsconfig.json의 nodeResolution에 해당하는 부분이다.
 
-<CodeSelector codes={['shell']} desc='pluginnoderesolve' />
+<CodeSelector names={['shell']} desc='pluginnoderesolve' />
 
 ```shell
 npm install @rollup/plugin-node-resolve --save-dev
@@ -296,7 +296,7 @@ CJS 모듈을 ES6으로 변환하여 rollup 번들에 포함할 수 있는 롤�
 
 외부 모듈이 CJS인 경우 이 플러그인을 사용해야 번들에 포함시킬 수 있다.
 
-<CodeSelector codes={['shell']} desc='plugincommonjs' />
+<CodeSelector names={['shell']} desc='plugincommonjs' />
 
 ```shell
 npm install @rollup/plugin-commonjs --save-dev
@@ -308,7 +308,7 @@ npm install @rollup/plugin-commonjs --save-dev
 
 terser를 사용해 minification을 해주는 플러그인
 
-<CodeSelector codes={['shell']} desc='pluginterser' />
+<CodeSelector names={['shell']} desc='pluginterser' />
 
 ```shell
 npm i rollup-plugin-terser --save-dev

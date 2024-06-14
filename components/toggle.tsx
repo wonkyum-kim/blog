@@ -3,13 +3,13 @@ import styles from './toggle.module.css'
 
 interface ToggleProps {
   isOpen: boolean
-  onClick: MouseEventHandler<HTMLButtonElement>
+  onClick: MouseEventHandler<HTMLDivElement>
 }
 
 export function Toggle({ onClick, isOpen }: ToggleProps) {
   return (
-    <button onClick={onClick} className={styles['toggle-button']}>
-      <svg width='23' height='23' viewBox='0 0 23 23'>
+    <div onClick={onClick} className={styles['toggle-button']}>
+      <svg width='23' height='23' viewBox='0 0 23 23' className={styles['toggle-svg']}>
         <path
           fill='transparent'
           strokeWidth='3'
@@ -33,6 +33,6 @@ export function Toggle({ onClick, isOpen }: ToggleProps) {
           d={!isOpen ? 'M 2 16.346 L 20 16.346' : 'M 3 2.5 L 17 16.346'}
         ></path>
       </svg>
-    </button>
+    </div>
   )
 }

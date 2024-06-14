@@ -2,18 +2,11 @@
   outline: none;
   border: none;
   cursor: pointer;
-  position: absolute;
-  top: 18px;
-  left: 15px;
   width: 50px;
   height: 50px;
   border-radius: 50%;
   background: transparent;
-}
-
-@media (hover: hover) {
-  .toggle-button:hover {
-    transform: scale(1.1);
-    transition-duration: 0.5s;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
