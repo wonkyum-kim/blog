@@ -14,7 +14,8 @@
   background-color: rgb(243 244 246);
   opacity: 0.9;
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  align-items: center;
   gap: 1rem;
   transition-duration: 1s;
   box-sizing: border-box;
@@ -52,4 +53,21 @@
 .link.animate-out {
   opacity: 0;
   transition-timing-function: ease-out;
+}
+
+.search-icon {
+  width: 30px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input {
+  width: 450px;
+  height: 25px;
+  background-color: transparent;
+  border: none;
+  border-bottom: solid #aaaaaa 1px;
+  outline: none;
 }

@@ -11,6 +11,7 @@ export default function Page() {
 
   const tag = searchParams.get('tag')
   const page = parseInt(searchParams.get('page') ?? '1')
+  const query = searchParams.get('query')
 
   let slugs = Object.keys(frontmatter) as unknown as (keyof typeof frontmatter)[]
 
@@ -19,6 +20,17 @@ export default function Page() {
       const { tags } = frontmatter[slug]
       return tags.includes(tag)
     })
+  }
+  if (query) {
+    const decoded = decodeURIComponent(query).toLowerCase()
+    slugs = slugs.filter((slug) => {
+      const { title } = frontmatter[slug]
+      return title.toLowerCase().includes(decoded)
+    })
+  }
+
+  if (slugs.length === 0) {
+    return <h1>검색 결과가 없습니다!</h1>
   }
 
   slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
