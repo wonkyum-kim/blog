@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 const links = ['Home', 'Posts', 'GitHub', 'temp2']
-const urls = ['/', '/posts/rollup', '/posts/mdx', '/']
+const urls = ['/', '/posts', '/posts/mdx', '/']
 
 export function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
