@@ -23,6 +23,8 @@ export default function Page() {
 
   slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
 
+  const lastPage = Math.floor(slugs.length / 5 + (slugs.length % 5) === 0 ? 0 : 1)
+
   const tryTransition = (url: string) => {
     // @ts-expect-error
     if (!document.startViewTransition) {
@@ -74,7 +76,7 @@ export default function Page() {
           </li>
         )
       })}
-      <Pagination page={page} lastPage={999} tag={tag} />
+      <Pagination page={page} lastPage={lastPage} tag={tag} />
     </ul>
   )
 }
