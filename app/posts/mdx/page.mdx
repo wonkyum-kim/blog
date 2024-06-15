@@ -1,5 +1,12 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 import { ToolTip } from '@/components/tooltip.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'mdx'} />
+
+<TOC headings={getHeadingsBySlug('mdx')} />
 
 ## @next/mdx
 
@@ -98,8 +105,6 @@ mdx에 frontmatter를 작성할 수 있고, 실제 화면에는 출력이 되지
 
 이 방법은 컴포넌트를 일일히 props로 넘겨줘야 하는 귀찮은 점이 존재한다.
 
-## layout.tsx
-
 `@next/mdx`에서 frontmatter를 사용하고 싶다면, 그냥 어딘가에 따로 작성하는 것이 가장 마음이 편하다.
 
 <CodeSelector names={['data/index.ts']} desc='frontmatter' />
@@ -115,54 +120,6 @@ export const frontmatter = {
     createdAt: '2024-06-14',
   },
 } as const
-```
-
-`layout.tsx`에서 현재 url을 확인하고, 각 컴포넌트에 slug를 건네주면, 컴포넌트는 slug에 해당하는 frontmatter를 찾을 수 있다.
-
-하지만 layout.tsx를 서버 컴포넌트로 작성할 것이기 때문에 현재 url을 확인하는 `usePathname` 훅을 사용할 수 없다.
-
-서버 컴포넌트에서 현재 url을 확인하려면 `middleware.ts`를 수정해야 한다.
-
-HTTP 응답 헤더에 현재 url을 넣어주는 방법이다.
-
-<CodeSelector names={['middleware.ts', 'app/posts/layout.tsx']} desc='middleware' />
-
-```ts showLineNumbers
-import { NextRequest, NextResponse } from 'next/server'
-
-export function middleware(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-pathname', request.nextUrl.pathname)
-
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  })
-}
-```
-
-```tsx showLineNumbers
-import { getHeadingsBySlug } from '@/lib/mdx'
-import styles from './layout.module.css'
-import { headers } from 'next/headers'
-import { TOC } from '@/components/toc'
-import { Title } from '@/components/title'
-
-export default function MdxLayout({ children }: { children: React.ReactNode }) {
-  // middleware 설정해서 서버 컴포넌트에서 현재 경로를 가져온다.
-  const pathname = (headers().get('x-pathname') || '').split('/')
-  const slug = pathname[pathname.length - 1]
-  const headings = getHeadingsBySlug(slug)
-
-  return (
-    <div className={styles.main}>
-      {slug !== 'posts' && <Title slug={slug} />}
-      {children}
-      <TOC headings={headings} />
-    </div>
-  )
-}
 ```
 
 이제 기본적인 준비는 다 끝났다.

@@ -1,5 +1,12 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 import { ToolTip } from '@/components/tooltip.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'rollup'} />
+
+<TOC headings={getHeadingsBySlug('rollup')} />
 
 ## 프로젝트 구성과 목표
 

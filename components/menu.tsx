@@ -25,7 +25,6 @@ export function Menu() {
     // @ts-expect-error
     document.startViewTransition(() => {
       router.push(slug)
-      router.refresh()
     })
   }
   return (
