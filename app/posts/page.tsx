@@ -2,34 +2,52 @@
 
 import { frontmatter } from '@/data'
 import styles from './page.module.css'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Pagination } from '@/components/pagination'
 
 export default function Page() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const slugs = Object.keys(frontmatter) as unknown as (keyof typeof frontmatter)[]
+  const tag = searchParams.get('tag')
+  const page = parseInt(searchParams.get('page') ?? '1')
 
-  const handleClick = (slug: string) => {
+  let slugs = Object.keys(frontmatter) as unknown as (keyof typeof frontmatter)[]
+
+  if (tag) {
+    slugs = slugs.filter((slug) => {
+      const { tags } = frontmatter[slug]
+      return tags.includes(tag)
+    })
+  }
+
+  slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
+
+  const tryTransition = (url: string) => {
     // @ts-expect-error
     if (!document.startViewTransition) {
-      router.push(slug)
+      router.push(url)
       return
     }
     // @ts-expect-error
     document.startViewTransition(() => {
-      router.push(slug)
+      router.push(url)
     })
   }
 
+  const handleClick = (slug: string) => {
+    tryTransition(slug)
+  }
+
   const handleTagClick = (tag: string) => {
-    // TODO
-    // 같은 tag만 보여준다.
+    tryTransition(`/posts?tag=${tag}`)
   }
 
   return (
     <ul className={styles.container}>
       {slugs.map((slug) => {
         const { createdAt, tags, title } = frontmatter[slug]
+
         return (
           <li className={styles.list} key={slug}>
             <time dateTime={createdAt} className={styles.date}>
@@ -56,6 +74,7 @@ export default function Page() {
           </li>
         )
       })}
+      <Pagination page={page} lastPage={999} tag={tag} />
     </ul>
   )
 }

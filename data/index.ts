@@ -9,4 +9,4 @@ export const frontmatter = {
     createdAt: '2024-05-06',
     tags: ['rollup'],
   },
-} as const
+}
