@@ -1,4 +1,5 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
+import { ToolTip } from '@/components/tooltip.tsx'
 
 ## 프로젝트 구성과 목표
 
@@ -50,10 +51,16 @@ package.json에서 필요한 옵션은 아래와 같다.
 }
 ```
 
-- 현재 프로젝트의 모듈 시스템을 ESM으로 설정하기 위해서 `"type": "module"`를 사용한다.
-- `"rm -rf dist/* && tsc && rollup -c"`를 통해, 이전 빌드 출력 결과물을 지우고, 번들링한다.
-- `"exports"` 필드를 사용하여 실제 file system 상의 위치와 다른 모듈 지정자(module specifier)를 사용할 수 있게 된다.
-- `"browserslist"`에 Babel에서 지원할 브라우저를 명시한다.
+<ToolTip
+  name='package'
+  codeIndex='0'
+  content={{
+    '2': '현재 프로젝트의 모듈 시스템은 ESM',
+    '4': '이전 빌드 출력 결과물을 지우고 컴파일, 번들링한다.',
+    '6': '실제 file system 상의 위치와 다른 모듈 지정자(module specifier)를 사용',
+    '13': 'Babel에서 지원할 브라우저를 명시',
+  }}
+/>
 
 tsc는 각 파일에 해당하는 `.d.ts` 파일들을 `dist` 디렉터리에 생성하고, rollup은 `dist/esm`과 `dist/cjs`에 각각의 자바스크립트 파일을 생성한다.
 
@@ -88,7 +95,7 @@ tsconfig.json에서 필요한 옵션은 아래와 같다.
 
 <CodeSelector names={['tsconfig.json']} desc='tsconfig' />
 
-```json {3-6, 8} showLineNumbers
+```json {3-4, 6, 8} showLineNumbers
 {
   "compilerOptions": {
     "module": "esnext",
@@ -102,16 +109,18 @@ tsconfig.json에서 필요한 옵션은 아래와 같다.
 }
 ```
 
-- module은 `esnext`를 사용한다.
-- moduleResolution은 `bundler`를 사용한다.
-- tsc는 선언 파일만 출력하도록 한다.
-- esModuleInterop는 ESM에서 CJS 모듈을 사용하는 라이브러리를 불러오는 문제를 해결해준다.
+<ToolTip
+  name='tsconfig'
+  codeIndex='0'
+  content={{
+    '3': '컴파일되어 나온 자바스크립트가 사용할 모듈 시스템을 지정하는 옵션',
+    '4': '타입스크립트가 모듈 지정자를 디스크에 있는 파일에서 찾아내는 알고리즘을 지정',
+    '6': 'tsc는 선언 파일만 출력하도록 한다.',
+    '8': 'ESM에서 CJS 모듈을 사용하는 라이브러리를 불러오는 문제를 해결',
+  }}
+/>
 
-`module`은 컴파일되어 나온 자바스크립트가 사용할 모듈 시스템을 지정하는 옵션이다.
-
-`moduleResolution`은 타입스크립트가 모듈 지정자를 디스크에 있는 파일에서 찾아내는 알고리즘을 지정하는 옵션이다.
-
-moduleResolution을 bundler로 설정하는 이유는, tsc가 아니라 번들러가 파일들을 찾기 때문이다.
+`moduleResolution`을 bundler로 설정하는 이유는, tsc가 아니라 번들러가 파일들을 찾기 때문이다.
 
 bundler로 설정했을 때의 추가적으로 얻는 장점은 `느슨한 import`를 사용할 수 있다는 것이다.
 
@@ -123,10 +132,6 @@ import { foo } from './foo'
 ```
 
 moduleResolution: bundler를 사용했다면 [반드시 module: esnext를 함께 사용해야 한다.](https://www.typescriptlang.org/docs/handbook/modules/reference.html#bundler)
-
-현재 프로젝트는 ESM이기 때문에 CJS 모듈 시스템을 사용하는 외부 라이브러리를 불러올 경우 문제가 발생할 수도 있다.
-
-따라서 `esModuleInterop`을 true로 설정해서 생길수도 있는 문제를 피할 수 있다.
 
 ## babel.config.js
 
@@ -176,27 +181,9 @@ npm install rollup --save-dev
 
 rollup.config.js 파일을 생성한다.
 
-<CodeSelector names={['rollup.config.js(기본)', 'rollup.config.js(상세)']} desc='rollupconfigjs' />
+<CodeSelector names={['rollup.config.js']} desc='rollupconfigjs' />
 
-```js showLineNumbers
-import pkg from './package.json' assert { type: 'json' }
-
-const external = Object.keys(pkg.dependencies)
-
-export default {
-  input: 'src/main.js',
-  output: {
-    file: 'bundle.js',
-    format: 'cjs',
-  },
-  external,
-  plugins: [
-    /* ... */
-  ],
-}
-```
-
-```js showLineNumbers
+```js {17, 20-21, 28-29} showLineNumbers
 import path from 'path';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
@@ -240,11 +227,17 @@ function buildJS(input) {
 export default [buildJS('index.ts')];
 ```
 
-- input에는 번들링할 코드의 진입점을 지정한다.
-- output.file에는 번들링 된 파일의 이름을 지정한다.
-- output.format에는 번들링된 파일이 사용할 모듈 시스템을 지정한다.
-- external에는 현재 사용하고 있는 외부 모듈(dependencies)을 명시해준다. 여기에 쓰여진 외부 모듈은 번들링된 코드에 직접 포함되지 않고 import 된다.
-- plugins에는 사용할 플러그인을 지정한다.
+<ToolTip
+  name='rollupconfigjs'
+  codeIndex='0'
+  content={{
+    '17': '번들링할 코드의 진입점',
+    '20': '번들링 된 파일의 이름',
+    '21': '번들링된 파일이 사용할 모듈 시스템',
+    '28': '현재 사용하고 있는 외부 모듈(dependencies).\n  여기에 쓰여진 외부 모듈은 번들링된 코드에 직접 포함되지 않고 import 된다',
+    '29': '사용할 플러그인',
+  }}
+/>
 
 ESM과 CJS 코드 모두 빌드하는 것이 목표이므로 상세 코드를 기반으로 작성해본다.
 

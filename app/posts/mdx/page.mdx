@@ -60,9 +60,114 @@ export default withMDX(nextConfig)
   content={{
     '10': 'outputFileTracingIncludes 옵션은 vercel에 배포 시 로컬 파일을 찾기 위해서 설정한다.',
     '19': 'remark-gfm은 GitHub 스타일의 마크다운을 사용할 수 있도록 해주는 플러그인이다.',
-    '20': 'rehype-prism-plus은 코드 블럭 스타일링을 도와주고, rehype-slug은 헤더 태그에 id를 부여한다.',
+    '20': 'rehype-prism-plus은 코드 블럭 스타일링을 도와주고,\n  rehype-slug은 헤더 태그에 id를 부여한다.',
   }}
 />
+
+## page.mdx
+
+mdx 파일의 이름은 반드시 `page.mdx`이어야 하며, Next.js에서 route를 정의하는 방식대로 배치하면 된다.
+
+`/posts/hello`에 접속하면 아래 파일이 보여진다.
+
+<CodeSelector names={['app/posts/hello/page.mdx']} desc='hello' />
+
+```md showLineNumbers
+import { MyComponent } from '...'
+
+## Hello
+
+world!
+
+<MyComponent />
+```
+
+mdx에서는 직접 작성한 컴포넌트도 불러올 수 있다.
+
+## Frontmatter
+
+`@next/mdx`의 단점은 frontmatter를 사용할 수 없다는 것이다.
+
+frontmatter를 사용하기 위해서 `remark-frontamtter`, `remark-mdx-frontmatter`, `gray-matter` 와 같은 플러그인들을 설치해 볼 수 있지만
+
+이 경우 `page.mdx`에 frontmatter를 작성하면 실제 화면에 frontmatter가 같이 보여지는 참사가 일어난다.
+
+또 다른 방법으로는 `next-mdx-remote`를 사용해볼 수 있다.
+
+mdx에 frontmatter를 작성할 수 있고, 실제 화면에는 출력이 되지 않았지만 직접 작성한 컴포넌트를 mdx에 넣으려면 해당 컴포넌트를 `<MDXRemote />`의 props로 넘겨주어야 한다.
+
+이 방법은 컴포넌트를 일일히 props로 넘겨줘야 하는 귀찮은 점이 존재한다.
+
+## layout.tsx
+
+`@next/mdx`에서 frontmatter를 사용하고 싶다면, 그냥 어딘가에 따로 작성하는 것이 가장 마음이 편하다.
+
+<CodeSelector names={['data/index.ts']} desc='frontmatter' />
+
+```ts showLineNumbers
+export const frontmatter = {
+  slug1: {
+    title: 'title1',
+    createdAt: '2024-05-06',
+  },
+  slug2: {
+    title: 'title2',
+    createdAt: '2024-06-14',
+  },
+} as const
+```
+
+`layout.tsx`에서 현재 url을 확인하고, 각 컴포넌트에 slug를 건네주면, 컴포넌트는 slug에 해당하는 frontmatter를 찾을 수 있다.
+
+하지만 layout.tsx를 서버 컴포넌트로 작성할 것이기 때문에 현재 url을 확인하는 `usePathname` 훅을 사용할 수 없다.
+
+서버 컴포넌트에서 현재 url을 확인하려면 `middleware.ts`를 수정해야 한다.
+
+HTTP 응답 헤더에 현재 url을 넣어주는 방법이다.
+
+<CodeSelector names={['middleware.ts', 'app/posts/layout.tsx']} desc='middleware' />
+
+```ts showLineNumbers
+import { NextRequest, NextResponse } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
+}
+```
+
+```tsx showLineNumbers
+import { getHeadingsBySlug } from '@/lib/mdx'
+import styles from './layout.module.css'
+import { headers } from 'next/headers'
+import { TOC } from '@/components/toc'
+import { Title } from '@/components/title'
+
+export default function MdxLayout({ children }: { children: React.ReactNode }) {
+  // middleware 설정해서 서버 컴포넌트에서 현재 경로를 가져온다.
+  const pathname = (headers().get('x-pathname') || '').split('/')
+  const slug = pathname[pathname.length - 1]
+  const headings = getHeadingsBySlug(slug)
+
+  return (
+    <div className={styles.main}>
+      {slug !== 'posts' && <Title slug={slug} />}
+      {children}
+      <TOC headings={headings} />
+    </div>
+  )
+}
+```
+
+이제 기본적인 준비는 다 끝났다.
+
+추가적으로 기호에 맞게 TOC와 rehype, remark 플러그인, 툴팁과 같은 것들을 추가해주면 멋진 블로그를 만들 수 있다.
 
 ## References
 
