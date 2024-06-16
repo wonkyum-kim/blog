@@ -1,0 +1,140 @@
+import { InfiniteScroll } from '@/components/css-only/infinite-scroll'
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'css-infinite-scroll'} />
+
+<TOC headings={getHeadingsBySlug('css-infinite-scroll')} />
+
+<InfiniteScroll />
+
+## codes
+
+많은 웹 사이트들에서 회사 로고들이 무한히 스크롤 되는 것을 본 적이 있다.
+
+이것을 CSS로 구현해보고 싶어서 찾아보았다.
+
+<CodeSelector names={['infinite-scroll.tsx', 'infinte-scroll.module.css']} desc='infinite-scroll' />
+
+```tsx showLineNumbers
+import styles from './infinite-scroll.module.css'
+
+export function InfiniteScroll() {
+  const colors = [
+    '#F1C40F',
+    '#FF5733',
+    '#DAF7A6',
+    '#900C3F',
+    '#C70039',
+    '#581845',
+    '#28B463',
+    '#1F618D',
+  ]
+  return (
+    <>
+      <div className={styles.wrapper}>
+        {colors.map((color, i) => {
+          return (
+            <div
+              key={i}
+              // @ts-expect-error
+              style={{ '--n': `${i + 1}`, backgroundColor: `${color}` }}
+              className={styles.scrollLeft}
+            ></div>
+          )
+        })}
+        {colors.map((color, i) => {
+          return (
+            <div
+              key={-i}
+              // @ts-expect-error
+              style={{ '--n': `${i + 1}`, backgroundColor: `${color}` }}
+              className={styles.scrollRight}
+            ></div>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+```
+
+```css {38, 52, 7, 5} showLineNumbers
+.wrapper {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 50px;
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0)
+  );
+}
+
+@keyframes scrollLeft {
+  to {
+    left: -200px;
+  }
+}
+
+@keyframes scrollRight {
+  to {
+    right: -200px;
+  }
+}
+
+.scrollLeft {
+  width: 200px;
+  height: 100px;
+  border-radius: 6px;
+  position: absolute;
+  left: max(calc(200px * 8), 100%);
+  animation-name: scrollLeft;
+  animation-duration: 30s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-delay: calc(30s / 8 * (8 - var(--n)) * -1);
+}
+
+.scrollRight {
+  width: 200px;
+  height: 100px;
+  border-radius: 6px;
+  position: absolute;
+  right: max(calc(200px * 8), 100%);
+  top: 120px;
+  animation-name: scrollRight;
+  animation-duration: 30s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-delay: calc(30s / 8 * (8 - var(--n)) * -1);
+}
+```
+
+## animation-delay
+
+무한 스크롤의 핵심은 `animation-delay`를 설정하는 부분이다.
+
+공식은 `duration * delay * -1` 이다.
+
+duration은 animation-duration을 전체 아이템의 개수로 나눠준 것이고
+
+delay는 전체 아이템의 개수에서 아이템의 인덱스를 빼주는 것이다.
+
+여기에 -1을 곱하여 음수로 설정하게 되면 애니메이션의 시작 위치가 `duration * delay`초 만큼 진행된 곳으로 설정된다.
+
+## mask-image
+
+`clip-path`는 엘리먼트를 잘라내는 역할을 하지만, `mask-image`는 이미지 또는 그라데이션을 엘리먼트와 겹치게 해준다.
+
+`overflow: hidden`과 함께 적용하여 양 옆으로 가면 사라지게 보이도록 설정하였다.
+
+## References
+
+- [You Don't Need JavaScript For This - CSS ONLY Infinite Scroll](https://www.youtube.com/watch?v=Reu0hHbis5w)

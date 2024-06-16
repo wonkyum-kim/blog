@@ -1,4 +1,9 @@
 export const frontmatter = {
+  ['css-infinite-scroll']: {
+    title: 'CSS로 Infinite Scroll 만들기',
+    createdAt: '2024-06-16',
+    tags: ['css'],
+  },
   mdx: {
     title: 'Next.js에서 mdx로 블로그 만들기',
     createdAt: '2024-06-14',
