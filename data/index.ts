@@ -14,4 +14,9 @@ export const frontmatter = {
     createdAt: '2024-05-06',
     tags: ['rollup'],
   },
+  ['enter-URL']: {
+    title: '웹 브라우저에 URL을 입력하면 일어나는 일',
+    createdAt: '2024-03-05',
+    tags: ['web'],
+  },
 }
