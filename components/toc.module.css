@@ -1,6 +1,7 @@
 .toc {
   position: fixed;
-  left: calc(50% + 600px);
+  /* left: calc(50% + 600px); */
+  max-width: calc((100% - 900px) / 2 - 100px);
   top: 100px;
   display: flex;
   flex-direction: column;
@@ -11,6 +12,19 @@
 @media (width < 1440px) {
   .toc {
     display: none;
+  }
+}
+
+@media (width >= 1440px) and (width < 2000px) {
+  .toc {
+    left: calc((100% - 900px) / 2 + 1000px);
+    font-size: small;
+  }
+}
+
+@media (width >= 2000px) {
+  .toc {
+    left: calc((100% - 900px) / 2 + 1200px);
   }
 }
 
