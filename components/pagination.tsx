@@ -10,8 +10,6 @@ interface PaginationProps {
   tag: string | null
 }
 
-// TODO ? viewTransitions 적용하기 ?
-
 export function Pagination({ page, lastPage, tag }: PaginationProps) {
   const leftPage = Math.floor((page - 1) / 5) * 5 + 1
   const rightPage = Math.min(leftPage + 4, lastPage)
@@ -26,8 +24,16 @@ export function Pagination({ page, lastPage, tag }: PaginationProps) {
   }
 
   const handleClick = (page: number) => {
-    setSelectedPage(page)
-    router.push(`/posts?page=${selectedPage}&tag=${tag ?? ''}`)
+    // @ts-expect-error
+    if (!document.startViewTransition) {
+      setSelectedPage(page)
+      router.push(`/posts?page=${page}&tag=${tag ?? ''}`)
+    }
+    // @ts-expect-error
+    document.startViewTransition(() => {
+      setSelectedPage(page)
+      router.push(`/posts?page=${page}&tag=${tag ?? ''}`)
+    })
   }
 
   const handlePreviousClick = () => {

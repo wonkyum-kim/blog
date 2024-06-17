@@ -33,9 +33,9 @@ export default function Page() {
     return <h1>검색 결과가 없습니다!</h1>
   }
 
-  slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
+  const lastPage = Math.floor(slugs.length / 5 + (slugs.length % 5 === 0 ? 0 : 1))
 
-  const lastPage = Math.floor(slugs.length / 5 + (slugs.length % 5) === 0 ? 0 : 1)
+  slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
 
   const tryTransition = (url: string) => {
     // @ts-expect-error
