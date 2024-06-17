@@ -1,4 +1,9 @@
 export const frontmatter = {
+  ['css-libraries']: {
+    title: 'CSS 라이브러리 종류 살펴보기',
+    createdAt: '2024-06-17',
+    tags: ['css'],
+  },
   ['css-infinite-scroll']: {
     title: 'CSS로 Infinite Scroll 만들기',
     createdAt: '2024-06-16',
