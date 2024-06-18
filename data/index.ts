@@ -1,4 +1,9 @@
 export const frontmatter = {
+  draggable: {
+    title: 'Draggable 컴포넌트 만들기',
+    createdAt: '2024-06-18',
+    tags: ['js', 'react'],
+  },
   ['css-libraries']: {
     title: 'CSS 라이브러리 종류 살펴보기',
     createdAt: '2024-06-17',
