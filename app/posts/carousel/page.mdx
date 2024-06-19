@@ -1,0 +1,269 @@
+import { Carousel } from '@/components/carousel/carousel.tsx'
+import { InfiniteCarousel } from '@/components/carousel/infinite-carousel.tsx'
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'carousel'} />
+
+<TOC headings={getHeadingsBySlug('carousel')} />
+
+<Carousel />
+
+## Carousel 컴포넌트
+
+`Carousel` 컴포넌트는 이전에 만들었던 `Draggable` 컴포넌트와 크게 다르지 않다.
+
+이번에는 x축 방향으로만 움직이게 한다.
+
+<CodeSelector names={['carousel.tsx', 'carousel.module.css']} desc='carousel' />
+
+```tsx {44, 52} showLineNumbers
+'use client'
+
+import { PointerEventHandler, useRef } from 'react'
+import styles from './carousel.module.css'
+
+const colors = [
+  // ...
+]
+
+export function Carousel() {
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const prevTranslate = useRef(0)
+
+  const pointerDownHandler: PointerEventHandler<HTMLDivElement> = (event) => {
+    const initX = event.clientX
+    let deltaX = 0
+
+    const pointerMoveHandler = (event: PointerEvent) => {
+      if (!carouselRef.current) return
+
+      // 이동한 거리
+      deltaX = event.clientX - initX
+
+      carouselRef.current.style.setProperty(
+        'transform',
+        `translateX(${prevTranslate.current + deltaX}px) translateZ(0px)`
+      )
+    }
+
+    const pointerUpHandler = () => {
+      if (!carouselRef.current) return
+
+      const prev = prevTranslate.current
+      const curr = prev + deltaX
+
+      const itemWidth = 200
+      const itemCount = colors.length
+
+      // 현재 보여지는 아이템의 인덱스
+      const index = Math.floor(Math.abs(curr) / itemWidth)
+      // 현재 보여지는 아이템이 얼마나 넘어갔는지 나타냄
+      const progress = Math.abs(curr) - index * itemWidth
+
+      // 다음 아이템으로 이동할 때
+      if (prev > curr) {
+        // item 너비의 절반이 넘어갔는지 판단
+        prevTranslate.current = -1 * itemWidth * (index + (progress > itemWidth / 2 ? 1 : 0))
+        // 마지막 item을 넘어갈 수는 없다.
+        prevTranslate.current = Math.max(prevTranslate.current, itemWidth * -(itemCount - 1))
+      }
+
+      // 이전 아이템으로 이동할 때
+      if (prev < curr) {
+        // item 너비의 절반이 넘어갔는지 판단
+        prevTranslate.current = -1 * itemWidth * (index + (progress < itemWidth / 2 ? 0 : 1))
+        // 첫 번째 item을 넘어갈 수는 없다.
+        if (curr > 0) prevTranslate.current = 0
+      }
+
+      carouselRef.current.style.setProperty(
+        'transform',
+        `translateX(${prevTranslate.current}px) translateZ(${0}px)`
+      )
+
+      document.removeEventListener('pointermove', pointerMoveHandler)
+    }
+
+    document.addEventListener('pointermove', pointerMoveHandler, { passive: true })
+    document.addEventListener('pointerup', pointerUpHandler, { once: true })
+  }
+  return (
+    <div className={styles.container}>
+      <div ref={carouselRef} className={styles.carousel} onPointerDown={pointerDownHandler}>
+        {colors.map((color) => {
+          return <div key={color} style={{ backgroundColor: `${color}` }} className={styles.item} />
+        })}
+      </div>
+    </div>
+  )
+}
+```
+
+```css showLineNumbers
+.container {
+  clip-path: rect(0px 200px 200px 0px);
+}
+
+.carousel {
+  display: flex;
+  background-color: white;
+  transition-duration: 0.1s;
+  user-select: none;
+  touch-action: none;
+}
+
+.item {
+  min-width: 200px;
+  height: 200px;
+  cursor: grab;
+}
+```
+
+`pointerMoveHandler`에서는 커서가 움직인 만큼 이동시키고, `poitnerUpHandler`에서는 아이템이 얼만큼 이동했는지에 따라서 translate를 조정한다.
+
+- 다음 아이템으로 넘어갈 때 다음 아이템이 절반 넘게 보인 채로 멈췄다면, 다음 아이템으로 이동시킨다.
+- 이전 아이템으로 넘어갈 때 이전 아이템이 절반 넘게 보인 채로 멈췄다면, 이전 아이템으로 이동시킨다.
+- 다음 또는 이전 아이템으로 넘어갈 때 현재 아이템이 절반 넘게 보인다면, 현재 아이템으로 이동시킨다.
+- 처음과 마지막 아이템을 넘어서 이동할 수는 없다.
+
+## Infinite Carousel 컴포넌트
+
+<InfiniteCarousel />
+
+`Infinite Carousel`은 마지막 아이템을 넘기면 처음 아이템으로 넘어가는 구조다.
+
+이를 구현하기 위해서는 `colors` 배열을 `[first, ..., last]`에서 `[last, first, ..., last, first]`로 변경한다.
+
+즉, 배열의 앞, 뒤에 각각 last와 first를 삽입한 것이다.
+
+그리고 `poitnerUpHandler`에서 first 또는 last에 도달한 상태라면 transition을 끈 상태로 이동시켜주면 된다.
+
+<CodeSelector names={['carousel.tsx', 'carousel.module.css']} desc='carouselinf' />
+
+```tsx {13, 28, 55, 62} showLineNumbers
+'use client'
+
+import { PointerEventHandler, useRef } from 'react'
+import styles from './carousel.module.css'
+
+// 앞, 뒤에 각각 last와 first를 삽입
+const colors = [
+  // ...
+]
+
+export function InfiniteCarousel() {
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const prevTranslate = useRef(-200)
+
+  const pointerDownHandler: PointerEventHandler<HTMLDivElement> = (event) => {
+    const initX = event.clientX
+    let deltaX = 0
+
+    const itemWidth = 200
+    const itemCount = colors.length
+
+    const pointerMoveHandler = (event: PointerEvent) => {
+      if (!carouselRef.current) return
+
+      deltaX = event.clientX - initX
+
+      const tx = prevTranslate.current + deltaX
+      carouselRef.current.style.setProperty('transition-duration', '0.1s')
+
+      carouselRef.current.style.setProperty('transform', `translateX(${tx}px) translateZ(0px)`)
+    }
+
+    const pointerUpHandler = () => {
+      if (!carouselRef.current) return
+
+      const prev = prevTranslate.current
+      const curr = prev + deltaX
+
+      const index = Math.floor(Math.abs(curr) / itemWidth)
+      const progress = Math.abs(curr) - index * itemWidth
+
+      if (prev > curr) {
+        prevTranslate.current = -1 * itemWidth * (index + (progress > itemWidth / 2 ? 1 : 0))
+      }
+
+      if (prev < curr) {
+        prevTranslate.current = -1 * itemWidth * (index + (progress < itemWidth / 2 ? 0 : 1))
+      }
+
+      carouselRef.current.style.setProperty(
+        'transform',
+        `translateX(${prevTranslate.current}px) translateZ(0px)`
+      )
+
+      // first 아이템(뒤에서 1번째)에 놓여진 경우, first 아이템(앞에서 2번째 아이템)으로 이동한다.
+      if (prevTranslate.current < -itemWidth * (itemCount - 2)) {
+        carouselRef.current.style.setProperty('transition-duration', '0s')
+        carouselRef.current.style.setProperty('transform', `translateX(-200px) translateZ(0px)`)
+        prevTranslate.current = -200
+      }
+
+      // last 아이템(앞에서 1번째 아이템)에 놓여진 경우, last 아이템(뒤에서 2번째 아이템으로 이동한다.)
+      if (prevTranslate.current > -200) {
+        carouselRef.current.style.setProperty('transition-duration', '0s')
+        carouselRef.current.style.setProperty(
+          'transform',
+          `translateX(${-itemWidth * (itemCount - 2)}px) translateZ(0px)`
+        )
+        prevTranslate.current = -itemWidth * (itemCount - 2)
+      }
+
+      document.removeEventListener('pointermove', pointerMoveHandler)
+    }
+
+    document.addEventListener('pointermove', pointerMoveHandler, { passive: true })
+    document.addEventListener('pointerup', pointerUpHandler, { once: true })
+  }
+  return (
+    <div className={styles.container}>
+      <div
+        ref={carouselRef}
+        className={styles['infinite-carousel']}
+        onPointerDown={pointerDownHandler}
+      >
+        {colors.map((color, i) => {
+          return (
+            <div key={color + i} style={{ backgroundColor: `${color}` }} className={styles.item} />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+```
+
+```css showLineNumbers
+.main {
+  margin-top: 100px;
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+
+.container {
+  clip-path: rect(0px 200px 200px 0px);
+  position: absolute;
+  left: calc(50% - 100px);
+}
+
+.infinite-carousel {
+  display: flex;
+  background-color: white;
+  user-select: none;
+  touch-action: none;
+  transform: translateX(-200px);
+}
+
+.item {
+  min-width: 200px;
+  height: 200px;
+  cursor: grab;
+}
+```

@@ -1,4 +1,9 @@
 export const frontmatter = {
+  carousel: {
+    title: 'Carousel 컴포넌트 만들기',
+    createdAt: '2024-06-18',
+    tags: ['js', 'react'],
+  },
   draggable: {
     title: 'Draggable 컴포넌트 만들기',
     createdAt: '2024-06-18',

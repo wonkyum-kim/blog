@@ -1,0 +1,34 @@
+.main {
+  margin-top: 100px;
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+
+.container {
+  clip-path: rect(0px 200px 200px 0px);
+  position: absolute;
+  left: calc(50% - 100px);
+}
+
+.carousel {
+  display: flex;
+  background-color: white;
+  transition-duration: 0.1s;
+  user-select: none;
+  touch-action: none;
+}
+
+.infinite-carousel {
+  display: flex;
+  background-color: white;
+  user-select: none;
+  touch-action: none;
+  transform: translateX(-200px);
+}
+
+.item {
+  min-width: 200px;
+  height: 200px;
+  cursor: grab;
+}
