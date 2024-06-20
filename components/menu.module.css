@@ -23,9 +23,18 @@
   padding-right: 1.5rem;
 }
 
-@media (width < 768px) {
+@media (width < 425px) {
   .header {
-    display: none;
+    width: 95%;
+  }
+  .link {
+    font-size: 0.6rem;
+  }
+}
+
+@media (width >= 425px) and (width < 768px) {
+  .header {
+    width: 400px;
   }
 }
 
