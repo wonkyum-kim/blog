@@ -1,0 +1,66 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## intrinsic과 extrinsic의 차이
+
+`intrinsic`은 엘리먼트의 크기를 엘리먼트 내부의 컨텐츠를 기준으로 정하는 방식이고,
+
+`extrinsic`은 엘리먼트의 크기를 엘리먼트가 속한 context를 기준으로 정하는 방식이다.
+
+## extrinsic
+
+일반적인 css 코드를 작성하는 방식이다.
+
+<CodeSelector names={['extrinsic']} desc='extrinsic' />
+
+```css
+.box {
+  width: 100px;
+  height: 100px;
+}
+```
+
+이 경우, 내부 컨텐츠에 따라서 overflow가 발생할 수 있다.
+
+## intrinsic
+
+`min-content`, `max-content`, `fit-content`를 사용하는 방식이다.
+
+### min-content
+
+컨텐츠가 텍스트라면, 모든 단어마다 wrap이 발생하고 가장 긴 단어의 길이를 기준으로 width가 정해진다.
+
+<CodeSelector names={['min-content']} desc='min-content' />
+
+```css
+.box {
+  width: min-content;
+}
+```
+
+### max-content
+
+컨텐츠가 텍스트라면, overflow가 발생해도 텍스트 길이 만큼의 width를 가지게 된다. 즉, wrap이 일어나지 않는다.
+
+<CodeSelector names={['max-content']} desc='max-content' />
+
+```css
+.box {
+  width: max-content;
+}
+```
+
+auto와는 다르다. auto는 부모 요소로 받은 만큼 전부를 다 쓰지만, max-content는 딱 텍스트의 길이만큼만을 가지게 된다.
+
+### fit-content
+
+auto와 max-content를 섞어둔 것과 같다.
+
+wrap이 발생하지 않으면 max-content가 적용되지만, warp이 발생하면 auto가 적용된다.
+
+<CodeSelector names={['fit-content']} desc='fit-content' />
+
+```css
+.box {
+  width: fit-content;
+}
+```

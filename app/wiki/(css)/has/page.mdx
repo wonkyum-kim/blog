@@ -1,0 +1,23 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :has()
+
+sibling, children에 따라서 스타일링 할 수 있게 해주는 psuedo-class
+
+<CodeSelector names={['html', 'css']} desc='has' />
+
+```html
+<!-- h1은 h2가 sibling이기 때문에 스타일이 적용된다. -->
+<h1>Lorem, ipsum dolor.</h1>
+<h2>Lorem ipsum dolor sit amet.</h2>
+<p>
+  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eius, odio voluptatibus est vero iste
+  ad?
+</p>
+```
+
+```css
+h1:has(+ h2) {
+  color: blue;
+}
+```

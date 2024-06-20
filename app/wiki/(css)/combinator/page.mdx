@@ -1,0 +1,68 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## ✅ multiple combinator
+
+<CodeSelector names={['multiple combinator']} desc='multiple' />
+
+```css
+/* .foo 와 .bar을 모두 가지고 있는 모든 엘리먼트를 선택한다. */
+.foo.bar {
+  background-color: royalblue;
+}
+```
+
+## ✅ comma combinator
+
+<CodeSelector names={['comma combinator']} desc='comma' />
+
+```css
+/* .foo 또는 .bar를 가지고 있는 모든 엘리먼트를 선택한다. */
+.foo,
+.bar {
+  background-color: sandybrown;
+}
+```
+
+## ✅ descendant combinator
+
+<CodeSelector names={['descendant combinator']} desc='descendant' />
+
+```css
+/* .foo를 가지고 있는 엘리먼트의 후손 중에서 .bar를 가지고 있는 모든 엘리먼트를 선택한다. */
+.foo .bar {
+  background-color: lightblue;
+}
+```
+
+## child combinator
+
+<CodeSelector names={['child combinator']} desc='child' />
+
+```css
+/* .foo를 가지고 있는 엘리먼트의 자식 중에서 .bar를 가지고 있는 모든 엘리먼트를 선택한다. */
+.foo > .bar {
+  background-color: olive;
+}
+```
+
+## next-sibling combinator
+
+<CodeSelector names={['next-sibling combinator']} desc='nextsibling' />
+
+```css
+/* .foo를 가지고 있는 엘리먼트의 바로 다음 형제가 .bar를 가지고 있는 엘리먼트이면 선택한다. */
+.foo + .bar {
+  background-color: yellowgreen;
+}
+```
+
+## subsequent-sibling combinator
+
+<CodeSelector names={['subsequent-sibling combinator']} desc='subsequent' />
+
+```css
+/* .foo를 가지고 있는 엘리먼트의 다음 형제 중에서 .bar를 가지고 있는 모든 엘리먼트를 선택한다. */
+.foo ~ .bar {
+  background-color: yellowgreen;
+}
+```

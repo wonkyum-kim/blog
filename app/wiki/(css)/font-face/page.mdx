@@ -1,0 +1,41 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## @font-face
+
+`@font-face` 를 사용하여 웹페이지의 텍스트에 온라인 폰트(online fonts)를 적용할 수 있다.
+
+컴퓨터에 설치된 폰트만을 사용해야했던 제약이 없어짐.
+
+보안을 위해서 `Content-Security-Policy`를 같이 설정하도록 한다.
+
+- font-family: `font-family`에 지정할 폰트 이름을 정의한다.
+- src: 로컬 폰트면 `local()`을 사용하고, 원격 폰트면 `url()`을 사용한다.
+- font-weight
+- font-style
+- font-display
+- size-adjust
+
+<CodeSelector names={['@font-face']} desc='font-face' />
+
+```css
+@font-face {
+  font-family: 'Bitstream Vera Serif Bold';
+  src: url('https://mdn.github.io/css-examples/web-fonts/VeraSeBd.ttf');
+}
+
+body {
+  font-family: 'Bitstream Vera Serif Bold', serif;
+}
+```
+
+### font-display
+
+- auto: 브라우저가 폰트를 불러오는 방법을 결정한다.
+- block: 폰트가 로딩되기 전까지 렌더링을 중단한다.
+- swap: 폴백 폰트로 렌더링한 다음, 로딩이 완료되면 폰트를 적용한다.
+- fallback: 100ms간 텍스트가 보이지 않고, 그 이후에 폴백 폰트를 보여준다. 3초 안에 폰트가 로딩된다면 해당 폰트로 전환한다.
+- optional: fallback과 동일하지만, 무조건 100ms 동안 폴백을 보여주는 것이 아니라 캐시되어 있거나 다운로드 되어 있으면 보여준다.
+
+### size-adjust
+
+글꼴이 바뀔 때 크기가 바뀌지 않도록 설정할 수 있다. [@font-face용 CSS 크기 조정](https://web.dev/articles/css-size-adjust?hl=ko)

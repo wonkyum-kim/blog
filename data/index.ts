@@ -1,7 +1,7 @@
 export const frontmatter = {
   carousel: {
     title: 'Carousel 컴포넌트 만들기',
-    createdAt: '2024-06-18',
+    createdAt: '2024-06-19',
     tags: ['js', 'react'],
   },
   draggable: {
@@ -40,3 +40,5 @@ export const frontmatter = {
     tags: ['web'],
   },
 }
+
+export { wiki } from './wiki'

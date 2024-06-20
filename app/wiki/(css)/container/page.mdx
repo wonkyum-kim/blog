@@ -1,0 +1,41 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## container-name
+
+`container-name`은 엘리먼트를 컨테이너로 등록하여 다른 엘리먼트들을 스타일을 컨테이너의 크기와 스타일에 따라 변경할 수 있게 한다.
+
+<CodeSelector names={['container-name']} desc='container-name' />
+
+```css
+.parent {
+  container-name: cards;
+  container-type: inline-size;
+}
+
+.child {
+  width: 30cqi;
+}
+
+@container cards (width > 800px) {
+  .child {
+    width: 50cqi;
+  }
+}
+```
+
+## container-type
+
+컨테이너의 타입을 정의하는 프로퍼티다.
+
+- normal: 기본 값. 쿼리를 적용하지 않음
+- size: 인라인 방향이든 블록 방향 모두 크기별로 컨테이너를 쿼리를 적용하려는 경우
+- inline-size: 인라인 방향 크기에 따라 쿼리를 적용하려는 경우 (일반적인 horizontal writing 모드에서는 width와 동일하다.)
+
+## Container query length units
+
+- cqw: 1% of a query container's width
+- cqh: 1% of a query container's height
+- cqi: 1% of a query container's inline size
+- cqb: 1% of a query container's block size
+- cqmin: The smaller value of either cqi or cqb
+- cqmax: The larger value of either cqi or cqb

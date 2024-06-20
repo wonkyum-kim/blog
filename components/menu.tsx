@@ -5,8 +5,8 @@ import { Toggle } from './toggle'
 import { useState, useRef, KeyboardEventHandler } from 'react'
 import { useRouter } from 'next/navigation'
 
-const links = ['Home', 'Posts', 'GitHub', 'TODO']
-const urls = ['/', '/posts', 'https://github.com/wonkyum-kim', '#']
+const links = ['Home', 'Posts', 'Wiki', 'GitHub']
+const urls = ['/', '/posts', '/wiki', 'https://github.com/wonkyum-kim']
 
 export function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

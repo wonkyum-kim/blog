@@ -1,0 +1,29 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## @property
+
+CSS의 `@property`라는 새로운 기능을 사용하면 CSS 변수를 정의할 수 있다.
+
+<CodeSelector names={['@property']} desc='property' />
+
+```css
+@property --progress {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+```
+
+기존에도 `--var`과 같이 변수를 생성할 수 있었지만 @property를 사용하면 `transition`에 css 변수도 적용할 수 있게 된다.
+
+<CodeSelector names={['']} desc='transition' />
+
+```css
+.progressbar {
+  transition: --progress 500ms linear;
+}
+```
+
+## References
+
+- [@property](https://developer.mozilla.org/en-US/docs/Web/CSS/@property)

@@ -1,0 +1,15 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :not()
+
+주어진 셀렉터나 조건에 맞지 않는 타겟 엘리먼트들을 스타일 할 수 있다.
+
+<CodeSelector names={['css']} desc='not' />
+
+```css
+/* exclude 클래스가 없는 div만 선택 */
+div:not(.exclude) {
+  border: 2px solid royalblue;
+  background: aliceblue;
+}
+```

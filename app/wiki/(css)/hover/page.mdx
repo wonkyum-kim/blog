@@ -1,0 +1,39 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :hover
+
+터치 디바이스에서는 버튼을 호버한다는 개념이 없다.
+
+따라서 디바이스에 따라서 호버를 적용할지 안할지 선택해야한다.
+
+<CodeSelector names={[':hover']} desc='hover' />
+
+```css
+/* button에 hover가 무조건 적용됨 */
+button:hover {
+  background-color: red;
+}
+
+/* 주 입력 방법이 마우스인 경우만 적용 */
+@media (hover: hover) {
+  button:hover {
+    background-color: red;
+  }
+}
+```
+
+## 입력 방법이 여러 개인 경우
+
+위에서 살펴본 방식에서 터치 스크린의 주 입력 방법은 터치이기 때문에 `@media (hover: hover)`에서 걸러지게 된다.
+
+하지만 터치스크린이라도 마우스를 지원하는 경우라 hover를 적용시키고 싶다면, `any-hover`를 사용한다.
+
+<CodeSelector names={[':hover']} desc='any-hover' />
+
+```css
+@media (any-hover: hover) {
+  button:hover {
+    background-color: red;
+  }
+}
+```
