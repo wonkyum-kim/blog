@@ -88,7 +88,7 @@ export default function Page() {
           </li>
         )
       })}
-      <Pagination page={page} lastPage={lastPage} tag={tag} />
+      <Pagination page={page} lastPage={lastPage} tag={tag} query={query} key={query} />
     </ul>
   )
 }

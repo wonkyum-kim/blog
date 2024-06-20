@@ -8,9 +8,10 @@ interface PaginationProps {
   page: number
   lastPage: number
   tag: string | null
+  query: string | null
 }
 
-export function Pagination({ page, lastPage, tag }: PaginationProps) {
+export function Pagination({ page, lastPage, tag, query }: PaginationProps) {
   const leftPage = Math.floor((page - 1) / 5) * 5 + 1
   const rightPage = Math.min(leftPage + 4, lastPage)
   const pageLength = rightPage - leftPage + 1
@@ -27,12 +28,12 @@ export function Pagination({ page, lastPage, tag }: PaginationProps) {
     // @ts-expect-error
     if (!document.startViewTransition) {
       setSelectedPage(page)
-      router.push(`/posts?page=${page}&tag=${tag ?? ''}`)
+      router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
     }
     // @ts-expect-error
     document.startViewTransition(() => {
       setSelectedPage(page)
-      router.push(`/posts?page=${page}&tag=${tag ?? ''}`)
+      router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
     })
   }
 
@@ -47,7 +48,7 @@ export function Pagination({ page, lastPage, tag }: PaginationProps) {
       }
       return prev - 1
     })
-    router.push(`/posts?page=${selectedPage - 1}&tag=${tag ?? ''}`)
+    router.push(`/posts?page=${selectedPage - 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
   }
 
   const handleNextClick = () => {
@@ -59,7 +60,7 @@ export function Pagination({ page, lastPage, tag }: PaginationProps) {
       }
       return prev + 1
     })
-    router.push(`/posts?page=${selectedPage + 1}&tag=${tag ?? ''}`)
+    router.push(`/posts?page=${selectedPage + 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
   }
 
   const dummy = <div className={styles.page} data-dummy />
