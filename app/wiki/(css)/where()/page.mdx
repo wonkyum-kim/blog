@@ -1,0 +1,33 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :where()
+
+`:is()`와 유사하지만, specificity(명시도)를 0으로 가진다.
+
+반면에 is는 가장 높은 명시도를 가진다.
+
+따라서 스타일을 덮어 씌우는 상황이 생기면 동작이 달라진다.
+
+예를 들어 아래와 같이 코드를 작성하고
+
+<CodeSelector names={['css']} desc='where' />
+
+```css
+:is(section.is-styling, aside.is-styling, footer.is-styling) a {
+  color: red;
+}
+
+:where(section.where-styling, aside.where-styling, footer.where-styling) a {
+  color: orange;
+}
+```
+
+blue로 덮어 씌우면 is를 사용한 부분은 색이 바뀌지 않고 where를 사용한 부분은 blue로 바뀐다.
+
+<CodeSelector names={['css']} desc='example' />
+
+```css
+footer a {
+  color: blue;
+}
+```

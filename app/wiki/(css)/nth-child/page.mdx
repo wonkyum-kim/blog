@@ -1,0 +1,19 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :nth-child
+
+`:nth-child(odd)` 또는 `:nth-child(2n + 1)`은 홀수 번째 자식 엘리먼트를 선택한다.
+
+`:nth-child(even)` 또는 `:nth-child(2n)`은 짝수 번째 자식 엘리먼트를 선택한다.
+
+`:nth-child(An + B)`에서 n은 0이상의 정수를 의미한다.
+
+`of <selector>`를 추가하면 선택된 엘리먼트 중에서 nth 자식을 선택할 수 있다.
+
+<CodeSelector names={['css']} desc='nth' />
+
+```css
+:nth-child(-n + 3 of li.foo) {
+  /*  */
+}
+```

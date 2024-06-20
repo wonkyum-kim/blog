@@ -1,0 +1,15 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :active
+
+a나 button을 누르는 순간부터 손을 떼는 시점까지 스타일을 적용할 수 있다.
+
+`:focus`는 손을 떼도 다른 엘리먼트를 클릭하기 전까지 스타일이 적용된다는 점에서 다르다.
+
+<CodeSelector names={['css']} desc='active' />
+
+```css
+button:active {
+  color: red;
+}
+```

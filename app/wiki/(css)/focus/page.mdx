@@ -1,0 +1,25 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## focus
+
+엘리먼트를 클릭하거나 탭하거나 Tab 키로 선택했을 때 스타일을 적용할 수 있다.
+
+주로 input과 button 엘리먼트에 사용한다.
+
+스타일은 엘리먼트를 누른 시점부터 손을 떼고 나서도 유지되다가 다른 엘리먼트를 누르게 되면 스타일이 해제된다.
+
+<CodeSelector names={['css']} desc='focus' />
+
+```css
+input:focus {
+  border: 2px solid deepskyblue;
+}
+```
+
+## :focus-visible
+
+키보드를 통해서 포커스를 받은 엘리먼트만 선택한다.
+
+## :focus-within
+
+해당 엘리먼트를 포함해서 내부 엘리먼트 중 하나가 포커스를 받으면 스타일이 활성화된다.

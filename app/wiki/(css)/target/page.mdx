@@ -1,0 +1,17 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## :target
+
+URL과 id 어트리뷰트가 일치하는 엘리먼트의 스타일을 적용한다.
+
+예를 들어 `https://example.com/#foo`이면, id가 `foo`인 엘리먼트에 스타일이 적용된다.
+
+<CodeSelector names={['css']} desc='target' />
+
+```css
+div:target {
+  border: 3px solid deepskyblue;
+  background-color: lightcyan;
+  transform: scale(1.05);
+}
+```
