@@ -1,0 +1,316 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ToolTip } from '@/components/tooltip.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+import { UnmountAnimation } from '@/components/unmount/unmount-animation.tsx'
+
+<Title slug={'unmount-animation'} />
+
+<TOC headings={getHeadingsBySlug('unmount-animation')} />
+
+<UnmountAnimation />
+
+## unmount 애니메이션
+
+말 그대로 언마운트 할 때 애니메이션이 진행되는 것이다.
+
+리액트에서는 컴포넌트가 언마운트 되는 것을 알려주는 이벤트가 없어서 이 애니메이션을 구현할 수 없었다.
+
+언마운트 애니메이션을 적용하기 위해서는 framer-motion의 `AnimatePresence` 컴포넌트 같은 라이브러리를 사용해야 했다.
+
+하지만 `View Transitions API`를 사용한다면, 별도의 라이브러리 설치 없이 unmount 애니메이션을 구현할 수 있다.
+
+## View Transitions API란
+
+unmount 애니메이션을 구현하기 전에 먼저 api에 대해 알아보자.
+
+View Transitions API는 별도의 라이브러리 없이 DOM을 업데이트 하기 이전과 이후를 캡쳐하여 화면 전환 애니메이션을 적용할 수 있게 해주는 API다.
+
+기본적으로 이전 화면의 opacity는 감소하고 이후 화면의 opacity를 증가시키는 애니메이션이 적용되어 있다.
+
+(지금 이 블로그에도 적용이 되어있다.)
+
+리액트에서는 `document.startViewTransition`에 flushSync와 useState의 set 함수를 실행하는 콜백 함수를 전달하여 실행할 수 있다.
+
+<CodeSelector names={['component.tsx']} desc='vtexample' />
+
+```tsx {13-17} showLineNumbers
+const image = ['/public/image1.png', '/public/image2.png'];
+
+function Component() {
+    const [index, setIndex] = useState(0)
+
+    const handleClick = () => {
+        // 지원하지 않는 경우도 고려한다.
+        // @ts-expect-error
+        if (!document.startViewTransition) {
+            setIndex((prev) => (prev + 1) % 2));
+        } else {
+          // @ts-expect-error
+          document.startViewTransition(() => {
+            flushSync(() => {
+              setIndex((prev) => (prev + 1) % 2)
+            })
+          })
+        }
+    };
+
+    return (
+        <>
+            <img src={image[index]} />
+            <button onClick={handleClick}>click</button>
+        </>
+    );
+}
+```
+
+## Psuedo Element Tree
+
+`document.startViewTransition()`가 호출되면, 전달된 콜백 함수가 실행되기 전과 후의 화면을 캡쳐하여 `psuedo element tree`를 구성한다.
+
+<CodeSelector names={['psuedo element tree']} desc='psuedoelementtree' />
+
+```text
+::view-transition
+└─ ::view-transition-group(root)
+   └─ ::view-transition-image-pair(root)
+      ├─ ::view-transition-old(root)
+      └─ ::view-transition-new(root)
+```
+
+- `::view-transition` : 모든 view transition를 포함하는 루트 의사 요소
+- `::view-transition-group` : 하나의 view transition 그룹을 나타내는 의사 요소
+- `::view-transition-image-pair` : 그룹의 이전 뷰와 이후 뷰를 포함하고 있는 의사 요소. `isolation: isolate`가 적용되어 있다.
+- `::view-transition-old, new` : 이전, 이후 뷰를 나타낸다. fade 효과를 적용하기 위해서 `mix-blend-mode: plus-lighter`가 포함되어 있다.
+
+## 애니메이션 수정하기
+
+기본적으로 할당되어 있는 애니메이션을 수정하려면, CSS에서 코드를 작성한다.
+
+<CodeSelector names={['css']} desc='editroot' />
+
+```css {25, 32} showLineNumbers
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    transform: translateX(30px);
+  }
+}
+
+@keyframes slide-to-left {
+  to {
+    transform: translateX(-30px);
+  }
+}
+
+/* 이전 화면은 왼쪽으로 -30px 이동하면서 사라진다.  */
+::view-transition-old(root) {
+  animation:
+    90ms linear both fade-out,
+    300ms linear both slide-to-left;
+}
+
+/* 이후 화면은 왼쪽으로 30px 이동하면서 나타난다.  */
+::view-transition-new(root) {
+  animation:
+    210ms linear 90ms both fade-in,
+    300ms linear both slide-from-right;
+}
+```
+
+## view-transition-name
+
+방금 살펴본 애니메이션 수정 방법은 애플리케이션에서 일어나는 모든 화면 전환 애니메이션에 대해 적용된다.
+
+특정 엘리먼트의 화면 전환에 대해서만 다른 애니메이션을 적용하고 싶다면, `view-transition-name`을 사용한다.
+
+<CodeSelector names={['html', 'css']} desc='name1' />
+
+```html showLineNumbers
+<!-- 아래 div가 전환될 때만 다른 애니메이션을 적용하려고 한다. -->
+<div className="main-header"></div>
+```
+
+```css {2} showLineNumbers
+.main-header {
+  view-transition-name: main-header;
+}
+```
+
+그러면 새로운 `::view-transition-group`이 생성된다.
+
+<CodeSelector names={['psuedo element tree']} desc='psuedoelementtree2' />
+
+```text {6-9}
+::view-transition
+├─ ::view-transition-group(root)
+│  └─ ::view-transition-image-pair(root)
+│     ├─ ::view-transition-old(root)
+│     └─ ::view-transition-new(root)
+└─ ::view-transition-group(main-header)
+   └─ ::view-transition-image-pair(main-header)
+      ├─ ::view-transition-old(main-header)
+      └─ ::view-transition-new(main-header)
+```
+
+이제 이 div에 대해 위에서 살펴본 것 처럼 애니메이션을 수정할 수 있는데, `::view-transition-old, new(root)` 대신 `::view-transition-old, new(main-header)`를 써주면 된다.
+
+그리고 view-transition-name을 화면이 전환될 때만 부여한다면, 굳이 [같은 DOM이 아니라도 화면 전환 애니메이션이 적용된다.](https://developer.chrome.com/docs/web-platform/view-transitions/same-document?hl=ko#transitioning_elements_dont_need_to_be_the_same_dom_element)
+
+예를 들어 같은 사진이지만, `/foo`에서는 100px x 100px이고, `/bar`에서는 200px x 200px인 경우,
+
+/foo에서 /bar로 이동할 때, 두 사진의 view-transition-name을 동일하게 설정한다면 화면 전환 애니메이션이 적용될 수 있다.
+
+## old 또는 new가 없는 경우
+
+이전 화면에는 없지만 이후 화면에는 존재하는 DOM 요소에 대해서 전환 애니메이션을 적용하게 된다면, `::view-transition-old`는 존재하지 않는다.
+
+마찬가지로 반대의 경우에는 `::view-transition-new`가 존재하지 않는다.
+
+이렇게 DOM이 마운트/언마운트 되는 상황은 의사 요소 트리의 image-pair 노드에 자식 노드가 하나 존재하게 되며, `:only-child`를 사용하여 의사 요소 트리를 확인하면 된다.
+
+<CodeSelector names={['css']} desc='onlychild' />
+
+```css {2, 9} showLineNumbers
+/* Entry transition */
+::view-transition-new(sidebar):only-child {
+  animation:
+    300ms cubic-bezier(0, 0, 0.2, 1) both fade-in,
+    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+}
+
+/* Exit transition */
+::view-transition-old(sidebar):only-child {
+  animation:
+    150ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-right;
+}
+```
+
+## unmount 애니메이션의 구현
+
+이제 실제로 코드를 작성해보자.
+
+<CodeSelector names={['unmount-animation.tsx', 'unmount-animation.css']} desc='fullcode' />
+
+```tsx {29} showLineNumbers
+'use client'
+
+import './unmount-animation.css'
+import { useState } from 'react'
+import { flushSync } from 'react-dom'
+
+export function UnmountAnimation() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleClick = () => {
+    // @ts-expect-error
+    if (!document.startViewTransition) {
+      setIsOpen((prev) => !prev)
+    } else {
+      // @ts-expect-error
+      document.startViewTransition(() => {
+        flushSync(() => {
+          setIsOpen((prev) => !prev)
+        })
+      })
+    }
+  }
+
+  return (
+    <div className='container'>
+      <button className='button' onClick={handleClick}>
+        {isOpen ? 'close' : 'open'}
+      </button>
+      {isOpen && <div className='box' />}
+    </div>
+  )
+}
+```
+
+```css showLineNumbers
+.container {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: azure;
+}
+
+.button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: var(--gray-300);
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.box {
+  width: 200px;
+  height: 200px;
+  background-color: var(--orange-500);
+  border-radius: 5px;
+  view-transition-name: box;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+:root::view-transition-old(box):only-child {
+  animation-name: fade-out;
+  animation-duration: 1s;
+}
+
+:root::view-transition-new(box):only-child {
+  animation-name: fade-in;
+  animation-duration: 1s;
+}
+```
+
+isOpen이 false가 되면서 box가 언마운트 되지만, 애니메이션이 적용된다.
+
+마찬가지로 unmount 뿐만 아니라 mount 애니메이션도 구현하여 적용하였다.
+
+## 써보고 느낀 점
+
+- framer-motion 없이도 unmount 애니메이션을 쉽게 적용할 수 있어서 좋았다.
+- mount 애니메이션만을 적용하고 싶다면 굳이 안써도 된다. 그냥 css animation만으로도 가능하다.
+- 일단 화면 전환 애니메이션이 시작하면, 시작한 애니메이션이 끝나기 전에 다른 화면 전환 애니메이션은 적용되지 않기 때문에 빠른 전환은 불가능.
+- 빠른 전환이 필요하다면, framer-motion의 AnimatePresence를 사용해 볼 수 있지만, 버그가 있어서 이슈가 많이 올라왔음.
+- 아직 크롬과 엣지에서만 적용할 수 있기 때문에 당분간은 framer-motion을 위주로 사용해야 할듯.
+
+## References
+
+- [Same-document view transitions for single-page applications](https://developer.chrome.com/docs/web-platform/view-transitions/same-document)

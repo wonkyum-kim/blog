@@ -1,4 +1,9 @@
 export const frontmatter = {
+  ['unmount-animation']: {
+    title: 'View Transitions API를 사용한 unmount 애니메이션 만들기',
+    createdAt: '2024-06-20',
+    tags: ['js', 'css', 'web'],
+  },
   carousel: {
     title: 'Carousel 컴포넌트 만들기',
     createdAt: '2024-06-19',
