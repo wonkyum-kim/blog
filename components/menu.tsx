@@ -4,6 +4,7 @@ import styles from './menu.module.css'
 import { Toggle } from './toggle'
 import { useState, useRef, KeyboardEventHandler } from 'react'
 import { useRouter } from 'next/navigation'
+import { flushSync } from 'react-dom'
 
 const links = ['Home', 'Posts', 'Wiki', 'GitHub']
 const urls = ['/', '/posts', '/wiki', 'https://github.com/wonkyum-kim']
@@ -22,7 +23,6 @@ export function Menu() {
     // @ts-expect-error
     if (!document.startViewTransition) {
       router.push(slug)
-      return
     }
     // @ts-expect-error
     document.startViewTransition(() => {
@@ -36,12 +36,14 @@ export function Menu() {
       if (!document.startViewTransition) {
         setIsSearchOpen((prev) => !prev)
         return
+      } else {
+        // @ts-expect-error
+        document.startViewTransition(() => {
+          flushSync(() => {
+            setIsSearchOpen((prev) => !prev)
+          })
+        })
       }
-
-      // @ts-expect-error
-      document.startViewTransition(() => {
-        setIsSearchOpen((prev) => !prev)
-      })
     } else {
       // search
       if (!inputRef.current) return
@@ -52,12 +54,14 @@ export function Menu() {
       // @ts-expect-error
       if (!document.startViewTransition) {
         router.push(`/posts?query=${query}`)
-        return
+      } else {
+        // @ts-expect-error
+        document.startViewTransition(() => {
+          flushSync(() => {
+            router.push(`/posts?query=${query}`)
+          })
+        })
       }
-      // @ts-expect-error
-      document.startViewTransition(() => {
-        router.push(`/posts?query=${query}`)
-      })
     }
   }
 

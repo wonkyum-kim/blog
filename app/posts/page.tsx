@@ -4,6 +4,7 @@ import { frontmatter } from '@/data'
 import styles from './page.module.css'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Pagination } from '@/components/pagination'
+import { flushSync } from 'react-dom'
 
 export default function Page() {
   const router = useRouter()
@@ -41,12 +42,14 @@ export default function Page() {
     // @ts-expect-error
     if (!document.startViewTransition) {
       router.push(url)
-      return
+    } else {
+      // @ts-expect-error
+      document.startViewTransition(() => {
+        flushSync(() => {
+          router.push(url)
+        })
+      })
     }
-    // @ts-expect-error
-    document.startViewTransition(() => {
-      router.push(url)
-    })
   }
 
   const handleClick = (slug: string) => {

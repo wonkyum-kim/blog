@@ -10,6 +10,7 @@ import styles from './toc.module.css'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useTOCEffect } from '@/hooks/useTOCEffect'
+import { flushSync } from 'react-dom'
 
 interface Heading {
   level: number
@@ -27,17 +28,18 @@ export function TOC({ headings }: TOCProps) {
 
   if (headings.length === 0) return
 
-  const handleClick = async (changed: string) => {
+  const handleClick = (changed: string) => {
     // @ts-expect-error
     if (!document.startViewTransition) {
       setSelected(changed)
-      return
+    } else {
+      // @ts-expect-error
+      document.startViewTransition(() => {
+        flushSync(() => {
+          setSelected(changed)
+        })
+      })
     }
-
-    // @ts-expect-error
-    await document.startViewTransition(() => {
-      setSelected(changed)
-    })
   }
 
   return (

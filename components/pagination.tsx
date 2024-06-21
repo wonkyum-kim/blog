@@ -3,6 +3,7 @@
 import styles from './pagination.module.css'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { flushSync } from 'react-dom'
 
 interface PaginationProps {
   page: number
@@ -29,12 +30,15 @@ export function Pagination({ page, lastPage, tag, query }: PaginationProps) {
     if (!document.startViewTransition) {
       setSelectedPage(page)
       router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
+    } else {
+      // @ts-expect-error
+      document.startViewTransition(() => {
+        flushSync(() => {
+          setSelectedPage(page)
+          router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
+        })
+      })
     }
-    // @ts-expect-error
-    document.startViewTransition(() => {
-      setSelectedPage(page)
-      router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
-    })
   }
 
   const handlePreviousClick = () => {
