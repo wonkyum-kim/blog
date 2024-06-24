@@ -1,0 +1,38 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## reset
+
+`reset`은 브랜치가 가리키는 커밋(HEAD가 가리키는 커밋)을 변경한다.
+
+예를 들어, A, B, C 순서대로 커밋하고 아래 명령어를 입력하여 HEAD가 B를 가리키도록 할 수 있다.
+
+<CodeSelector names={['shell']} desc='reset' />
+
+```shell
+git reset --hard B
+```
+
+## mode
+
+reset의 모드는 3가지가 있다.
+
+A에서 1을 입력하고, B에서 2를, C에서 3을 입력했을 때 아래와 같이 적용된다.
+
+|                   | --soft | --mixed | --hard |
+| ----------------- | ------ | ------- | ------ |
+| repository        | 2      | 2       | 2      |
+| staging area      | 3      | 2       | 2      |
+| working directory | 3      | 3       | 2      |
+
+mode를 생략하면 `--mixed`가 적용된다.
+
+## 브랜치 생성 안하고 커밋한 경우
+
+1. main 브랜치에서 작업하고 있던 경우라고 가정
+2. main 브랜치에 일단 커밋한다.
+3. dev 브랜치를 만든다.
+4. main으로 돌아와서 `git reset HEAD~1 --hard`로 되돌아간다.
+
+## References
+
+- https://www.youtube.com/watch?v=A6jzRmygVXM&list=PLuHgQVnccGMAvTJlPGzizAkyqXfZ9IyY8&index=6

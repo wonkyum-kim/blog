@@ -1,0 +1,35 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## fixup
+
+`fixup`은 떨어져있는 커밋을 하나로 합칠 때 사용한다.
+
+먼저 최근 3개의 커밋을 살펴본다.
+
+<CodeSelector names={['shell']} desc='head3' />
+
+```shell
+git rebase -i HEAD~3
+```
+
+떨어져 있는 commit-m2를 commit-m1에 합치려면 아래와 같이 진행한다.
+
+<CodeSelector names={['before', 'after']} desc='text' />
+
+```txt
+pick ****** commit-m1
+pick ****** commit-m3
+pick ****** commit-m2
+```
+
+```txt {2}
+pick ****** commit-m1
+fixup ****** commit-m2
+pick ****** commit-m3
+```
+
+```shell
+git push -f
+```
+
+`squash`와는 다르게 커밋 메시지를 남기거나 편집할 수 없다.

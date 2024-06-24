@@ -1,0 +1,15 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## --amend
+
+잘못된 이전 커밋을 수정할 때 사용한다.
+
+<CodeSelector names={['shell']} desc='amend' />
+
+```shell
+git commit --amend
+```
+
+파일을 스테이징 영역에 올리고, 해당 명령어를 입력하면 에디터가 뜬다.
+
+여기서 아까 스테이징한 파일을 확인 가능하고 커밋 메시지도 수정 가능하다.

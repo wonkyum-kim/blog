@@ -31,6 +31,9 @@ const css = [
   'perspective',
 ]
 
+const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
+
 export const wiki = {
   css,
+  git,
 }

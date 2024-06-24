@@ -1,0 +1,108 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## stash
+
+git stash는 현재 작업 중인 변경 사항을 임시로 저장하는 데 사용되는 Git의 기능.
+
+작업 중인 변경 사항을 저장하지 않고 다른 브랜치로 전환하려고 할 때 유용하다.
+
+(커밋하지 않고 브랜치를 이동하면, 수정된 내용이 이동한 브랜치에도 반영되기 때문)
+
+## ✅ stash push
+
+<CodeSelector names={['shell']} desc='push' />
+
+```shell
+git stash push
+```
+
+push를 하면, 파일들이 stash에 들어가고 현재 브랜치는 HEAD로 돌아간다.
+
+stash에는 아래 파일들만 들어간다.
+
+1. staging area에 있는 파일
+2. modified면서 tracked인 파일
+
+추적되지 않는 파일도 stash에 넣고 싶다면
+
+<CodeSelector names={['shell']} desc='pusha' />
+
+```shell
+git stash push -a
+```
+
+## ✅ stash list
+
+<CodeSelector names={['shell']} desc='list' />
+
+```shell
+git stash list
+```
+
+여러 번 stash를 했다면 확인할 수 있다.
+
+`stash@{0}`이 가장 최근에 넣은 것이고 `stash@{1}`이 그 전에 넣은 것이다.
+
+## ✅ stash show
+
+<CodeSelector names={['shell']} desc='show' />
+
+```shell
+git stash show
+```
+
+현재 스태시에 저장된 변경 사항을 보여준다.
+
+untracked까지 보고 싶으면
+
+<CodeSelector names={['shell']} desc='showu' />
+
+```shell
+git stash show -u
+```
+
+## stash drop
+
+<CodeSelector names={['shell']} desc='drop' />
+
+```shell
+git stash drop
+```
+
+스태시를 삭제한다.
+
+삭제된 스태시는 복구할 수 없으니 사용에 주의한다.
+
+## stash apply
+
+<CodeSelector names={['shell']} desc='apply' />
+
+```shell
+git stash apply
+```
+
+stash를 복구하지만, 삭제는 하지 않기 때문에 pop을 사용하는 편이 나을듯
+
+스테이징 상태까지 복구하려면 아래와 같이 입력한다.
+
+<CodeSelector names={['shell']} desc='applyindex' />
+
+```shell
+git stash apply --index
+```
+
+## ✅ stash pop
+
+<CodeSelector names={['shell']} desc='pop' />
+
+```shell
+git stash pop
+```
+
+apply와 drop을 한 번에 해준다.
+
+스테이징 상태까지 복구하고 싶으면 `--index`
+
+## References
+
+- [[Git] git stash 명령어 사용하기](https://gmlwjd9405.github.io/2018/05/18/git-stash.html)

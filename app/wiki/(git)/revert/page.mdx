@@ -1,0 +1,36 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## git revert
+
+`revert`는 이전 해당 커밋의 내용을 지워버리고 새로운 커밋을 추가한다.
+
+<CodeSelector names={['shell']} desc='revert' />
+
+```shell
+git commit -m "1번 커밋"
+git commit -m "2번 커밋"
+git commit -m "3번 커밋"
+
+git revert [1번 커밋 hash]
+```
+
+이 상황에서는 1번 커밋에 관한 기록들만 지워지고 2번, 3번 커밋에 관한 기록만 남은 새로운 커밋이 추가된다.
+
+<CodeSelector names={['shell']} desc='log' />
+
+```shell
+git log
+
+Revert "1번 커밋"
+3번 커밋
+2번 커밋
+1번 커밋
+```
+
+이러면 conflict가 발생할 수 있는데, 적절히 처리해주고 continue를 해주면 알아서 커밋이 추가된다.
+
+<CodeSelector names={['shell']} desc='continue' />
+
+```shell
+git revert --continue
+```
