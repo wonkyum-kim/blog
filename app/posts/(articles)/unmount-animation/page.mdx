@@ -297,13 +297,19 @@ isOpen이 false가 되면서 box가 언마운트 되지만, 애니메이션이 �
 
 마찬가지로 unmount 뿐만 아니라 mount 애니메이션도 구현하여 적용하였다.
 
-## 써보고 느낀 점
+## 사용 후기
 
 - framer-motion 없이도 unmount 애니메이션을 쉽게 적용할 수 있어서 좋았다.
 - mount 애니메이션만을 적용하고 싶다면 굳이 안써도 된다. 그냥 css animation만으로도 가능하다.
 - 일단 화면 전환 애니메이션이 시작하면, 시작한 애니메이션이 끝나기 전에 다른 화면 전환 애니메이션은 적용되지 않기 때문에 빠른 전환이 안된다.
 - css module은 pure selector를 쓸 수 없기 때문에 `::view-transition-old`와 같은 selector를 사용할 수 없었다.
 - 아직 크롬과 엣지에서만 적용할 수 있기 때문에 사용에 주의해야 한다.
+
+## 다른 방법
+
+css `transition-behavior: allow-discrete`를 사용하면, 같은 효과를 줄 수 있다.
+
+다만 대상 엘리먼트의 `display` css 프로퍼티를 `block`에서 `none`으로 직접 변경해줘야 한다.
 
 ## References
 
