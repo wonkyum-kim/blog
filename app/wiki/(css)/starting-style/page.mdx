@@ -1,0 +1,49 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## @starting-style
+
+transition을 적용하기 이전에 적용할 스타일을 지정하는 프로퍼티
+
+좀 더 간편하게 mount 애니메이션을 만들 수 있게 된다.
+
+<CodeSelector names={['css']} desc='startingstyle' />
+
+```css
+/*  0. BEFORE-OPEN STATE   */
+/*  Starting point for the transition */
+@starting-style {
+  .item {
+    opacity: 0;
+    height: 0;
+  }
+}
+
+/*  1. IS-OPEN STATE   */
+/*  The state at which the element is open + transition logic */
+.item {
+  height: 3rem;
+  display: grid;
+  overflow: hidden;
+  transition:
+    opacity 0.5s,
+    transform 0.5s,
+    height 0.5s,
+    display 0.5s allow-discrete;
+}
+
+/*  2. EXITING STATE   */
+/*  While it is deleting, before DOM removal in JS, apply this
+    transformation for height, opacity, and a transform which
+    skews the element and moves it to the left before setting
+    it to display: none */
+.is-deleting {
+  opacity: 0;
+  height: 0;
+  display: none;
+  transform: skewX(50deg) translateX(-25vw);
+}
+```
+
+## References
+
+- https://developer.chrome.com/blog/entry-exit-animations#the_starting-style_rule_for_entry_animations

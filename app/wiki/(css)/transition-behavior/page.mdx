@@ -1,0 +1,31 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## transition-behavior
+
+`discrete` 프로퍼티도 트랜지션의 대상이 되도록 설정할 수 있는 프로퍼티다.
+
+discrete 프로퍼티란 연속적이지 않은 것들을 의미하는데, 예를 들어 `display: block`에서 `display: none`으로 바꾸면 그냥 바로 보이지 않게 된다.
+
+<CodeSelector names={['css']} desc='behavior' />
+
+```css {5} showLineNumbers
+.card {
+  transition:
+    opacity 0.25s,
+    display 0.25s;
+  transition-behavior: allow-discrete;
+}
+
+.card.fade-out {
+  opacity: 0;
+  display: none;
+}
+```
+
+`transition-behavior: allow-discrete`를 설정하지 않으면, opacity가 0으로 변하기 전에 바로 화면에서 사라지므로 트랜지션을 관찰할 수 없다.
+
+하지만 설정하였다면, opacity의 트랜지션이 마무리되고 화면에서 사라지게 된다.
+
+## References
+
+- https://developer.chrome.com/blog/entry-exit-animations?hl=ko#the_transition-behavior_property

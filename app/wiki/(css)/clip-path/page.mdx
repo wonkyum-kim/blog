@@ -1,0 +1,20 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## clip-path
+
+원하는 영역만 잘라서 보여줄 수 있다.
+
+복잡한 모양을 만들려고 하기 보다는 이미지를 따로 만들어 오는 것이 나을 수 있다고 생각함.
+
+하지만 원과 같이 단순한 모양이면 해볼만 한듯
+
+`circle()`과 함께 사용해서 동그란 모양으로 잘라낼 수 있다.
+
+transition과 함께 사용하면 원이 커지는 애니메이션도 가능
+
+<CodeSelector names={['css']} desc='clip' />
+
+```css
+/* shape-radius at position */
+clip-path: circle(6rem at 12rem 8rem);
+```

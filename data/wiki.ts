@@ -5,6 +5,7 @@ const css = [
   '@property',
   '@font-face',
   '@container',
+  '@starting-style',
   ':hover',
   ':focus',
   ':active',
@@ -22,6 +23,12 @@ const css = [
   ':where()',
   'background-image: url()',
   'animation-timeline',
+  'object-fit',
+  'transition-behavior',
+  'clip-path',
+  'mask-image',
+  'appearance',
+  'perspective',
 ]
 
 export const wiki = {
