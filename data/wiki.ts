@@ -29,11 +29,15 @@ const css = [
   'mask-image',
   'appearance',
   'perspective',
+  'word-break',
 ]
 
 const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
 
+const browser = ['critical rendering path']
+
 export const wiki = {
   css,
   git,
+  browser,
 }
