@@ -1,7 +1,6 @@
 .selector {
   background-color: #2f2f2f;
   display: flex;
-  gap: 2rem;
   height: 40px;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -13,29 +12,34 @@
   overflow: scroll;
 }
 
-.selected-bar {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  font-size: 1.2rem;
-}
-
 @media (width < 768px) {
   .selector {
     font-size: 0.6rem;
   }
-
-  .selected-bar {
-    font-size: 0.8rem;
-  }
 }
 
 .bar {
+  padding: 0 1rem;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition-property: opacity;
   transition-duration: 0.5s;
 }
 
-.bar:not(.selected-bar) {
+.bar[data-active='false'] {
   opacity: 0.5;
+}
+
+.bar[data-active='true']::after {
+  position: absolute;
+  bottom: -0.5rem;
+  right: 0;
+  left: 0;
+  height: 2px;
+  content: ' ';
+  background-color: var(--orange-500);
+  view-transition-name: var(--vtName);
 }

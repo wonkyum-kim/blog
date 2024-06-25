@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import styles from './code-selector.module.css'
+import { viewTransition } from '@/lib/viewTransition'
 
 interface CodeSelectorProps {
   names: string[]
@@ -35,7 +36,9 @@ export function CodeSelector({ names, desc }: CodeSelectorProps) {
     prevElment.style.display = 'none'
     currElement.style.display = 'block'
 
-    setCurr(index)
+    viewTransition(() => {
+      setCurr(index)
+    })
   }
 
   return (
@@ -45,7 +48,10 @@ export function CodeSelector({ names, desc }: CodeSelectorProps) {
           <div
             key={code}
             onClick={() => handleClick(i)}
-            className={[i === curr ? styles['selected-bar'] : '', styles.bar].join(' ')}
+            className={styles.bar}
+            data-active={i === curr}
+            // @ts-ignore
+            style={{ '--vtName': `${desc}` }}
           >
             {code}
           </div>
