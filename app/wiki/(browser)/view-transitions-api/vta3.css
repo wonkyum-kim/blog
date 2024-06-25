@@ -1,0 +1,46 @@
+.container {
+  width: 100%;
+  height: 200px;
+  background-color: antiquewhite;
+  position: relative;
+}
+
+.box3 {
+  background-color: var(--orange-500);
+  position: absolute;
+  height: 100px;
+  view-transition-name: vta-box3;
+  cursor: pointer;
+}
+
+.first-box3 {
+  width: 100px;
+  left: 0;
+  top: 0;
+}
+
+.second-box3 {
+  width: 300px;
+  bottom: 0;
+  right: 0;
+}
+
+::view-transition-group(vta-box3) {
+  animation-duration: 3s;
+}
+
+::view-transition-old(vta-box3),
+::view-transition-new(vta-box3) {
+  animation: none;
+  mix-blend-mode: normal;
+  height: 100%;
+  overflow: clip;
+}
+
+::view-transition-old(vta-box3) {
+  object-fit: contain;
+}
+
+::view-transition-new(vta-box3) {
+  object-fit: cover;
+}

@@ -34,7 +34,7 @@ const css = [
 
 const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
 
-const browser = ['critical rendering path']
+const browser = ['critical rendering path', 'view transitions api']
 
 export const wiki = {
   css,

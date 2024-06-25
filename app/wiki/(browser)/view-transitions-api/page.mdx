@@ -1,0 +1,183 @@
+import { Vta1 } from './vta1.tsx'
+import { Vta2 } from './vta2.tsx'
+import { Vta3 } from './vta3.tsx'
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## view transitions api
+
+이전 화면과 이후 화면을 이미지로 만들고 트랜지션을 진행하는 api.
+
+이미 글로 작성한 적이 있지만, 지금은 궁금했던 것을 하나씩 확인해보는 과정
+
+## 서로 같은 DOM일 필요가 없다.
+
+<Vta1 />
+
+박스를 클릭하면 좌상단에서 우하단으로 이동한다.
+
+두 박스는 같은 엘리먼트가 아니지만, `view-transition-name`은 같게 설정하였다.
+
+<CodeSelector names={['vta1.tsx', 'vta1.css']} desc='example1' />
+
+```tsx showLineNumbers
+'use client'
+
+import { useState } from 'react'
+import './vta1.css'
+import { viewTransition } from '@/lib/viewTransition'
+
+export function Vta1() {
+  const [state, setState] = useState(true)
+
+  const handleClick = () => {
+    viewTransition(() => {
+      setState((prev) => !prev)
+    })
+  }
+  return (
+    <div className='container'>
+      {state ? (
+        <div className='box first-box' onClick={handleClick} />
+      ) : (
+        <div className='box second-box' onClick={handleClick} />
+      )}
+    </div>
+  )
+}
+```
+
+```css showLineNumbers
+.container {
+  width: 100%;
+  height: 200px;
+  background-color: antiquewhite;
+  position: relative;
+}
+
+.box {
+  background-color: var(--orange-500);
+  position: absolute;
+  width: 100px;
+  aspect-ratio: 1;
+  view-transition-name: vta-box;
+  cursor: pointer;
+}
+
+.first-box {
+  left: 0;
+  top: 0;
+}
+
+.second-box {
+  bottom: 0;
+  right: 0;
+}
+
+::view-transition-group(vta-box) {
+  animation-duration: 3s;
+}
+```
+
+두 엘리먼트는 서로 다르지만 위치가 interpolation 되어 이동한다.
+
+글을 쓰면서 발견한 것인데, 애니메이션이 진행 중에 스크롤을 움직이면 박스가 컨테이너를 벗어난다.
+
+버그인지 의도된 것인지는 잘 모르겠다.
+
+## 비율이 달라지는 경우
+
+이전과 이후 화면의 박스의 비율이 달라지면 어떻게 될까?
+
+<Vta2 />
+
+이전과 이후의 박스의 높이는 서로 같지만 너비를 다르게 했더니 매우 이상하다.
+
+<CodeSelector names={['vta2.css']} desc='example2' />
+
+```css showLineNumbers
+.container {
+  width: 100%;
+  height: 200px;
+  background-color: antiquewhite;
+  position: relative;
+}
+
+.box2 {
+  background-color: var(--orange-500);
+  position: absolute;
+  height: 100px;
+  view-transition-name: vta-box2;
+  cursor: pointer;
+}
+
+.first-box2 {
+  width: 100px;
+  left: 0;
+  top: 0;
+}
+
+.second-box2 {
+  width: 300px;
+  bottom: 0;
+  right: 0;
+}
+
+::view-transition-group(vta-box2) {
+  animation-duration: 3s;
+}
+```
+
+그 이유는 이전과 이후 뷰의 너비를 일단 맞추려고 하고, 안되면 비율을 맞추려고 하기 때문.
+
+<Vta3 />
+
+비율 대신 높이를 맞추게 하면 잘 작동한다.
+
+겸사겸사 opacity 관련 애니메이션 적용 안할려고 한다면 끄는게 좋다.
+
+<CodeSelector names={['vta3.css']} desc='example3' />
+
+```css {32-37} showLineNumbers
+.container {
+  width: 100%;
+  height: 200px;
+  background-color: antiquewhite;
+  position: relative;
+}
+
+.box3 {
+  background-color: var(--orange-500);
+  position: absolute;
+  height: 100px;
+  view-transition-name: vta-box3;
+  cursor: pointer;
+}
+
+.first-box3 {
+  width: 100px;
+  left: 0;
+  top: 0;
+}
+
+.second-box3 {
+  width: 300px;
+  bottom: 0;
+  right: 0;
+}
+
+::view-transition-group(vta-box3) {
+  animation-duration: 3s;
+}
+
+::view-transition-old(vta-box3),
+::view-transition-new(vta-box3) {
+  animation: none;
+  mix-blend-mode: normal;
+  height: 100%;
+}
+```
+
+## References
+
+- https://developer.chrome.com/docs/web-platform/view-transitions/same-document?hl=ko#handle_changes_in_aspect_ratio
+- https://jakearchibald.com/2024/view-transitions-handling-aspect-ratio-changes/
