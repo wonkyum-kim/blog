@@ -4,7 +4,7 @@ import { frontmatter } from '@/data'
 import styles from './page.module.css'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Pagination } from '@/components/pagination'
-import { flushSync } from 'react-dom'
+import { viewTransition } from '@/lib/viewTransition'
 
 export default function Page() {
   const router = useRouter()
@@ -39,17 +39,9 @@ export default function Page() {
   slugs = slugs.slice((page - 1) * 5, (page - 1) * 5 + 5)
 
   const tryTransition = (url: string) => {
-    // @ts-expect-error
-    if (!document.startViewTransition) {
+    viewTransition(() => {
       router.push(url)
-    } else {
-      // @ts-expect-error
-      document.startViewTransition(() => {
-        flushSync(() => {
-          router.push(url)
-        })
-      })
-    }
+    })
   }
 
   const handleClick = (slug: string) => {

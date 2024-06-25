@@ -4,7 +4,7 @@ import styles from './menu.module.css'
 import { Toggle } from './toggle'
 import { useState, useRef, KeyboardEventHandler } from 'react'
 import { useRouter } from 'next/navigation'
-import { flushSync } from 'react-dom'
+import { viewTransition } from '@/lib/viewTransition'
 
 const links = ['Home', 'Posts', 'Wiki', 'GitHub']
 const urls = ['/', '/posts', '/wiki', 'https://github.com/wonkyum-kim']
@@ -20,30 +20,16 @@ export function Menu() {
   }
 
   const handleMove = (slug: string) => {
-    // @ts-expect-error
-    if (!document.startViewTransition) {
-      router.push(slug)
-    }
-    // @ts-expect-error
-    document.startViewTransition(() => {
+    viewTransition(() => {
       router.push(slug)
     })
   }
 
   const changeMode = (action: string) => {
     if (action === 'change') {
-      // @ts-expect-error
-      if (!document.startViewTransition) {
+      viewTransition(() => {
         setIsSearchOpen((prev) => !prev)
-        return
-      } else {
-        // @ts-expect-error
-        document.startViewTransition(() => {
-          flushSync(() => {
-            setIsSearchOpen((prev) => !prev)
-          })
-        })
-      }
+      })
     } else {
       // search
       if (!inputRef.current) return
@@ -51,17 +37,9 @@ export function Menu() {
       const query = encodeURIComponent(inputRef.current.value)
       if (query === '') return
 
-      // @ts-expect-error
-      if (!document.startViewTransition) {
+      viewTransition(() => {
         router.push(`/posts?query=${query}`)
-      } else {
-        // @ts-expect-error
-        document.startViewTransition(() => {
-          flushSync(() => {
-            router.push(`/posts?query=${query}`)
-          })
-        })
-      }
+      })
     }
   }
 

@@ -25,7 +25,7 @@
   height: 200px;
   background-color: var(--orange-500);
   border-radius: 5px;
-  view-transition-name: box;
+  view-transition-name: unmount-box;
 }
 
 @keyframes fade-in {
@@ -46,12 +46,12 @@
   }
 }
 
-:root::view-transition-old(box):only-child {
+::view-transition-old(unmount-box):only-child {
   animation-name: fade-out;
   animation-duration: 1s;
 }
 
-:root::view-transition-new(box):only-child {
+::view-transition-new(unmount-box):only-child {
   animation-name: fade-in;
   animation-duration: 1s;
 }

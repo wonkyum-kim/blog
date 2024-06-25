@@ -3,7 +3,7 @@
 import styles from './pagination.module.css'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { flushSync } from 'react-dom'
+import { viewTransition } from '@/lib/viewTransition'
 
 interface PaginationProps {
   page: number
@@ -26,45 +26,40 @@ export function Pagination({ page, lastPage, tag, query }: PaginationProps) {
   }
 
   const handleClick = (page: number) => {
-    // @ts-expect-error
-    if (!document.startViewTransition) {
+    viewTransition(() => {
       setSelectedPage(page)
       router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
-    } else {
-      // @ts-expect-error
-      document.startViewTransition(() => {
-        flushSync(() => {
-          setSelectedPage(page)
-          router.push(`/posts?page=${page}&tag=${tag ?? ''}&query=${query ?? ''}`)
-        })
-      })
-    }
+    })
   }
 
   const handlePreviousClick = () => {
     if (selectedPage === 1) return
 
-    setSelectedPage((prev) => {
-      if (pagesRef.current[0] > prev - 1) {
-        const to = pagesRef.current[0] - 1
-        const from = to - 4
-        pagesRef.current = new Array(5).fill(from).map((p, i) => p + i)
-      }
-      return prev - 1
+    viewTransition(() => {
+      setSelectedPage((prev) => {
+        if (pagesRef.current[0] > prev - 1) {
+          const to = pagesRef.current[0] - 1
+          const from = to - 4
+          pagesRef.current = new Array(5).fill(from).map((p, i) => p + i)
+        }
+        return prev - 1
+      })
+      router.push(`/posts?page=${selectedPage - 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
     })
-    router.push(`/posts?page=${selectedPage - 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
   }
 
   const handleNextClick = () => {
     if (selectedPage === lastPage) return
 
-    setSelectedPage((prev) => {
-      if (pagesRef.current.slice(-1)[0] < prev + 1) {
-        pagesRef.current = pagesRef.current.map((p) => p + 5).filter((p) => p <= lastPage)
-      }
-      return prev + 1
+    viewTransition(() => {
+      setSelectedPage((prev) => {
+        if (pagesRef.current.slice(-1)[0] < prev + 1) {
+          pagesRef.current = pagesRef.current.map((p) => p + 5).filter((p) => p <= lastPage)
+        }
+        return prev + 1
+      })
+      router.push(`/posts?page=${selectedPage + 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
     })
-    router.push(`/posts?page=${selectedPage + 1}&tag=${tag ?? ''}&query=${query ?? ''}`)
   }
 
   const dummy = <div className={styles.page} data-dummy />

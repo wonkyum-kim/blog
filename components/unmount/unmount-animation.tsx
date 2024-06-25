@@ -2,24 +2,17 @@
 
 import './unmount-animation.css'
 import { useState } from 'react'
-import { flushSync } from 'react-dom'
+import { viewTransition } from '@/lib/viewTransition'
 
 export function UnmountAnimation() {
   const [isOpen, setIsOpen] = useState(false)
 
   const handleClick = () => {
-    // @ts-expect-error
-    if (!document.startViewTransition) {
+    viewTransition(() => {
       setIsOpen((prev) => !prev)
-    } else {
-      // @ts-expect-error
-      document.startViewTransition(() => {
-        flushSync(() => {
-          setIsOpen((prev) => !prev)
-        })
-      })
-    }
+    })
   }
+
   return (
     <div className='container'>
       <button className='button' onClick={handleClick}>
