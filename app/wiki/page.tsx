@@ -21,6 +21,8 @@ function getLinks(subject: keyof typeof wiki) {
   )
 }
 
+// TODO: 태그를 먼저 보여주도록 수정하기
+
 export default function WikiPage() {
   return (
     <div className={styles.container}>
@@ -30,6 +32,8 @@ export default function WikiPage() {
       {getLinks('git')}
       <h2>Browser</h2>
       {getLinks('browser')}
+      <h2>TypeScript</h2>
+      {getLinks('typescript')}
     </div>
   )
 }

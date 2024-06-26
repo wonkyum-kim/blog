@@ -1,0 +1,101 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## let과 const 차이
+
+let으로 선언한 변수에 문자열을 할당하면 그 변수의 타입은 string이 된다.
+
+하지만, const로 선언한 변수에 문자열을 할당하면 그 변수의 타입은 string literal이 된다.
+
+<CodeSelector names={['ts']} desc='letconst' />
+
+```ts
+// string literal, 'Hello World'
+const helloWorld1 = 'Hello World'
+
+// string
+let helloWorld2 = 'Hello World'
+
+// string
+const helloWorld3: string = 'Hello World'
+```
+
+- `helloWorld1`은 더이상 변하지 않으므로 스트링 리터럴 타입이 되었다.
+- `helloWorld2`은 변할 수 있으므로 스트링 타입이다.
+- `helloWorld3`은 직접 타입을 스트링으로 지정해서 스트링 타입이다.
+
+## 컴파일 타임에 오타 발견하기
+
+스트링 리터럴을 사용하면 오타를 컴파일 타임에 발견할 수 있다.
+
+<CodeSelector names={['ts']} desc='compile' />
+
+```ts
+type EventType = 'mouseout' | 'mouseover' | 'click'
+
+function handleEvent(event: EventType) {
+  // ...
+}
+
+handleEvent('mouseout') // ok
+handleEvent('mouseOut') // compile error
+```
+
+## 객체 키와 스트링 리터럴
+
+타입스크립트에서 스트링은 객체의 키로 접근하지 못한다.
+
+<CodeSelector names={['ts']} desc='objectstring' />
+
+```ts
+const foo = {
+  a: '1',
+  b: '2',
+}
+
+// name: string
+let name = 'a'
+
+console.log(foo[name]) // compile error
+```
+
+객체의 키가 스트링 리터럴이면 접근이 가능하다.
+
+<CodeSelector names={['ts']} desc='objectliteral' />
+
+```ts
+const foo = {
+  a: '1',
+  b: '2',
+}
+
+// name: 'a'
+const name = 'a'
+
+console.log(foo[name]) // ok
+```
+
+`Object.keys()`는 `string[]`이기 때문에 컴파일 에러가 발생한다.
+
+<CodeSelector names={['ts']} desc='keys' />
+
+```ts
+// key: string
+Object.keys(foo).map((key) => {
+  return foo[key] // compile error
+})
+```
+
+이를 해결하려면 타입 단언을 사용한다.
+
+<CodeSelector names={['ts']} desc='keyas' />
+
+```ts
+const foo = {
+  a: '1',
+  b: '2',
+}
+
+Object.keys(foo).map((key) => {
+  return foo[key as keyof typeof foo] // ok
+})
+```
