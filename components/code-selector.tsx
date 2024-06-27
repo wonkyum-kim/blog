@@ -20,7 +20,7 @@ export function CodeSelector({ names, desc }: CodeSelectorProps) {
     }
 
     for (let i = 0; i < names.length; ++i) {
-      const pre = siblings.current[i]
+      const pre = siblings.current[i] as HTMLPreElement
       const code = pre.firstChild as HTMLElement
       code?.setAttribute('name', `${desc + i.toString()}`)
     }

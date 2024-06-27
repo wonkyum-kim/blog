@@ -37,8 +37,8 @@ export function Pagination({ page, lastPage, tag, query }: PaginationProps) {
 
     viewTransition(() => {
       setSelectedPage((prev) => {
-        if (pagesRef.current[0] > prev - 1) {
-          const to = pagesRef.current[0] - 1
+        if (pagesRef.current[0]! > prev - 1) {
+          const to = pagesRef.current[0]! - 1
           const from = to - 4
           pagesRef.current = new Array(5).fill(from).map((p, i) => p + i)
         }
@@ -53,7 +53,7 @@ export function Pagination({ page, lastPage, tag, query }: PaginationProps) {
 
     viewTransition(() => {
       setSelectedPage((prev) => {
-        if (pagesRef.current.slice(-1)[0] < prev + 1) {
+        if (pagesRef.current.slice(-1)[0]! < prev + 1) {
           pagesRef.current = pagesRef.current.map((p) => p + 5).filter((p) => p <= lastPage)
         }
         return prev + 1

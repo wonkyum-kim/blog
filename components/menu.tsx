@@ -60,7 +60,7 @@ export function Menu() {
             const delay = isMenuOpen ? `${i * 0.2 + 0.5}s` : `${(4 - i) * 0.2 + 0.5}s`
             return (
               <div
-                onClick={() => handleMove(urls[i])}
+                onClick={() => handleMove(urls[i] as string)}
                 style={{ transitionDelay: delay }}
                 className={[
                   styles.link,

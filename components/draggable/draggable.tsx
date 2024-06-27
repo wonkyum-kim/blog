@@ -39,7 +39,7 @@ export function Draggable() {
     let deltaY = 0
 
     // 중심(0,0)에서 얼마만큼 translate 할 수 있는지
-    const [minX, maxX, minY, maxY] = getBoundary(10, 10)
+    const [minX, maxX, minY, maxY] = getBoundary(10, 10) as [number, number, number, number]
 
     const pointerMoveHandler = (event: PointerEvent) => {
       if (!dragItemRef.current) return
