@@ -1,6 +1,10 @@
+'use client'
+
 import styles from './page.module.css'
 import { wiki } from '@/data'
 import Link from 'next/link'
+import { UIEventHandler, useRef, useState } from 'react'
+import { viewTransition } from '@/lib/viewTransition'
 
 function replaceTitle(title: string) {
   return title.replace(/\s/g, '-').replace(/@/g, '').replace(/:/g, '')
@@ -21,19 +25,49 @@ function getLinks(subject: keyof typeof wiki) {
   )
 }
 
-// TODO: 태그를 먼저 보여주도록 수정하기
-
 export default function WikiPage() {
+  const subjects = Object.keys(wiki)
+  const [currIndex, setCurrIndex] = useState(0)
+  const prevTop = useRef(0)
+
+  const handleScroll: UIEventHandler<HTMLDivElement> = (event) => {
+    const scrollHeight = (event.target as HTMLDivElement).scrollHeight
+    const scrollTop = (event.target as HTMLDivElement).scrollTop
+    const oneCell = Math.floor(scrollHeight / subjects.length)
+
+    let nextIndex = 0
+
+    // down
+    if (prevTop.current < scrollTop) {
+      nextIndex = Math.floor(scrollTop / oneCell)
+    }
+    // up
+    else {
+      nextIndex = Math.floor((scrollTop + oneCell * 0.5) / oneCell)
+    }
+
+    prevTop.current = scrollTop
+
+    if (currIndex === nextIndex) return
+
+    viewTransition(() => {
+      setCurrIndex(nextIndex)
+    })
+  }
+
   return (
-    <div className={styles.container}>
-      <h2>CSS</h2>
-      {getLinks('css')}
-      <h2>Git</h2>
-      {getLinks('git')}
-      <h2>Browser</h2>
-      {getLinks('browser')}
-      <h2>TypeScript</h2>
-      {getLinks('typescript')}
-    </div>
+    <>
+      <div className={styles['guide']}>스크롤하여 둘러보기</div>
+      <div className={styles['container']} onScroll={handleScroll}>
+        {subjects.map((sub) => {
+          return (
+            <div key={sub} className={styles['subject']}>
+              {sub}
+            </div>
+          )
+        })}
+      </div>
+      {getLinks(subjects[currIndex] as keyof typeof wiki)}
+    </>
   )
 }
