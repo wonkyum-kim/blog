@@ -1,0 +1,26 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## implements
+
+`implements`를 사용해서 클래스가 interface를 만족했는지 확인할 수 있다.
+
+<CodeSelector names={['implements']} desc='implements' />
+
+```ts
+interface Pingable {
+  ping(): void
+}
+
+class Sonar implements Pingable {
+  ping() {
+    console.log('ping!')
+  }
+}
+
+// ❌ error
+class Ball implements Pingable {
+  pong() {
+    console.log('pong!')
+  }
+}
+```

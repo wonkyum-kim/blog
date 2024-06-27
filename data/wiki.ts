@@ -36,7 +36,15 @@ const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
 
 const browser = ['critical rendering path', 'view transitions api']
 
-const typescript = ['index signature', 'unknown', 'literal types', 'utility types']
+const typescript = [
+  'index signature',
+  'unknown',
+  'literal types',
+  'utility types',
+  'interface vs type',
+  'implements',
+  'compilerOptions-typeChecking',
+]
 
 export const wiki = {
   css,

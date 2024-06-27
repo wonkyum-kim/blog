@@ -1,0 +1,54 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 확장하는 방법의 차이
+
+interface는 `extends`를 사용하고, type은 `&`을 사용한다.
+
+<CodeSelector names={['interface', 'type']} desc='example' />
+
+```ts
+interface Animal {
+  name: string
+}
+
+interface Bear extends Animal {
+  honey: boolean
+}
+
+const bear = getBear()
+bear.name
+bear.honey
+```
+
+```ts
+type Animal = {
+  name: string
+}
+
+type Bear = Animal & {
+  honey: boolean
+}
+
+const bear = getBear()
+bear.name
+bear.honey
+```
+
+그리고 interface는 같은 이름의 interface를 재선언하여 프로퍼티를 확장할 수 있는데, 그닥 좋은 방법은 아니므로 사용하지 않을 것 같다.
+
+## primitive 타입
+
+interface의 경우 primitive type을 extends 하는 것이 불가능하다.
+
+type은 가능하다.
+
+<CodeSelector names={['interface', 'type']} desc='primitive' />
+
+```ts
+// error
+interface X extends string {}
+```
+
+```ts
+type EvenNumber = number
+```

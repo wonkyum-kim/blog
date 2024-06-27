@@ -1,0 +1,42 @@
+## 쓰이지 않는 코드에 대한 에러
+
+- allowUnreachableCode: 도달하지 않는 코드에 대한 에러
+- allowUnusedLabels: 사용되지 않는 라벨에 대한 에러
+- noUnusedLocals: 사용하지 않은 지역 변수에 대한 에러
+- noUnusedParameters: 사용하지 않은 파라미터에 대한 에러
+
+## 암묵적인 선언에 대한 에러
+
+- noImplicitAny: 암묵적인 any에 대한 에러
+- noImplicitOverride: 서브클래스의 암묵적인 메서드 오버라이딩에 대한 에러
+- noImplicitReturns: 함수가 암묵적으로 undefined를 반환하는 것에 대한 에러
+- noImplicitThis: this가 암묵적으로 any로 평가되는 것에 대한 에러
+
+## 엄격 모드에 대한 에러
+
+- strict: 모든 엄격 관련 옵션을 적용
+- alwaysStrict: 엄격 모드를 위반하면 에러
+- strictBindCallApply: call, bind, apply를 사용했을 때, 인자의 타입이 다르면 에러
+- strictFunctionTypes: 함수 파라미터를 더 정확하게 체크(반공변성)
+- strictNullChecks: false, null, undefined인 값에 접근하면 에러
+- strictPropertyInitialization: 클래스의 인스턴스가 생성될 시점에 멤버 변수가 초기화 되지 않으면 에러
+- useUnknownInCatchVariables: catch의 error를 unknown으로 다루지 않으면 에러
+
+`strict` 옵션만 켜놓으면 다른 것은 설정할 필요가 없다.
+
+## 기타 에러
+
+- exactOptionalPropertyTypes: 옵셔널 프로퍼티에 직접 undefined를 할당하면 에러
+- noFallthroughCasesInSwitch: switch 문이 반드시 break, return, throw를 하지 않으면 에러
+- noPropertyAccessFromIndexSignature: 인덱스 시그니처로 선언된 프로퍼티에 '.'으로 접근하면 에러
+- noUncheckedIndexedAccess: 인덱스 시그니처로 선언된 프로퍼티의 값 타입을 Optional로 평가
+
+css module을 사용하고 있는 상황에서 `noPropertyAccessFromIndexSignature`을 적용하니 .으로 접근하던 className에서 에러가 났다.
+
+너무 많은 곳에서 에러가 발생해서 일단 꺼두긴 했는데, 다음에 css module을 사용할 때는 처음부터 대괄호로 접근하도록 해야겠다.
+
+## References
+
+- [Intro to the TSConfig Reference
+  ](https://www.typescriptlang.org/tsconfig)
+- [[tsconfig의 모든 것] Compiler options / Type Checking](https://evan-moon.github.io/2021/08/08/tsconfig-compiler-options-type-check/)
