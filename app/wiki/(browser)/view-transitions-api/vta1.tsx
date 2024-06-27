@@ -15,9 +15,9 @@ export function Vta1() {
   return (
     <div className='container'>
       {state ? (
-        <div className='box first-box' onClick={handleClick} />
+        <div className='box1 first-box' onClick={handleClick} />
       ) : (
-        <div className='box second-box' onClick={handleClick} />
+        <div className='box1 second-box' onClick={handleClick} />
       )}
     </div>
   )

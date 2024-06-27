@@ -5,12 +5,12 @@
   position: relative;
 }
 
-.box {
+.box1 {
   background-color: var(--orange-500);
   position: absolute;
   width: 100px;
   aspect-ratio: 1;
-  view-transition-name: vta-box;
+  view-transition-name: vta-box1;
   cursor: pointer;
 }
 
@@ -24,6 +24,6 @@
   right: 0;
 }
 
-::view-transition-group(vta-box) {
+::view-transition-group(vta-box1) {
   animation-duration: 3s;
 }
