@@ -362,16 +362,3 @@ a {
     opacity: 0;
   }
 }
-
-/* wiki */
-::view-transition-old(wiki-items) {
-  animation-name: slideToDown, fadeOut;
-  animation-duration: 0.5s, 0.5s;
-  animation-timing-function: linear, linear;
-}
-
-::view-transition-new(wiki-items) {
-  animation-name: slideFromTop, fadeIn;
-  animation-duration: 0.5s, 0.5s;
-  animation-timing-function: linear, linear;
-}

@@ -4,7 +4,6 @@ import styles from './page.module.css'
 import { wiki } from '@/data'
 import Link from 'next/link'
 import { UIEventHandler, useRef, useState } from 'react'
-import { viewTransition } from '@/lib/viewTransition'
 
 function replaceTitle(title: string) {
   return title.replace(/\s/g, '-').replace(/@/g, '').replace(/:/g, '')
@@ -38,21 +37,15 @@ export default function WikiPage() {
     let nextIndex = 0
 
     // down
-    if (prevTop.current < scrollTop) {
-      nextIndex = Math.floor(scrollTop / oneCell)
-    }
+    if (prevTop.current < scrollTop) nextIndex = Math.floor(scrollTop / oneCell)
     // up
-    else {
-      nextIndex = Math.floor((scrollTop + oneCell * 0.5) / oneCell)
-    }
+    else nextIndex = Math.floor((scrollTop + oneCell * 0.5) / oneCell)
 
     prevTop.current = scrollTop
 
     if (currIndex === nextIndex) return
 
-    viewTransition(() => {
-      setCurrIndex(nextIndex)
-    })
+    setCurrIndex(nextIndex)
   }
 
   return (

@@ -38,7 +38,6 @@
   margin-top: 3rem;
   width: 100%;
   flex-wrap: wrap;
-  view-transition-name: wiki-items;
 }
 
 .item {
