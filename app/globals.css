@@ -38,6 +38,16 @@ thead {
   --green-400: rgb(74 222 128);
 }
 
+blockquote {
+  background-color: var(--gray-200);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+span.katex-html {
+  display: none;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.5s;

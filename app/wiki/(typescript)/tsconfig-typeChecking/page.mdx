@@ -22,7 +22,7 @@
 - strictPropertyInitialization: 클래스의 인스턴스가 생성될 시점에 멤버 변수가 초기화 되지 않으면 에러
 - useUnknownInCatchVariables: catch의 error를 unknown으로 다루지 않으면 에러
 
-`strict` 옵션만 켜놓으면 다른 것은 설정할 필요가 없다.
+> `strict` 옵션만 켜놓으면 다른 것은 설정할 필요가 없다.
 
 ## 기타 에러
 
@@ -31,9 +31,7 @@
 - noPropertyAccessFromIndexSignature: 인덱스 시그니처로 선언된 프로퍼티에 '.'으로 접근하면 에러
 - noUncheckedIndexedAccess: 인덱스 시그니처로 선언된 프로퍼티의 값 타입을 Optional로 평가
 
-css module을 사용하고 있는 상황에서 `noPropertyAccessFromIndexSignature`을 적용하니 .으로 접근하던 className에서 에러가 났다.
-
-너무 많은 곳에서 에러가 발생해서 일단 꺼두긴 했는데, 다음에 css module을 사용할 때는 처음부터 대괄호로 접근하도록 해야겠다.
+> css module을 사용하고 있는 상황에서 `noPropertyAccessFromIndexSignature`을 적용하니 .으로 접근하던 className에서 에러가 났다. <br /><br /> 이 옵션을 사용하면서 css module을 사용할 때는 대괄호로 접근하도록 한다.
 
 ## References
 

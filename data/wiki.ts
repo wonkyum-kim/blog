@@ -30,6 +30,7 @@ const css = [
   'appearance',
   'perspective',
   'word-break',
+  'linear()',
 ]
 
 const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
@@ -43,7 +44,10 @@ const typescript = [
   'utility types',
   'interface vs type',
   'implements',
-  'compilerOptions-typeChecking',
+  'covariant-contravariant',
+  'generic constraint',
+  'infer',
+  'tsconfig-typeChecking',
 ]
 
 export const wiki = {

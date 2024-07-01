@@ -1,0 +1,17 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## infer
+
+`extends`와 함께 사용하며, 타입을 추론하고, 추론된 타입을 참인 조건에서만 사용가능하다. (거짓인 조건에서는 사용 불가능)
+
+`ReturnType`의 구현을 살펴보자.
+
+<CodeSelector names={['ReturnType']} desc='ReturnType' />
+
+```ts
+type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
+```
+
+`T extends (...args: any) => any`에서 T는 함수 타입임을 컴파일러가 알 수 있다.
+
+그리고 `T extends (...args: any) => infer R ? R : any`에서 T의 반환 값 타입 R을 추론하고, T가 함수인 참인 조건에서 R을 반환, 거짓인 조건에서 any를 반환한다.
