@@ -1,0 +1,158 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 서브타입과 슈퍼타입
+
+좀 더 큰 집합을 슈퍼타입, 작은 집합을 서브타입이라고 하자.
+
+<CodeSelector names={['ts']} desc='type' />
+
+```ts
+type A = 'number' | 'string'
+type B = 'number'
+```
+
+별다른 설명 없이도, A가 B보다 더 큰 집합인 것을 알 수 있다.
+
+## variance
+
+타입스크립트에서 variance는 제네릭 타입 `F<T>`가 타입 파라미터 T에 대해서 어떻게 달라지는지 설명한다.
+
+만약에 T가 U의 서브타입일 때(`T extends U`), `F<T>`와 `F<U>`의 관계에 대해 4가지 경우가 존재한다.
+
+- covariant
+- contravariant
+- invariant
+- bivariant
+
+## 공변적(covariant)
+
+`공변적`이란 `T extends U` 이면, `F<T> extends F<U>`이 되는 것을 의미한다.
+
+대표적으로 객체와 함수의 반환형에서 나타난다.
+
+먼저 객체 A와 B가 있다고 하자.
+
+객체 A의 모든 프로퍼티 P에 대하여 $A[P] \gtrsim B[P]$이면, A가 B의 슈퍼타입($A \gtrsim B$)이 된다.
+
+즉 객체의 타입은 프로퍼티의 타입에 대해 공변적이다.
+
+<CodeSelector names={['ts']} desc='co1' />
+
+```ts
+interface A {
+  x: number
+  y?: string
+  z: boolean
+}
+
+interface B {
+  x: number
+  z: boolean
+  a: string
+}
+
+// P = 'x' | 'y' | 'z'
+// 1. A['x']는 number이고, B['x']도 number 이므로 A['x'] >= B['x']
+// 2. A['y']는 string | undefined 이고 B['y']는 undefined이므로 A['y'] >= B['y']
+// 3. A['z']는 boolean이고, B['z']도 boolean 이므로 A['z'] >= B['z']
+// 4. 'a'는 A의 key가 아니므로 상관 없음
+// 5. 따라서 A는 B의 슈퍼타입
+```
+
+다음으로 어떤 타입 A가 B의 서브타입이라고 하자.
+
+인자가 같을 때 A를 반환하는 함수는 B를 반환하는 함수의 서브타입이 된다.
+
+즉, 함수는 인자형이 같을 때 반환형에 대해서는 공변적이다.
+
+<CodeSelector names={['ts']} desc='co2' />
+
+```ts
+// A가 B의 서브타입이라면, F1은 F2의 서브타입이 된다.
+type F1 = () => A
+type F2 = () => B
+```
+
+하지만, 이 함수가 인자를 가지게 된다면 상황은 달라진다.
+
+## 반변적(Contravariant)
+
+`반변적`이란 `T extends U` 이면, `F<U> extends F<T>`이 되는 것을 의미한다.
+
+함수는 반환형에 대해서는 공변적이지만, 인자형에 대해서는 `반변적(Contravariant)`이다.
+
+따라서 A가 B의 서브타입이라면, 반환형이 같을 때, B를 인자로 같는 함수는 A를 인자로 갖는 함수의 서브타입이 된다.
+
+쉽게 생각하면, 함수를 호출할 때는 lval 타입을 사용하고, 함수를 실행할 때는 rval 타입을 사용한다고 생각하면 된다.
+
+<CodeSelector names={['ts']} desc='con1' />
+
+```ts
+function processNumber(x: number) {}
+function processNumberAndString(x: number | string) {}
+
+// A를 number라고 하고, B를 number | string이라고 생각해보자.
+// A는 B의 서브타입이지만, 반환형이 같을 때 B를 인자로 같는 함수는 A를 인자로 갖는 함수의 서브타입이 된다.
+
+let wide: (x: number) => void
+// A를 인자로 갖는 함수를 대입한다. -> ok
+wide = processNumber
+// B를 인자로 갖는 함수를 대입한다. -> ok
+// wide에는 x: number만 전달할 수 있으며, processNumberAndString은 x: number를 받아들일 수 있기 때문
+wide = processNumberAndString
+
+let narrow: (x: number | string) => void
+// B를 인자로 갖는 함수를 대입한다. -> ok
+narrow = processNumberAndString
+// A를 인자로 갖는 함수를 대입한다. -> error
+// narrow('0')을 processNumber에서 처리하지 못하기 때문!
+narrow = processNumber
+```
+
+인자의 수가 불일치 하는 경우, 인자가 적은 함수가 인자가 많은 함수의 서브타입이 된다.
+
+그 함수를 사용하는 곳에서 넣어줘야 할 인자를 안넣어주는 상황을 방지하기 위함.
+
+<CodeSelector names={['ts']} desc='con2' />
+
+```ts
+function consumeOneArg(x: any) {}
+
+let wide: (x: any, y: any) => void
+wide = consumeOneArg
+// 가능. consumeOneArg에서 두 번째 인자를 그냥 무시하면 되기 때문
+wide(0, 1)
+
+function consumeTwoArg(x: any, y: any) {}
+
+let narrow: (x: any) => void
+// 불가능. consumeTwoArg의 두 번째 인자인 y가 전달되지 않음
+narrow = consumeTowArg
+```
+
+## 무공변적(invariant)
+
+제공한 타입을 매개변수로도 사용하고 반환형으로도 사용하는 함수 타입을 `무공변적(Invariant)`이라고 한다.
+
+<CodeSelector names={['ts']} desc='inv' />
+
+```ts
+type Inv<T> = (value: T) => T // Invariant
+```
+
+이 경우 두 타입간의 관계가 제네릭을 적용했을 때 아무런 영향을 끼치지 않는다.
+
+## 양변적(bivariant)
+
+공변적인 성질과 반변적인 성질을 동시에 만족하는 것을 말한다.
+
+따라서 제네릭을 적용했을 때, 서로가 서로의 서브타입이면서 슈퍼타입이 된다.
+
+## out in
+
+[타입스크립트 4.7](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-7.html#optional-variance-annotations-for-type-parameters)에서 out과 in 어노테이션이 추가되었다.
+
+## References
+
+- [infer, never만 보면 두려워지는 당신을 위한 고급 TypeScript](https://www.youtube.com/watch?v=xesy1i67OWI&list=WL&index=57&t=1573s)
+- [Covariant, Contravariant, and Invariant in Typescript](https://www.sandromaglione.com/articles/covariant-contravariant-and-invariant-in-typescript)

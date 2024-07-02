@@ -44,7 +44,7 @@ const typescript = [
   'utility types',
   'interface vs type',
   'implements',
-  'covariant-contravariant',
+  'variance',
   'generic constraint',
   'infer',
   'tsconfig-typeChecking',
