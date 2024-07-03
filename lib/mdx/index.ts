@@ -14,7 +14,7 @@ export function getHeadingsBySlug(slug: string) {
 
   const headings = matches.map(({ groups }) => {
     const flag = groups?.flag
-    const content = groups?.content
+    const content = groups?.content?.replace(/\?/g, '')
     return {
       level: flag?.length ?? -1,
       heading: content ?? '',
