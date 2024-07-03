@@ -1,4 +1,9 @@
 export const frontmatter = {
+  ['zustand-object-method-type']: {
+    title: 'Zustand에서 bivariant 메서드 타입이 필요했던 이유',
+    createdAt: '2024-07-03',
+    tags: ['ts', 'zustand'],
+  },
   ['unmount-animation']: {
     title: 'View Transitions API를 사용한 unmount 애니메이션 만들기',
     createdAt: '2024-06-20',

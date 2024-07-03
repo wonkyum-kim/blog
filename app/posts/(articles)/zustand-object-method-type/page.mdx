@@ -1,0 +1,154 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ToolTip } from '@/components/tooltip.tsx'
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'zustand-object-method-type'} />
+
+<TOC headings={getHeadingsBySlug('zustand-object-method-type')} />
+
+## SetStateInternal type
+
+Zustand의 소스코드를 살펴보면 이상한 타입들이 많이 존재하는데, 그 중에서 제일 처음 나와있는 것이 `SetStateInternal`이다.
+
+<CodeSelector names={['src/vanilla.ts']} desc='SetStateInternal' />
+
+```ts showLineNumbers
+type SetStateInternal<T> = {
+  _(
+    partial: T | Partial<T> | { _(state: T): T | Partial<T> }['_'],
+    replace?: boolean | undefined
+  ): void
+}['_']
+```
+
+분명히 어떤 함수의 타입을 나타내는 것 같은데, 객체를 만들고 그 안에 메서드를 정의한 다음, `['_']`로 접근하고 있다.
+
+굳이 이럴 필요가 있는 것일까?
+
+Zustand의 메인테이너인 `dai-shi`는 [그의 블로그](https://blog.axlight.com/posts/why-zustand-typescript-implementation-is-so-ugly/)에서 라이브러리를 사용하는 사람들은 굳이 이유를 알필요 없다고 넘어갔지만,
+
+어떤 [PR](https://github.com/pmndrs/zustand/pull/1977)에서 그 이유에 대해 간단히 설명하고 있는 것을 볼 수 있다.
+
+> It's intentional to make types bivariant.
+
+즉, 타입을 `bivariant`로 만들기 위해서 의도적으로 작성한 코드라는 것이다.
+
+하지만 여전히 무슨 의미인지 모르겠어서 살펴보게 되었다.
+
+## Method definitions
+
+뜬금 없겠지만 먼저 자바스크립트에서 객체 메서드를 정의하는 방법에 대해 알아야 한다.
+
+자바스크립트에서는 3가지 방법으로 객체 메서드를 정의할 수 있다.
+
+<CodeSelector names={['js']} desc='methods' />
+
+```js showLineNumbers
+const obj = {
+  method1: function (a) {},
+  method2: (a) => {},
+  method3(a) {},
+}
+```
+
+기존에는 `method1`과 `method2` 처럼만 작성해야 했으나, ES6에서 `method3`과 같이 짧게 줄여쓰는 방법이 추가되었다.
+
+이 3가지 메서드들의 차이에 대해 알고 있는가?
+
+`this`에 대해 알고 있는 사람들은 `method1`과 `method2`의 this가 가리키고 있는 것이 서로 다르다는 것을 이미 알고 있을 것이다.
+
+`method3`은 this에 대해서는 `method1`과 동일하게 작동한다.
+
+이 밖에도 [차이점](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)이 몇 가지 더 있지만, 글의 주제와는 상관이 없으므로 넘어간다.
+
+(사실 this도 주제와는 상관 없는 이야기였지만...)
+
+객체 메서드를 표시하는 방법이 3가지나 되듯이, 타입스크립트에서 객체 메서드의 타입을 표시하는 방법도 2가지나 된다.
+
+<CodeSelector names={['ts']} desc='typemethods' />
+
+```ts showLineNumbers
+interface Obj<T> {
+  method1: (a: T) => void
+  method2(a: T): void
+}
+```
+
+그렇다면, `method1`과 `method2`의 차이점은 뭘까?
+
+이를 살펴보려면, `variance`에 대해 알아야한다.
+
+## Variance
+
+`subtyping`은 많은 프로그래밍 언어 타입시스템이 지원하고 있다.
+
+예를 들어 `Cat` 타입이 `Animal` 타입의 서브타입이라고 한다면, Animal 타입이 사용되고 있는 곳에서 더 작은 타입인 Cat으로 대체할 수 있다.
+
+`variance`는 더 복잡한 타입끼리의 subtyping이 발생했을 때 어떻게 동작해야 하는지 설명해주는 것에 관한 것이다.
+
+이에 대해서 [wiki](https://blog-gray-omega-81.vercel.app/wiki/variance)에 자세한 설명을 적어두었다.
+
+## 그래서 둘의 차이점은?
+
+`method1`은 contravariant이지만, `method2`는 bivariant이다.
+
+아니 분명히 타입스크립트는 함수의 인자형에 대해서 contravariant 라고 했던 것 같은데?
+
+사실 타입스크립트에서 함수의 인자형은 bivariant가 맞다.
+
+하지만 대부분 `tsconfig.json`에서 `strict` 옵션을 적용하고 있기 때문에 contravariant로 되어 있던 것이었다. [wiki](https://blog-gray-omega-81.vercel.app/wiki/tsconfig-typeChecking)
+
+그렇다면 왜 strict 옵션을 적용해도 `method2`는 bivariant일까?
+
+그 이유는 [여기](https://github.com/Microsoft/TypeScript/wiki/FAQ#why-are-function-parameters-bivariant)서 찾을 수 있었다.
+
+간단히 설명하면, `Animal`은 `Dog`의 슈퍼타입이고 covariant이므로 `Animal[]`은 `Dog[]`의 슈퍼타입이 된다.
+
+따라서 `Dog[]`를 `Animal[]`에 대입하는 subtyping이 가능해야 하는데, contravariant를 적용하면 `Dog[].push`가 `Animal[].push`의 서브타입이 되지 않는 문제가 발생한다는 것이다.
+
+그래서 의도적으로 `method2`와 같은 메서드 타입은 옵션과 상관 없이 bivariant로 만들었다는 것이다.
+
+## bivariant 메서드 타입이 필요했던 이유
+
+만약 `SetStateInternal` 타입이 contravariant 였다면 어떻게 될까?
+
+<CodeSelector names={['ts']} desc='storeapi' />
+
+```ts showLineNumbers
+// bivariant
+type SetStateInternal<T> = {
+  _(
+    partial: T | Partial<T> | { _(state: T): T | Partial<T> }['_'],
+    replace?: boolean | undefined
+  ): void
+}['_']
+
+// contravariant
+type SetStateInternal2<T> = (
+  partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+  replace?: boolean | undefined
+) => void
+```
+
+`dai-shi`는 이것에 대한 [예시](https://tsplay.dev/NBVO4N)를 남겨두었다.
+
+첫 번째 예시에서 `State`는 `unknown`의 서브타입이므로 contravariant일 경우
+
+`SetStateInternal2<State> extends SetStateInternal2<unknown>`가 성립하지 않아서 `run2(setState2)`에 에러가 발생한 모습이다.
+
+두 번째 예시에서 `StoreApi`는 bivariant이고, `StoreApi2`는 contravariant이다.
+
+그리고 `NameOnlyState`는 `State`의 슈퍼타입이기 때문에, `nameOnlyStore2`에서 에러가 발생했다.
+
+Zustand에서 bivariant 메서드 타입이 필요했던 이유는 두 번째 예시처럼, 슈퍼타입(`NameOnlyState`)을 서브타입(`State`)으로 확장하고 싶을 때, contravariance로 인해 에러가 발생하는 경우를 피하기 위함이었다.
+
+## References
+
+- [Why Zustand Typescript Implementation Is So Ugly](https://blog.axlight.com/posts/why-zustand-typescript-implementation-is-so-ugly/)
+- [Method definitions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions)
+- [Covariance and contravariance (computer science)](<https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)>)
+- [타입 시스템에서의 변성(Variance) — 공변성(Covariance)과 반공변성(Contravariance)](https://driip.me/d875a384-3fb9-471b-a53b-b3ca52f8238e)
+- [Why are function parameters bivariant?](https://github.com/Microsoft/TypeScript/wiki/FAQ#why-are-function-parameters-bivariant)
+- https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts#L1
