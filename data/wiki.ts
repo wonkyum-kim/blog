@@ -45,14 +45,16 @@ const typescript = [
   'interface vs type',
   'implements',
   'variance',
-  'generic constraint',
   'infer',
   'tsconfig-typeChecking',
 ]
+
+const algorithm = ['prefix sum']
 
 export const wiki = {
   css,
   git,
   browser,
   typescript,
+  algorithm,
 }
