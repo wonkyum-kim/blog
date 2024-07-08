@@ -33,7 +33,16 @@ const css = [
   'linear()',
 ]
 
-const git = ['stash', 'amend', 'squash', 'fixup', 'reset', 'revert', 'remote']
+const git = [
+  'stash',
+  'amend',
+  'squash',
+  'fixup',
+  'reset',
+  'revert',
+  'remote',
+  'allow-unrelated-histories',
+]
 
 const browser = ['critical rendering path', 'view transitions api']
 
@@ -49,7 +58,7 @@ const typescript = [
   'tsconfig-typeChecking',
 ]
 
-const algorithm = ['prefix sum']
+const algorithm = ['prefix sum', `maximum subarray problem`, `knapsack problem`]
 
 export const wiki = {
   css,

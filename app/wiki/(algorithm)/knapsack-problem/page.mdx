@@ -1,0 +1,138 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 0-1 배낭 문제
+
+`0-1 배낭 문제`는 n개의 물건이 있고, 각 물건은 가치와 무게를 가지고 있을 때, 배낭에 최대 k만큼의 무게만 담을 수 있는 경우 최대로 얻을 수 있는 이익을 구하는 문제다.
+
+이 문제는 물건을 가져가거나, 남겨두는 두 가지 선택 중 하나만 가능하다.
+
+무게가 큰 곳부터 살펴보는 트릭을 사용한다면, 직전 물건에서 고려한 값을 침범하지 않고 dp 배열을 업데이트 할 수 있다.
+
+<CodeSelector names={['js']} desc='knap1' />
+
+```js {5} showLineNumbers
+function knapsack(n, k) {
+  const dp = new Array(k + 1).fill(0)
+  for (let i = 0; i < n; ++i) {
+    const [weight, value] = item[i]
+    for (let j = k; j >= weight; --j) {
+      dp[j] = Math.max(dp[j], dp[j - weight] + value)
+    }
+  }
+  return dp[k]
+}
+```
+
+## 분할 가능 배낭 문제(fractional knapsack problem)
+
+`분할 가능 배낭 문제`에서는 조건은 동일하지만, 물건의 일부를 떼어서 가져갈 수 있다.
+
+그렇기 때문에 이 문제는 무게 당 가치가 높은 물건 순서대로 가져가는 것이 이득이 되는 그리디 문제가 된다.
+
+## 물건이 무한 개 있는 경우
+
+[백준 1106 - 호텔](https://www.acmicpc.net/problem/1106)와 같이 각 물건이 한 개가 아니라 무한 개가 있는 경우, 뒤에서부터 dp를 갱신하지 않아도 된다.
+
+왜냐하면 물건이 무한 개가 있기 때문에, 이전 값에서 계속 더해나가도 괜찮기 때문이다.
+
+[백준 9084 - 동전](https://www.acmicpc.net/problem/9084) 문제와 같이 만들 수 있는 방법의 개수를 세는 것도 물건이 무한 개가 있는 것과 같다.
+
+두 문제는 비슷해 보이지만, 전자의 유형은 최대/최소 값을 구하는 것이고 후자의 유형은 가능한 방법의 개수를 구하는 것이다.
+
+따라서 전자는 dp 배열을 갱신할 때 두 값을 서로 비교하지만, 후자는 그저 더해주기만 한다.
+
+<CodeSelector names={['호텔.js', '동전.js']} desc='example' />
+
+```js {11} showLineNumbers
+function solve() {
+  const c = input.getNumber
+  const n = input.getNumber
+  // dp[i] = i명 일때 최소 비용
+  const dp = new Array(1101).fill(Infinity)
+  dp[0] = 0
+
+  for (let i = 0; i < n; ++i) {
+    const [weight, value] = [0, 0].map(() => input.getNumber)
+    for (let j = value; j <= 1100; ++j) {
+      dp[j] = Math.min(dp[j], dp[j - value] + weight)
+    }
+  }
+
+  let ans = Infinity
+  for (let i = c; i <= 1100; ++i) {
+    ans = Math.min(ans, dp[i])
+  }
+  console.log(ans)
+}
+```
+
+```js {12} showLineNumbers
+function solve() {
+  let t = input.getNumber
+  while (t--) {
+    const n = input.getNumber
+    const coin = new Array(n).fill(0).map(() => input.getNumber)
+    const m = input.getNumber
+    const dp = new Array(m + 1).fill(0)
+    dp[0] = 1
+    for (let i = 0; i < n; ++i) {
+      const curr = coin[i]
+      for (let j = curr; j <= m; ++j) {
+        dp[j] += dp[j - curr]
+      }
+    }
+    console.log(dp[m])
+  }
+}
+```
+
+## 물건이 여러 개 있는 경우
+
+[백준 15817 - 배수 공사](https://www.acmicpc.net/problem/15817)와 [백준 12920 - 평범한 배낭 2](https://www.acmicpc.net/problem/12920)와 같이 물건이 무한 개 있지는 않지만 여러 개 있는 경우는 뒤에서부터 dp 배열을 갱신해야 한다.
+
+이 두 문제도 아까와 같이 비슷해보이지만 유형이 서로 다르다.
+
+`평범한 배낭 2` 문제는 시간을 줄이기 위해서 한 종류의 물건을 적절한 개수로 묶어서 서로 다른 물건으로 치환하는 방법을 사용할 수 있다.
+
+어떤 물건의 개수가 10개라고 한다면, 물건 몇 개를 묶어서 하나의 물건으로 치환한다.
+
+예를 들어 2의 제곱 수로 물건을 묶는다면, 10을 1,2,4,3(1+2+4+8 = 15이므로 8이 아니라 남은 3을 그대로 쓴다.)으로 분해할 수 있다.
+
+저 4가지를 각각 하나의 물건으로 취급한다면, 물건들을 적절히 골라서 1부터 10가지의 수를 모두 만들 수 있기 때문에 가능하다.
+
+<CodeSelector names={['js']} desc='knap3' />
+
+```js showLineNumbers
+function solve() {
+  let n = input.getNumber
+  const m = input.getNumber
+  const dp = new Array(m + 1).fill(0)
+
+  while (n--) {
+    let [v, c, k] = [0, 0, 0].map(() => input.getNumber)
+
+    // k개의 물건을 적절히 묶어서 서로 다른 물건 처럼 취급한다.
+    let count = 1
+    while (k > 0) {
+      count = Math.min(count, k)
+      for (let i = m; i >= count * v; --i) {
+        dp[i] = Math.max(dp[i], dp[i - count * v] + c * count)
+      }
+      k -= count
+      count *= 2
+    }
+  }
+
+  console.log(dp[m])
+}
+```
+
+하지만 `배수 공사` 문제의 경우 이러한 최적화를 사용할 수 없다.
+
+예를 들어 4를 1, 2, 1개로 나누고 다른 물건으로 취급해보자.
+
+dp 배열을 최대/최소 값으로 갱신하는 경우엔 문제가 발생하지 않지만, 더해주기만 하는 방식으로는 1 + 1과 2를 서로 다른 것으로 취급하기 때문에 문제가 발생한다.
+
+## References
+
+- https://dingcoding.tistory.com/374

@@ -1,0 +1,21 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## allow-unrelated-histories
+
+문제 발생 경위:
+
+로컬에서 작업을 하고 커밋을 한 다음, 깃허브에서 레포지토리를 생성하고 웹에서 라이센스 파일을 추가한 상태였다.
+
+이때 `git remote`로 연결하려고 하면 `refusing to merge unrelated histories`와 같은 에러메시지가 발생하였다.
+
+해결 방안:
+
+origin과 local이 서로 관계가 없기 때문에 병합이 거부된 것으로 충돌이 발생하지 않을 것이라 확신한다면
+
+다음 명령어로 문제를 해결할 수 있다.
+
+<CodeSelector names={['shell']} desc='allow' />
+
+```shell
+git pull origin main --allow-unrelated-histories
+```

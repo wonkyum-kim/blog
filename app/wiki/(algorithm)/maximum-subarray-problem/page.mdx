@@ -1,0 +1,19 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## O(n) 시간 풀이
+
+크기가 N인 배열 X가 있을 때, X의 부분 배열 중에서 각 원소의 합이 가장 큰 부분 배열을 찾는 문제를 `Maximum subarray problem`라고 한다.
+
+푸는 방법은 여러 가지가 있지만 가장 효율적인 방법은 `Kadane's Algorithm`이다.
+
+<CodeSelector names={['js']} desc='sum' />
+
+```js
+let sum = 0
+let best = -Infinity
+
+for (let i = 0; i < n; ++i) {
+  sum = Math.max(sum + v[i], v[i])
+  best = Math.max(best, sum)
+}
+```
