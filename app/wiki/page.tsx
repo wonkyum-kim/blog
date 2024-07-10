@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { UIEventHandler, useRef, useState } from 'react'
 
 function replaceTitle(title: string) {
-  return title.replace(/\s/g, '-').replace(/@/g, '').replace(/:/g, '')
+  return title.replace(/[\s@:]/g, (match) => (match === ' ' ? '-' : ''))
 }
 
 function getLinks(subject: keyof typeof wiki) {
