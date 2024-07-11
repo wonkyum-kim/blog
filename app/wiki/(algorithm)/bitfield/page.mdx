@@ -1,0 +1,86 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 비트필드
+
+비트필드는 어떤 상태 정보를 비트 형식으로 저장하는 기법이다.
+
+예를 들어 어떤 그래프의 10개의 노드 중에서 0번과 2번 노드를 방문했다고 저장하려면
+
+0번과 2번 비트를 1로 설정하면 된다.
+
+## 방문하는 순서가 중요한 경우
+
+가장 대표적인 문제가 [백준 2098 - 외판원 순회](https://www.acmicpc.net/problem/2098)다.
+
+외판원 순회는 어느 한 도시에서 다른 도시를 모두 거쳐서 다시 원래의 도시로 돌아올 때 가장 적은 비용을 구하는 문제다.
+
+방문한 도시에서 아직 방문하지 않은 도시를 찾기 위해서 비트필드를 사용한다.
+
+방문한 도시의 비트는 1이고 방문하지 않은 도시의 비트는 0로 구분할 수 있다.
+
+시작 도시는 아무 도시나 상관이 없기 때문에 0번 노드로 설정한다.
+
+(순회가 가능하다면 경로는 사이클일 것이기 때문이다.)
+
+<CodeSelector names={['외판원 순회.js']} desc='ex1' />
+
+```js
+function dfs(curr, state) {
+  // 모든 도시를 다 방문했으면 처음 도시로 돌아간다.
+  if (state === (1 << n) - 1) return v[curr][0]
+  // 방문한 적이 있으면 또 진행하지 않는다.
+  if (dp[curr][state] !== 0) return dp[curr][state]
+
+  dp[curr][state] = Infinity
+  for (let i = 0; i < n; ++i) {
+    // 방문하지 않은 도시만 선택한다.
+    if (state & (1 << i)) continue
+    // 갈 수 없는 경우
+    if (v[curr][i] === Infinity) continue
+    const nextState = state | (1 << i)
+    dp[curr][state] = Math.min(dp[curr][state], dfs(i, nextState) + v[curr][i])
+  }
+
+  return dp[curr][state]
+}
+```
+
+왜 2차원 dp 배열을 사용해야 하는가?
+
+그건 바로 방문하는 순서가 중요하기 때문이다.
+
+예를 들어 1->2, 1->3, 2->3, 3->2 간선이 있다고 하자.
+
+1번에서 출발해서 모든 노드를 방문하는 경로는 1->2->3 또는 1->3->2가 있지만
+
+1차원 배열로 풀게되면 1->2 & 1->3과 같은 경로도 상태로 포함되므로 잘못된 답을 구하게 된다.
+
+## 방문하는 순서가 중요하지 않은 경우
+
+대표적으로 [백준 1102 - 발전소](https://www.acmicpc.net/problem/1102) 문제가 있다.
+
+이 경우 1차원 dp 배열을 사용해도된다.
+
+아까 예시에서 설명한 것처럼 1->2 & 1->3과 같은 경로도 가능하기 때문이다.
+
+<CodeSelector names={['발전소.js']} desc='ex2' />
+
+```js
+function dfs(state) {
+  if (popCount(state) >= p) return 0
+  if (dist[state] !== -1) return dist[state]
+
+  dist[state] = Infinity
+  for (let i = 0; i < n; ++i) {
+    // 현재 켜져 있는 발전소 중에서
+    if ((state & (1 << i)) === 0) continue
+    for (let j = 0; j < n; ++j) {
+      // 현재 꺼져 있는 발전소를 고른다
+      if (state & (1 << j)) continue
+      const nextState = state | (1 << j)
+      dist[state] = Math.min(dist[state], v[i][j] + dfs(nextState))
+    }
+  }
+  return dist[state]
+}
+```

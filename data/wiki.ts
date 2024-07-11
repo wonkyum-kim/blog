@@ -58,7 +58,15 @@ const typescript = [
   'tsconfig-typeChecking',
 ]
 
-const algorithm = ['prefix sum', `maximum subarray problem`, `knapsack problem`, `sweeping`]
+const algorithm = [
+  'prefix sum',
+  `maximum subarray problem`,
+  `knapsack problem`,
+  `sweeping`,
+  'bitfield',
+]
+
+const etc = ['blocking']
 
 export const wiki = {
   css,
@@ -66,4 +74,5 @@ export const wiki = {
   browser,
   typescript,
   algorithm,
+  etc,
 }
