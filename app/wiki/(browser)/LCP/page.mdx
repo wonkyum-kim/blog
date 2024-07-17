@@ -1,0 +1,20 @@
+## 최대 콘텐츠풀 페인트(Largest Contentful Paint, LCP)
+
+페이지가 처음으로 로드를 시작한 시점부터 뷰포트 내부에서 가장 큰 이미지 또는 텍스트를 렌더링하는 데 걸리는 시간.
+
+- img
+- svg 내부의 image
+- poster 속성을 사용하는 video
+- url()을 통해 불러온 배경 이미지가 있는 요소
+- 인라인 텍스트 요소를 포함하고 있는 블록 레벨 요소
+
+텍스트 보다는 이미지가 LCP에 영향을 많이 미치게 된다.
+
+`background-image: url()`의 LCP 시간을 낮추려면, [프리로드 스캐너](https://yceffort.kr/2022/06/preload-scanner#pre-load-scanner%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80)를 활용하는 것이 하나의 방법이다.
+
+그 밖에 [여러 최적화 기법과 주의사항](https://yceffort.kr/2022/06/optimize-LCP)이 있다.
+
+## References
+
+- [브라우저의 프리로드 스캐너(pre-load scanner)와 파싱 동작의 이해](https://yceffort.kr/2022/06/preload-scanner#pre-load-scanner%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80)
+- [Largest Contentful Paint (LCP) 최적화하기](https://yceffort.kr/2022/06/optimize-LCP)

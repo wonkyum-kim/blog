@@ -44,7 +44,7 @@ const git = [
   'allow-unrelated-histories',
 ]
 
-const browser = ['critical rendering path', 'view transitions api']
+const browser = ['critical rendering path', 'view transitions api', 'LCP', 'CLS']
 
 const typescript = [
   'index signature',
@@ -56,6 +56,7 @@ const typescript = [
   'variance',
   'infer',
   'tsconfig-typeChecking',
+  'hack-currying',
 ]
 
 const algorithm = [
@@ -64,6 +65,9 @@ const algorithm = [
   `knapsack problem`,
   `sweeping`,
   'bitfield',
+  `segment tree`,
+  `boj 1100-1109`,
+  `boj 1110-1119`,
 ]
 
 const etc = ['blocking']
