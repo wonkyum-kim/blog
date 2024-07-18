@@ -44,8 +44,6 @@ const git = [
   'allow-unrelated-histories',
 ]
 
-const browser = ['critical rendering path', 'view transitions api', 'LCP', 'CLS']
-
 const typescript = [
   'index signature',
   'unknown',
@@ -70,12 +68,11 @@ const algorithm = [
   `boj 1110-1119`,
 ]
 
-const etc = ['blocking']
+const etc = ['blocking', 'critical rendering path', 'view transitions api', 'LCP', 'CLS']
 
 export const wiki = {
   css,
   git,
-  browser,
   typescript,
   algorithm,
   etc,
