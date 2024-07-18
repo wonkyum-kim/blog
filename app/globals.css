@@ -107,7 +107,7 @@ li {
 }
 
 /* 중간 강조 */
-p > code {
+:is(p, li, td) > code {
   padding: 2px 4px;
   background-color: #f3f4f6;
   font-size: 1rem;
