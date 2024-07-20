@@ -53,7 +53,8 @@ const typescript = [
   'implements',
   'variance',
   'infer',
-  'tsconfig-typeChecking',
+  'tsconfig-type checking',
+  'tsconfig-modules',
   'hack-currying',
 ]
 
@@ -68,7 +69,15 @@ const algorithm = [
   `boj 1110-1119`,
 ]
 
-const etc = ['blocking', 'critical rendering path', 'view transitions api', 'LCP', 'CLS']
+const etc = [
+  'blocking',
+  'critical rendering path',
+  'view transitions api',
+  'LCP',
+  'CLS',
+  'NPM',
+  'indexedDB',
+]
 
 export const wiki = {
   css,

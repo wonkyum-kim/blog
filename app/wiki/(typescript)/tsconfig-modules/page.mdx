@@ -1,0 +1,195 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## module
+
+module은 컴파일하여 생성된 자바스크립트가 어떤 모듈을 사용할 것 인지를 지정하는 옵션이다.
+
+또한 컴파일러에게 각 파일의 모듈 종류를 감지하는 방법과, 서로 다른 모듈을 가져오는 방법, `import.meta`와 `top-level await`와 같은 기능을 사용할 수 있는지 알려주는 역할도 한다.
+
+그래서 noEmit이 설정되어 있더라도 올바른 module 세팅을 컴파일러에게 알려주는 것이 중요하다.
+
+### node16, nodenext
+
+아래의 기준에 따라서 CJS 또는 ESM 형식으로 파일을 출력한다.
+
+- `.mts`/`.mjs`/`.d.mts`는 항상 ESM
+- `.cts`/`.cjs`/`.d.cts`는 항상 CJS
+- `.ts`/`.tsx`/`.js`/`.jsx`/`.d.ts`은 `pacakge.json`의 `type` 필드가 `module`이면 ESM 아니면 CJS
+
+node16과 nodenext은 서로 다른 `target` 옵션 값을 의미한다는 것만 제외하면 현재로서는 동일하다.
+
+나중에 Node.js가 모듈 시스템을 크게 변경한다면, nodenext는 새로운 동작을 반영하도록 업데이트 된다.
+
+사실상 tsc로 자바스크립트 파일을 출력할 것이라면 이것을 사용한다.
+
+- `--module nodenext` 또는 `node16`은 암묵적으로 동일한 이름의 `modeResolution`을 적용 시킨다.
+- `--module nodenext`는 `--target esnext`를 의미한다.
+- `--module node16`은 `--target es2022`를 의미한다.
+- `--module nodenext` 또는 `node16`은 `--esModuleInterop`을 의미한다.
+
+### es2015, es2020, es2022, esnext
+
+Node.js에서 사용할 것이라면 이 옵션을 선택하면 안된다.
+
+하지만 번들러를 사용할 것이라면 `esnext`와 함께 `moduleResolution`을 `bundler`로 설정한다.
+
+zustand의 [tsconfig.json](https://github.com/pmndrs/zustand/blob/main/tsconfig.json)은 esnext, bundler, noEmit로 설정되어 있다.
+
+대부분 번들러를 사용할 것이므로 이렇게 설정하면 될 것 같다.
+
+번들러를 사용했을 경우, tsc가 직접 자바스크립트 파일을 출력하지 않기 때문에 좀 더 느슨한 import를 사용할 수 있다.
+
+느슨한 import란, 상대 경로 import에서 파일 확장자를 쓰지 않아도 되는 것을 의미한다.
+
+### commonjs
+
+CJS 모듈을 출력하고 싶다면 이게 아니라 node16, nodenext를 사용하면 된다. 결국 사용하지 말라는 의미.
+
+## moduleResolution
+
+`moduleResolution`은 타입스크립트가 모듈 지정자(import나 require에 건내주는 문자열)를 디스크에 있는 파일에서 찾아내는 알고리즘을 지정하는 옵션이다.
+
+### node16, nodenext
+
+`module`을 node16, nodenext로 설정하면 자동적으로 `moduleResolution`도 같게 설정된다. (건드릴 필요가 없다.)
+
+### bundler
+
+번들러를 사용하는 경우 적용한다.(module의 esnext를 참고한다.)
+
+## moduleSuffixes
+
+모듈을 확인할 때 검색할 파일 이름 접미사의 기본 목록을 재정의하는 방법을 제공한다.
+
+<CodeSelector names={['tsconfig.json', 'foo.ts']} desc='ex1' />
+
+```json
+{
+  "compilerOptions": {
+    "moduleSuffixes": [".ios", ".native", ""]
+  }
+}
+```
+
+```ts
+// './foo.ios.ts', './foo.native.ts', './foo.ts'를 모두 찾는다.
+import * as foo from './foo'
+```
+
+## resolveJsonModule
+
+`.json`으로 끝나는 모듈의 import를 허용하는 것을 설정하는 옵션이다.
+
+## noResolve
+
+tsconfig의 include나 files에 포함되지 않은 파일이라도 직접 `import`나 `/// <reference path="..." />`같은 디렉티브를 사용하여 모듈을 불러왔다면 암시적으로 컴파일되는데, 이를 막을 수 있는 설정이다.
+
+## baseUrl
+
+상대 경로를 명시할 때 귀찮음을 해결할 수 있도록 해준다.
+
+예를 들어 디렉토리 구조가 다음과 같을 때, `"baseUrl": "./"`로 설정해두면, 아래와 같이 import가 가능하다.
+
+<CodeSelector names={['project', 'ex.ts']} desc='ex2' />
+
+```text
+project
+├── ex.ts
+├── hello
+│   └── world.ts
+└── tsconfig.json
+```
+
+```ts
+// ex.ts
+import { helloWorld } from 'hello/world'
+// 아래와 같은 의미다.
+// import { helloWorld } from './hello/world'
+```
+
+TS 4.1 버전 부터는 `paths`를 설정할 때 baseUrl을 굳이 설정할 필요가 없다고 한다.
+
+## paths
+
+`baseUrl`을 기준으로 컴파일러가 어디서부터 모듈을 탐색해야 하는지 지정한다. (e.g. `app/config/*`로 접근해야 할 것을 `config/*`로 찾을 수 있게 해준다.)
+
+## rootDir
+
+컴파일할 루트 디렉토리를 지정한다.
+
+`outDir` 옵션과 함께 사용하면, 그 디렉토리에 루트 디렉토리 구조를 본딴 출력 파일들이 들어가게 된다.
+
+## rootDirs
+
+쓰면 복잡하니 안 쓰는 것을 추천
+
+## typeRoots
+
+타입 파일들이 어디 있는지 지정할 수 있다.
+
+굳이 안 써도 되는 옵션이지만, 더 빠르게 타입을 찾도록 하고 싶을 때 사용하면 될 것 같다.
+
+## types
+
+원래는 `@types`에 있는 모든 타입이 전역 스코프에서 접근 가능하지만, `types`를 사용하면 특정한 패키지들의 타입만 전역 스코프에 포함 시킬 수 있다.
+
+## allowArbitaryExtensions
+
+자바스크립트나 타입스크립트 확장자가 아닌 파일을 import 했을 때, 컴파일러가 `{file basename}.d.{extension}.ts`파일을 찾도록 해주는 옵션이다.
+
+예를 들어 번들러의 CSS loader는 아래 css 파일을 보고 선언 파일을 생성해준다.
+
+<CodeSelector names={['app.css', 'app.d.css.ts']} desc='ex3' />
+
+```css
+.cookie-banner {
+  display: none;
+}
+```
+
+```ts
+declare const css: {
+  cookieBanner: string
+}
+export default css
+```
+
+하지만 타입스크립트는 `app.d.css.ts` 파일을 이해하지 못하기 때문에 에러가 발생한다.
+
+이전까지는 이 에러를 피하기 위해 `app.css.d.ts`를 사용했었다.
+
+이 방법이 작동했던 이유는 CJS에서는 파일의 확장자를 명시하지 않아도 되기 때문이다.
+
+그래서 `app.css`가 아니라 `app.css.js` 처럼 해석되었기 때문에 작동했던 것이었다.
+
+하지만 ESM에서는 상대 파일 경로는 무조건 파일의 확장자를 명시해야 하기 때문에 이 같은 꼼수가 작동하지 않는다고 한다.
+
+## allowImportingTsExtensions
+
+`.ts` 파일을 import 경로에 써도 에러가 발생하지 않도록 하는 옵션인데, `"moduleResolution": "bundler`를 대부분 사용하므로 이 옵션을 사용할 일은 없을 것 같다.
+
+- baseUrl과 paths는 import 시에 타이핑을 줄여볼 수 있도록 설정하면 좋을 것 같다.
+- rootDir는 컴파일 하는 기준 디렉토리를 설정하는데, include에 포함되어 있어도 rootDir에서 벗어나 있으면 에러가 발생한다.
+
+## subpath
+
+건드릴 일은 많지 않을 것 같다.
+
+| 옵션                      | 설명                                                                                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| customConditions          | `exports`, `imports` 필드를 커스텀으로 설정해뒀으면 사용한다. (`modeResolution`이 `node16`, `nodenext`, `bundler`로 설정되어야 함)        |
+| resolvePackageJsonExports | 타입스크립트가 `node_modules`에서 패키지를 읽는 경우, package.json의 exports 필드를 참조하도록 한다.                                      |
+| resolvePackageJsonImports | 타입스크립트가 조상 디렉토리에 package.json이 포함되는 `#`으로 시작하는 파일을 찾을 때 package.json의 imports 필드를 참조하도록 강제한다. |
+
+> - `customConditions`은 예를 들어 보통 package.json에서 CJS와 ESM을 지원하기 위해 `exports` 필드에서 `require`와 `import`를 설정해두는데, 이거 말고도 커스텀 필드를 따로 사용할 수 있나보다.
+> - `resolvePackageJsonExports`은 `modeResolution`이 `node16`, `nodenext`, `bundler`이면 true가 기본 값이니 따로 설정하지 않아도 된다.
+> - 파일시스템 기반으로 모듈을 검색하는 것이 아니라 package.json을 참조해서 검색을 하게 된다. 그래도 실패하면 다시 파일시스템 기반으로 검색하는듯
+> - [TODO] package.json의 exports는 써봤는데, imports는 뭐할 때 써야하는 건가?
+> - moduleResolution이 nodenext가 아니라면 pacakge.json에서 설정한 [subpath를 찾지 못하는 에러](https://github.com/hoseungme/wiki/blob/main/typescript/package-json-exports-backward-compatiblity/ko.md)가 발생할 수도 있다.
+
+## References
+
+- [Intro to the TSConfig Reference](https://www.typescriptlang.org/tsconfig)
+- [TypeScript의 기본개념과 환경설정](https://pozafly.github.io/typescript/typescript-env/)
+- [[tsconfig의 모든 것] Compiler options / Modules](https://evan-moon.github.io/2021/08/22/tsconfig-compiler-options-modules/)
+- [CommonJS와 ESM에 모두 대응하는 라이브러리 개발하기: exports field](https://toss.tech/article/commonjs-esm-exports-field)
