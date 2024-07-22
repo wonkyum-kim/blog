@@ -17,7 +17,7 @@
   /* justify-content: space-between; */
   align-items: center;
   gap: 1rem;
-  transition-duration: 1s;
+  transition-duration: 0.3s;
   box-sizing: border-box;
   padding-left: 1rem;
   padding-right: 1.5rem;

@@ -57,7 +57,7 @@ export function Menu() {
         <>
           <Toggle isOpen={isMenuOpen} onClick={handleOpen} />
           {links.map((link, i) => {
-            const delay = isMenuOpen ? `${i * 0.2 + 0.5}s` : `${(4 - i) * 0.2 + 0.5}s`
+            const delay = isMenuOpen ? `${i * 0.2 + 0.1}s` : `${(4 - i) * 0.2 + 0.1}s`
             return (
               <div
                 onClick={() => handleMove(urls[i] as string)}
