@@ -25,7 +25,23 @@ body {
 }
 
 thead {
-  background-color: var(--gray-300);
+  border-block-end: 2px solid;
+  background: whitesmoke;
+}
+
+table {
+  display: table;
+  border-spacing: 2px;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  text-indent: 0;
+  margin-bottom: 1rem;
+}
+
+th,
+td {
+  border: 1px solid lightgrey;
+  padding: 0.25rem 0.75rem;
 }
 
 :root {
@@ -54,7 +70,7 @@ span.katex-html {
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.5s;
+  animation-duration: 0.3s;
 }
 
 .background-radish {

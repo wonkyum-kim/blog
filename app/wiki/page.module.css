@@ -2,35 +2,6 @@
   margin-top: 6rem;
 }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 6rem;
-  width: 100%;
-  overflow-y: scroll;
-  user-select: none;
-  border: 1px black solid;
-  border-radius: 0.5rem;
-  scrollbar-width: auto;
-  scrollbar-color: var(--orange-500) transparent;
-}
-
-@keyframes appear {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.subject {
-  font-size: 6rem;
-  animation-timeline: view();
-  animation-name: appear;
-  color: var(--orange-600);
-}
-
 .items {
   display: flex;
   gap: 1rem;
@@ -57,27 +28,120 @@
   background-image: none;
 }
 
-@media (width < 768px) {
-  .container {
-    height: 4rem;
-  }
-  .subject {
-    font-size: 4rem;
-  }
-}
-
-@media (width < 425px) {
-  .container {
-    height: 3rem;
-  }
-  .subject {
-    font-size: 3rem;
-  }
-}
-
 @media (hover: hover) {
   .item:hover {
     transition-duration: 0.3s;
     background-color: var(--gray-300);
+  }
+}
+
+/* 3d carousel */
+
+.scene {
+  margin: 40px 0;
+  position: relative;
+  width: 500px;
+  height: 140px;
+  margin: 40px auto;
+  perspective: 1000px;
+}
+
+.carousel {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform: translateZ(-344px);
+  transform-style: preserve-3d;
+}
+
+.carousel__cell {
+  position: absolute;
+  width: 480px;
+  height: 120px;
+  left: 10px;
+  top: 10px;
+  line-height: 116px;
+  font-size: 5rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  border-radius: 10px;
+  user-select: none;
+  transform: rotateY(var(--yDeg)) translateZ(calc(250px / var(--tan)));
+  transition: transform 1s;
+  cursor: pointer;
+}
+
+.move_left {
+  position: absolute;
+  z-index: 99;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+}
+
+.move_right {
+  position: absolute;
+  z-index: 99;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+}
+
+.carousel__cell:nth-child(9n + 1) {
+  background: hsla(0, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 2) {
+  background: hsla(40, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 3) {
+  background: hsla(80, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 4) {
+  background: hsla(120, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 5) {
+  background: hsla(160, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 6) {
+  background: hsla(200, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 7) {
+  background: hsla(240, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 8) {
+  background: hsla(280, 100%, 50%, 0.8);
+}
+.carousel__cell:nth-child(9n + 0) {
+  background: hsla(320, 100%, 50%, 0.8);
+}
+
+@starting-style {
+  .carousel__cell {
+    transform: rotateY(var(--yDeg)) translateZ(600px);
+  }
+}
+
+@media (width < 768px) {
+  .scene {
+    width: 360px;
+  }
+  .carousel__cell {
+    width: 340px;
+    font-size: 4rem;
+    transform: rotateY(var(--yDeg)) translateZ(calc(180px / var(--tan)));
+  }
+}
+
+@media (width < 425px) {
+  .scene {
+    width: 300px;
+  }
+  .carousel__cell {
+    width: 280px;
+    font-size: 3rem;
+    transform: rotateY(var(--yDeg)) translateZ(calc(150px / var(--tan)));
   }
 }
