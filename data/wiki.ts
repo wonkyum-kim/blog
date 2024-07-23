@@ -1,4 +1,4 @@
-const css = [
+const CSS = [
   'units',
   'combinator',
   'intrinsic size',
@@ -33,7 +33,7 @@ const css = [
   'linear()',
 ]
 
-const git = [
+const Git = [
   'stash',
   'amend',
   'squash',
@@ -44,7 +44,7 @@ const git = [
   'allow-unrelated-histories',
 ]
 
-const typescript = [
+const TypeScript = [
   'index signature',
   'unknown',
   'literal types',
@@ -58,7 +58,7 @@ const typescript = [
   'hack-currying',
 ]
 
-const algorithm = [
+const Algorithm = [
   'prefix sum',
   `maximum subarray problem`,
   `knapsack problem`,
@@ -79,10 +79,13 @@ const etc = [
   'indexedDB',
 ]
 
+const React = ['Intro', 'package-react']
+
 export const wiki = {
-  css,
-  git,
-  typescript,
-  algorithm,
+  CSS,
+  Git,
+  TypeScript,
+  React,
+  Algorithm,
   etc,
 }

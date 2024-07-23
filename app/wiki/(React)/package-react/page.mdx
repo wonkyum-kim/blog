@@ -1,0 +1,185 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# TODO: 글 완성하기
+
+## react 패키지
+
+`react` 패키지는 React 컴포넌트를 정의하는데 필요한 기능만 포함되어 있다.
+
+보통 웹을 위한 `react-dom` 또는 네이티브 환경을 위한 `react-native`와 같은 React 렌더러와 함께 사용된다.
+
+기본적으로 React는 개발 모드에 존재한다.
+
+개발 버전은 일반적인 실수에 대한 추가적인 경고가 포함되어 있지만, 프로덕션 버전에서는 추가적인 성능 최적화가 포함되어 있고 모든 에러 메시지가 제거된다.
+
+따라서 애플리케이션을 배포할 때, 프로덕션 빌드를 사용하는 것을 잊지 않아야 한다.
+
+참고로 react 패키지에서 개발 버전에 대한 코드는 `__DEV__`로 관리되고 있다.
+
+`react` 패키지에서 export 하고 있는 모듈은 [`index.js`](https://github.com/facebook/react/blob/main/packages/react/index.js)에서 확인 가능하다.
+
+## \_\_CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
+
+구현체: [src/ReactSharedInternalsClient.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactSharedInternalsClient.js)
+
+React 내부에서 사용하는 객체로 개발자가 접근하는 것을 권장하지 않는다고 한다.
+
+원래 이름은 `SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED`였는데, React 19에서 이름을 바꿔버린 바람에 이것을 사용하는 다른 라이브러리들에서 고생을 좀 하는 것 같다.
+
+> TODO: 이 객체가 사용되는 곳을 살펴보기
+
+## Children
+
+구현체: [src/ReactChildren.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactChildren.js)
+
+문서: https://19.react.dev/reference/react/Children
+
+`Children`은 객체고 그 안에 `props.children`으로 전달된 children에 대해 여러 가지 작업을 할 수 있는 메서드로 구성되어 있다.
+
+React에서 children prop은 항상 배열이 아니다. 그래서 children을 다룰려면 `Children` 메서드가 필요한 것이다.
+
+children이 항상 배열이 아닌 이유는, 자식이 오직 하나일 때 배열로 만들게 되면 불필요한 메모리 오버헤드가 발생하기 때문이다.
+
+React에서 자식 노드로 간주되는 것은 Empty nodes(null, undefined, and Booleans), strings, numbers, and React elements다.
+
+React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문에 그 자식 노드들은 개수에 포함되지 않는다.
+
+이 로직은 `mapIntoArray` 함수에 구현되어 있다.
+
+- Children.count: 자식 노드의 개수를 반환한다.
+- Children.forEach: 배열 메서드의 forEach와 같은 역할을 한다.
+- Children.map: 배열 메서드의 map과 같은 역할을 한다.
+- Children.only: children이 하나의 React 엘리먼트인지 단언한다.
+- Children.toArray: children을 배열에 담아서 반환한다.
+
+## Component
+
+구현체: [src/ReactBaseClasses.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactBaseClasses.js)
+
+문서: https://19.react.dev/reference/react/Component
+
+`Component`는 클래스형 컴포넌트를 만들기 위해 사용된다.
+
+구현체를 보면, 함수로 정의되어있으며, 프로토타입에 여러 메서드가 포함된다.
+
+클래스형 컴포넌트를 선언하는 방법은 `Component`를 extend하고 `render` 메서드를 정의해주면 된다.
+
+이제는 사용할 일이 거의 없기 때문에 자세히 보지 않고 넘어간다.
+
+## PureComponent
+
+구현체: [src/ReactBaseClasses.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactBaseClasses.js)
+
+문서: https://19.react.dev/reference/react/PureComponent
+
+`Component`와 비슷하지만 같은 props와 state에 대해 재렌더링을 방지해준다고 하는데, 클래스형 컴포넌트는 넘어가도록 한다.
+
+## Fragment
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Fragment
+
+구현체를 보면 전역 심볼로 선언되어 있다.
+
+심볼을 JSX에 전달하면 어떻게 되는 것일까? Babel로 변환된 결과물을 확인해보았다.
+
+<CodeSelector names={['src/index.jsx', 'dist/index.js']} desc='ex1' />
+
+```jsx
+const Fragment = Symbol.for('react.fragment')
+const app = () => <Fragment></Fragment>
+```
+
+```js
+const Fragment = Symbol.for('react.fragment')
+const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
+```
+
+`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되었다.
+
+이 과정에 대해서는 createElement를 살펴보면서 다시 확인해보도록 하자.
+
+## Profiler
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Profiler
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+## StrictMode
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/StrictMode
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+## Suspense
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Suspense
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+## cloneElement
+
+구현체: [src/jsx/ReactJSXElement.js](https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js)
+
+문서: https://19.react.dev/reference/react/cloneElement
+
+전달된 엘리먼트를 복사하여 반환하는 함수다.
+
+React 19버전에서는 [ref 객체를 prop으로 전달하도록 되어 있다.](https://19.react.dev/blog/2024/04/25/react-19#ref-as-a-prop) 그래서 구현체를 보면 props에 ref를 포함한 모든 prop이 복사되어있다.
+
+> TODO: ReactElement.\_owner가 무엇인지 알아보기
+
+## createContext
+
+구현체: [src/ReactContext.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactContext.js)
+
+문서: https://19.react.dev/reference/react/createContext
+
+컴포넌트 외부에서 `context` 객체를 생성할 수 있게 해주는 함수다.
+
+context 객체 그 자체는 아무런 정보도 가지고 있지 않으며, 단지 다른 컴포넌트들이 어떤 컨텍스트를 읽거나 제공받는지를 나타낸다.
+
+context 객체는 2가지 프로퍼티를 가진다. 하지만 19 버전부터 모두 deprecated 되었다.
+
+- `SomeContext.Provider`: 컴포넌트에 컨텍스트 값을 제공한다. (React 19부터는 그냥 SomeContext만 사용해도 동일하다.)
+- `SomeContext.Consumer`: 컨텍스트 값을 읽게 해준다. (`useContext`를 사용하는 것이 권장된다.)
+
+<CodeSelector names={['context']} desc='ex2' />
+
+```jsx
+// context object를 생성한다.
+// optional: 'light'라는 기본 값을 제공해준다.
+const ThemeContext = createContext('light')
+
+function App() {
+  const [theme, setTheme] = useState('dark')
+
+  // 기본 값 대신 'dark'라는 값을 context value로 설정한다.
+  // React 19부터는 ThemeContext.Provider 대신 ThemeContext로 사용해도 된다.
+  return (
+    <ThemeContext value={theme}>
+      <Page />
+    </ThemeContext>
+  )
+}
+
+function Page() {
+  // ThemeContext.Consumer는 이제 사용하지 않는다.
+  // 대신에 context value를 얻기 위해서 useContext를 사용한다.
+  const theme = useContext(ThemeContext)
+  return <div>{theme}</div>
+}
+```
+
+그리고 문서에는 나오지 않는 4가지 프로퍼티도 존재한다.
+
+- `$$typeof`: context 객체의 타입
+- `_currentValue`와 `_currentValue2`: React는 여러 concurrent 렌더러를 지원하는 해결 방법으로 렌더러를 primary와 secondary로 구분한다. secondary 렌더러는 분리된 필드에 컨텍스트 값을 저장하기 때문에 이와 같이 두 개의 필드가 필요한 것이다.
+- `_threadCount`: 단일 렌더러 내에서 이 컨텍스트가 현재 지원하는 concurrent 렌더러 수를 추적하는데 사용된다.
