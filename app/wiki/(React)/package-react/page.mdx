@@ -22,11 +22,11 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 구현체: [src/ReactSharedInternalsClient.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactSharedInternalsClient.js)
 
-React 내부에서 사용하는 객체로 개발자가 접근하는 것을 권장하지 않는다고 한다.
+실제 React 내부 코드에서는 저 긴 이름 대신에 `ReactSharedInternals`로 사용한다.
+
+외부에서 사용은 권장하지 않지만 사용할 수 있도록은 해두었다.
 
 원래 이름은 `SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED`였는데, React 19에서 이름을 바꿔버린 바람에 이것을 사용하는 다른 라이브러리들에서 고생을 좀 하는 것 같다.
-
-> TODO: 이 객체가 사용되는 곳을 살펴보기
 
 ## Children
 
@@ -74,7 +74,7 @@ React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문�
 
 `Component`와 비슷하지만 같은 props와 state에 대해 재렌더링을 방지해준다고 하는데, 클래스형 컴포넌트는 넘어가도록 한다.
 
-## Fragment
+## TODO: Fragment
 
 구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
 
@@ -96,11 +96,9 @@ const Fragment = Symbol.for('react.fragment')
 const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
 ```
 
-`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되었다.
+`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되는 것을 확인할 수 있다. 즉, 심볼도 React 엘리먼트의 타입이 될 수 있음을 의미한다.
 
-이 과정에 대해서는 createElement를 살펴보면서 다시 확인해보도록 하자.
-
-## Profiler
+## TODO: Profiler
 
 구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
 
@@ -108,7 +106,7 @@ const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
 
 `Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
 
-## StrictMode
+## TODO: StrictMode
 
 구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
 
@@ -116,7 +114,7 @@ const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
 
 `Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
 
-## Suspense
+## TODO: Suspense
 
 구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
 
@@ -134,7 +132,63 @@ const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
 
 React 19버전에서는 [ref 객체를 prop으로 전달하도록 되어 있다.](https://19.react.dev/blog/2024/04/25/react-19#ref-as-a-prop) 그래서 구현체를 보면 props에 ref를 포함한 모든 prop이 복사되어있다.
 
-> TODO: ReactElement.\_owner가 무엇인지 알아보기
+`ReactElement` 함수를 사용하여 복사된 React 엘리먼트를 반환한다. (createElement에서 살펴보도록 한다.)
+
+## createElement
+
+구현체: [src/jsx/ReactJSXElement.js](https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js)
+
+문서: https://19.react.dev/reference/react/createElement
+
+JSX를 사용하지 않고 직접 React 엘리먼트를 만드는 함수다.
+
+`ReactElement` 함수를 사용하여 새로운 React 엘리먼트를 반환한다.
+
+그렇다면 React 엘리먼트란 무엇인가?
+
+ReactElement의 구현을 살펴보면 아래와 같이 type, key, ref, props를 가지고 있는 객체를 의미한다.
+
+<CodeSelector names={['src/jsx/ReactJSXElement.js']} desc='ex3' />
+
+```js
+function ReactElement(
+  type,
+  key,
+  _ref,
+  self,
+  source,
+  owner,
+  props,
+  debugStack,
+  debugTask,
+) {
+  // ...
+  let element;
+  if (...) {
+    // ...
+  } else if (!__DEV__ && disableStringRefs) {
+    // In prod, `ref` is a regular property and _owner doesn't exist.
+    element = {
+      // This tag allows us to uniquely identify this as a React Element
+      $$typeof: REACT_ELEMENT_TYPE,
+
+      // Built-in properties that belong on the element
+      type,
+      key,
+      ref,
+
+      props,
+    };
+  } else {
+    // ...
+  }
+
+  // ...
+  return element;
+}
+```
+
+이 객체가 DOM으로 변환되는 과정은 나중에 살펴보기로 한다.
 
 ## createContext
 
@@ -173,6 +227,7 @@ function App() {
 function Page() {
   // ThemeContext.Consumer는 이제 사용하지 않는다.
   // 대신에 context value를 얻기 위해서 useContext를 사용한다.
+  // 또는 use 훅을 사용해도 된다.
   const theme = useContext(ThemeContext)
   return <div>{theme}</div>
 }
@@ -183,3 +238,59 @@ function Page() {
 - `$$typeof`: context 객체의 타입
 - `_currentValue`와 `_currentValue2`: React는 여러 concurrent 렌더러를 지원하는 해결 방법으로 렌더러를 primary와 secondary로 구분한다. secondary 렌더러는 분리된 필드에 컨텍스트 값을 저장하기 때문에 이와 같이 두 개의 필드가 필요한 것이다.
 - `_threadCount`: 단일 렌더러 내에서 이 컨텍스트가 현재 지원하는 concurrent 렌더러 수를 추적하는데 사용된다.
+
+## createRef
+
+구현체: [src/ReactCreateRef.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactCreateRef.js)
+
+문서: https://19.react.dev/reference/react/createRef
+
+`useRef`가 나오기 전까지 ref 객체를 만들기 위해 사용하던 함수다.
+
+## use
+
+구현체: [src/ReactHooks.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactHooks.js)
+
+문서: https://19.react.dev/reference/react/use
+
+먼저 `use`가 무엇인지 살펴보자.
+
+use는 Promise와 context 값을 읽는 새로운 API다.
+
+하지만 다른 React 훅과는 달리 조건문이나 반복문 안에서도 사용이 가능하다.
+
+Promise와 함께 호출되었을 때는, use는 Suspense, error boundary와 결합시킬 수 있다.
+
+Promise의 값을 얻으려면, 서버 컴포넌트의 async 함수 내에서 await를 사용해야 했는데 이제는 클라이언트 컴포넌트 내에서도 가능해졌다.
+
+use를 Promise와 함께 사용하는 가장 좋은 방법은 서버 컴포넌트에서 Promise를 생성해서 클라이언트 컴포넌트에 prop으로 넘기는 것이다.
+
+두 방법의 차이는 아래와 같다.
+
+- 서버 컴포넌트에서 async와 await를 사용하면 Promise 값이 resolve 되기까지 렌더링이 차단된다.
+- 클라이언트 컴포넌트에서 use를 사용하면 재렌더링이 발생한다.
+
+이제 실제 구현을 살펴보자.
+
+<CodeSelector names={['src/ReactHooks.js']} desc='ex4' />
+
+```js
+function resolveDispatcher() {
+  const dispatcher = ReactSharedInternals.H;
+  // Will result in a null access error if accessed outside render phase. We
+  // intentionally don't throw our own error because this is in a hot path.
+  // Also helps ensure this is inlined.
+  return ((dispatcher: any): Dispatcher);
+}
+
+export function use<T>(usable: Usable<T>): T {
+  const dispatcher = resolveDispatcher();
+  return dispatcher.use(usable);
+}
+```
+
+`ReactSharedInternals`는 아까 보았던 `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`와 같고, `H` 프로퍼티는 Dispatcher를 나타낸다.
+
+use 뿐만 아니라 모든 훅들도 Dispatcher에 상세 구현이 포함되어 있으므로 react 패키지에서는 훅의 역할에 대해서만 살펴보고 넘어간다.
+
+> TODO: Dispatcher에 대해 알아보기
