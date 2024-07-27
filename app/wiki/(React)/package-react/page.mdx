@@ -18,7 +18,9 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 `react` 패키지에서 export 하고 있는 모듈은 [`index.js`](https://github.com/facebook/react/blob/main/packages/react/index.js)에서 확인 가능하다.
 
-## \_\_CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
+## [Internal]
+
+### \_\_CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
 
 구현체: [src/ReactSharedInternalsClient.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactSharedInternalsClient.js)
 
@@ -28,7 +30,9 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 원래 이름은 `SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED`였는데, React 19에서 이름을 바꿔버린 바람에 이것을 사용하는 다른 라이브러리들에서 고생을 좀 하는 것 같다.
 
-## Children
+## [Legacy]
+
+### Children
 
 구현체: [src/ReactChildren.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactChildren.js)
 
@@ -52,7 +56,7 @@ React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문�
 - Children.only: children이 하나의 React 엘리먼트인지 단언한다.
 - Children.toArray: children을 배열에 담아서 반환한다.
 
-## Component
+### Component
 
 구현체: [src/ReactBaseClasses.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactBaseClasses.js)
 
@@ -66,7 +70,7 @@ React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문�
 
 이제는 사용할 일이 거의 없기 때문에 자세히 보지 않고 넘어간다.
 
-## PureComponent
+### PureComponent
 
 구현체: [src/ReactBaseClasses.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactBaseClasses.js)
 
@@ -74,55 +78,7 @@ React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문�
 
 `Component`와 비슷하지만 같은 props와 state에 대해 재렌더링을 방지해준다고 하는데, 클래스형 컴포넌트는 넘어가도록 한다.
 
-## TODO: Fragment
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/Fragment
-
-구현체를 보면 전역 심볼로 선언되어 있다.
-
-심볼을 JSX에 전달하면 어떻게 되는 것일까? Babel로 변환된 결과물을 확인해보았다.
-
-<CodeSelector names={['src/index.jsx', 'dist/index.js']} desc='ex1' />
-
-```jsx
-const Fragment = Symbol.for('react.fragment')
-const app = () => <Fragment></Fragment>
-```
-
-```js
-const Fragment = Symbol.for('react.fragment')
-const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
-```
-
-`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되는 것을 확인할 수 있다. 즉, 심볼도 React 엘리먼트의 타입이 될 수 있음을 의미한다.
-
-## TODO: Profiler
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/Profiler
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
-
-## TODO: StrictMode
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/StrictMode
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
-
-## TODO: Suspense
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/Suspense
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
-
-## cloneElement
+### cloneElement
 
 구현체: [src/jsx/ReactJSXElement.js](https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js)
 
@@ -134,7 +90,7 @@ React 19버전에서는 [ref 객체를 prop으로 전달하도록 되어 있다.
 
 `ReactElement` 함수를 사용하여 복사된 React 엘리먼트를 반환한다. (createElement에서 살펴보도록 한다.)
 
-## createElement
+### createElement
 
 구현체: [src/jsx/ReactJSXElement.js](https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js)
 
@@ -190,7 +146,89 @@ function ReactElement(
 
 이 객체가 DOM으로 변환되는 과정은 나중에 살펴보기로 한다.
 
-## createContext
+### createRef
+
+구현체: [src/ReactCreateRef.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactCreateRef.js)
+
+문서: https://19.react.dev/reference/react/createRef
+
+`useRef`가 나오기 전까지 ref 객체를 만들기 위해 사용하던 함수다.
+
+### forwardRef
+
+구현체: [src/ReactForwardRef.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactForwardRef.js)
+
+문서: https://19.react.dev/reference/react/forwardRef
+
+`forwardRef`는 ref를 컴포넌트에 전달하기 위해 사용되었던 함수다.
+
+하지만 19버전 부터는 props에 ref를 전달할 수 있으므로 살펴보지 않고 넘어가도록 한다.
+
+### isValidElement
+
+구현체: [src/jsx/ReactJSXElement.js](https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js)
+
+문서: https://19.react.dev/reference/react/isValidElement
+
+[React 엘리먼트](#createelement)인지 확인해주는 함수다. 그래서 구현은 매우 간단하다.
+
+React 노드는 함수형 컴포넌트가 반환할 수 있는 모든 것을 의미한다.
+
+반면에 React 엘리먼트는 JSX 태그 또는 createElement가 반환한 객체만을 의미한다.
+
+## [Component]
+
+### TODO: Fragment
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Fragment
+
+구현체를 보면 전역 심볼로 선언되어 있다.
+
+심볼을 JSX에 전달하면 어떻게 되는 것일까? Babel로 변환된 결과물을 확인해보았다.
+
+<CodeSelector names={['src/index.jsx', 'dist/index.js']} desc='ex1' />
+
+```jsx
+const Fragment = Symbol.for('react.fragment')
+const app = () => <Fragment></Fragment>
+```
+
+```js
+const Fragment = Symbol.for('react.fragment')
+const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
+```
+
+`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되는 것을 확인할 수 있다. 즉, 심볼도 React 엘리먼트의 타입이 될 수 있음을 의미한다.
+
+### TODO: Profiler
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Profiler
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+### TODO: StrictMode
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/StrictMode
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+### TODO: Suspense
+
+구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
+
+문서: https://19.react.dev/reference/react/Suspense
+
+`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+
+## [API]
+
+### createContext
 
 구현체: [src/ReactContext.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactContext.js)
 
@@ -239,15 +277,7 @@ function Page() {
 - `_currentValue`와 `_currentValue2`: React는 여러 concurrent 렌더러를 지원하는 해결 방법으로 렌더러를 primary와 secondary로 구분한다. secondary 렌더러는 분리된 필드에 컨텍스트 값을 저장하기 때문에 이와 같이 두 개의 필드가 필요한 것이다.
 - `_threadCount`: 단일 렌더러 내에서 이 컨텍스트가 현재 지원하는 concurrent 렌더러 수를 추적하는데 사용된다.
 
-## createRef
-
-구현체: [src/ReactCreateRef.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactCreateRef.js)
-
-문서: https://19.react.dev/reference/react/createRef
-
-`useRef`가 나오기 전까지 ref 객체를 만들기 위해 사용하던 함수다.
-
-## use
+### use
 
 구현체: [src/ReactHooks.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactHooks.js)
 
@@ -259,7 +289,7 @@ use는 Promise와 context 값을 읽는 새로운 API다.
 
 하지만 다른 React 훅과는 달리 조건문이나 반복문 안에서도 사용이 가능하다.
 
-Promise와 함께 호출되었을 때는, use는 Suspense, error boundary와 결합시킬 수 있다.
+Promise와 함께 호출되었을 때, use는 Suspense, error boundary와 결합시킬 수 있다.
 
 Promise의 값을 얻으려면, 서버 컴포넌트의 async 함수 내에서 await를 사용해야 했는데 이제는 클라이언트 컴포넌트 내에서도 가능해졌다.
 
@@ -291,6 +321,78 @@ export function use<T>(usable: Usable<T>): T {
 
 `ReactSharedInternals`는 아까 보았던 `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`와 같고, `H` 프로퍼티는 Dispatcher를 나타낸다.
 
-use 뿐만 아니라 모든 훅들도 Dispatcher에 상세 구현이 포함되어 있으므로 react 패키지에서는 훅의 역할에 대해서만 살펴보고 넘어간다.
+use 뿐만 아니라 모든 훅들도 Dispatcher에 상세 구현이 포함되어 있으므로 react 패키지에서는 역할에 대해서만 살펴보고 넘어간다.
 
 > TODO: Dispatcher에 대해 알아보기
+
+### lazy
+
+구현체: [src/ReactLazy.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactLazy.js)
+
+문서: https://19.react.dev/reference/react/lazy
+
+`lazy`는 로딩 중인 컴포넌트의 렌더링이 완료될 때까지 특정 코드의 실행을 지연시켜주는 API다.
+
+lazy에 건네주는 함수는 지연시킬 코드이며 `load`(내부 코드에서는 `ctor`라고 부른다.)라고 부르고 `Promise` 또는 `thenable`을 반환한다.
+
+컴포넌트의 렌더링이 완료되어 load를 호출하면, 반환된 Promise가 resolve 될 때까지 기다리고 resolved 값의 `default`를 React 컴포넌트로 렌더링한다. (즉 resolved될 값(컴포넌트)은 default export 해야 한다는 의미, lazyInitializer의 구현을 살펴보면 알 수 있다.)
+
+반환된 Promise와 Promise의 resolved 값은 저장되기 때문에, React는 load를 다시 호출하지 않는다.
+
+쉽게 정리해보면, 어떤 컴포넌트가 렌더링을 하는데 lazy 부분의 코드는 빼고 렌더링을 하게 된다.
+
+그 컴포넌트의 렌더링이 완료되면, lazy의 load 함수를 호출한다.
+
+load 함수는 Promise(또는 thenable)를 반환하고 값이 resolved 되면 그 값(React 컴포넌트)을 렌더링한다.
+
+resolved 되기 이전까지는 `Suspense`에 전달한 값을 보여주게 된다.
+
+내부 구현을 살펴보면 `lazyInitializer`에서 작업이 이루어진다.
+
+값이 resolve 되면 payload에 그 값을 전달하고, error가 발생하면 에러를 전달한다.
+
+### memo
+
+구현체: [src/ReactMemo.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactMemo.js)
+
+문서: https://19.react.dev/reference/react/memo
+
+`memo`는 컴포넌트의 props가 변하지 않으면 재렌더링을 스킵하게 해주는 함수다.
+
+하지만 항상 스킵이 보장되는 것은 아니다. 성능 최적화를 위해서 React는 여전히 재렌더링할 수 있다.
+
+props의 비교는 `Object.is`로 진행되지만, 직접 비교를 하는 함수를 전달할 수도 있다.
+
+memo로 최적화하는 과정은 정확히 같은 props로 자주 재렌더링 되거나 재렌더링 로직이 비쌀 때만 가치가 있다.
+
+컴포넌트에 건네주는 props가 항상 다르다면, 예를 들어 객체나 함수를 건네준다면 memo는 의미가 없다.
+
+따라서 useMemo와 useCallback을 memo와 같이 사용해야한다.
+
+### cache
+
+구현체: [src/ReactCacheImpl.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactCacheImpl.js)
+
+문서: https://19.react.dev/reference/react/cache
+
+서버 컴포넌트에서 data fetch나 계산 결과를 저장하게 해주는 함수를 반환한다.
+
+클라이언트 컴포넌트에서 실행하면 캐싱 기능은 작동하지 않는다.
+
+`src/ReactCacheClient.js`를 보면 클라이언트 컴포넌트에서 cache는 아직 구현되지 않았다고 적혀있다.
+
+즉, 언젠가 지원해줄 것이라고 기대해 볼 수 있다.
+
+다시 서버 컴포넌트로 돌아와서, cache는 마치 `ReactQuery`와 비슷하게 작동한다.
+
+컴포넌트 외부에서 함수를 cache로 감싸고, 반환된 함수를 서버 컴포넌트 내부에서 사용하면 된다.
+
+다시 말하면, 감싸는 것은 컴포넌트 외부에서 반환된 함수를 사용하는 것은 컴포넌트 내부에서다.
+
+`memo`는 클라이언트 컴포넌트에서 props를 비교해 컴포넌트를 렌더링을 스킵하는 것이라면, cache는 서버 컴포넌트에서 data fetch나 계산 결과를 저장해두고 쓰는 것이라고 할 수 있다.
+
+`src/ReactCacheImpl.js`에서 dispatcher는 `ReactSharedInternals.A`인데, [H](#use)와는 달리 AsyncDispatcher다.
+
+> TODO: AsyncDispatcher에 대해 알아보기
+
+그리고 cache 함수의 구현을 보면 인자의 개수만큼 `cacheNode`를 계속 갱신하는데 아마도 이런 방식의 구현은 나중에 바뀌지 않을까 생각해본다.
