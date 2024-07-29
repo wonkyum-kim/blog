@@ -1,7 +1,5 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 
-# TODO: 글 완성하기
-
 ## react 패키지
 
 `react` 패키지는 React 컴포넌트를 정의하는데 필요한 기능만 포함되어 있다.
@@ -18,6 +16,15 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 `react` 패키지에서 export 하고 있는 모듈은 [`index.js`](https://github.com/facebook/react/blob/main/packages/react/index.js)에서 확인 가능하다.
 
+크게 6가지 부분으로 구성되어 있다.
+
+- Internal: React 내부에서 사용되는 객체(지만 외부로 노출되어 있다.)
+- Legacy API: 현재는 사용이 권장되지 않는 API(클래스형 컴포넌트 등...)
+- Component: 미리 정의된 React 컴포넌트 (react는 단순히 export 할 뿐이고, 정의는 shared에 구현은 다른 곳에 있는 것 같다.)
+- API: 컴포넌트를 정의하는데 도움이 되는 API
+- Hook: React 훅 (react가 아니라 react-reconciler에 구현되어 있는 것 같아서 넘어간다.)
+- Unstable: 여기서는 다루지 않고 넘어간다.
+
 ## [Internal]
 
 ### \_\_CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
@@ -30,7 +37,7 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 원래 이름은 `SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED`였는데, React 19에서 이름을 바꿔버린 바람에 이것을 사용하는 다른 라이브러리들에서 고생을 좀 하는 것 같다.
 
-## [Legacy]
+## [Legacy API]
 
 ### Children
 
@@ -144,7 +151,7 @@ function ReactElement(
 }
 ```
 
-이 객체가 DOM으로 변환되는 과정은 나중에 살펴보기로 한다.
+이 객체가 DOM으로 변환되는 과정은 나중에 다른 패키지와 같이 살펴보기로 한다.
 
 ### createRef
 
@@ -178,13 +185,9 @@ React 노드는 함수형 컴포넌트가 반환할 수 있는 모든 것을 의
 
 ## [Component]
 
-### TODO: Fragment
-
 구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
 
-문서: https://19.react.dev/reference/react/Fragment
-
-구현체를 보면 전역 심볼로 선언되어 있다.
+react 패키지는 단순히 export 하는 역할이고, 실제 정의는 `shared` 패키지에 전역 심볼로 되어 있다.
 
 심볼을 JSX에 전달하면 어떻게 되는 것일까? Babel로 변환된 결과물을 확인해보았다.
 
@@ -202,29 +205,7 @@ const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
 
 `React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되는 것을 확인할 수 있다. 즉, 심볼도 React 엘리먼트의 타입이 될 수 있음을 의미한다.
 
-### TODO: Profiler
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/Profiler
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
-
-### TODO: StrictMode
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/StrictMode
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
-
-### TODO: Suspense
-
-구현체: [shared/ReactSymbols.js](https://github.com/facebook/react/blob/main/packages/shared/ReactSymbols.js)
-
-문서: https://19.react.dev/reference/react/Suspense
-
-`Fragment`와 마찬가지로 전역 심볼로 구현되어 있다.
+Fragment, Profiler, StrictMode, Suspense가 실제로 어떻게 구현되어 있는지는 다른 패키지를 살펴봐야 할 것이다.
 
 ## [API]
 
@@ -323,8 +304,6 @@ export function use<T>(usable: Usable<T>): T {
 
 use 뿐만 아니라 모든 훅들도 Dispatcher에 상세 구현이 포함되어 있으므로 react 패키지에서는 역할에 대해서만 살펴보고 넘어간다.
 
-> TODO: Dispatcher에 대해 알아보기
-
 ### lazy
 
 구현체: [src/ReactLazy.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactLazy.js)
@@ -396,3 +375,21 @@ memo로 최적화하는 과정은 정확히 같은 props로 자주 재렌더링 
 > TODO: AsyncDispatcher에 대해 알아보기
 
 그리고 cache 함수의 구현을 보면 인자의 개수만큼 `cacheNode`를 계속 갱신하는데 아마도 이런 방식의 구현은 나중에 바뀌지 않을까 생각해본다.
+
+또한 아직까지 ReactQuery나 Next.js fetch에 비해 기능이 많이 부족하기 때문에 대체하기는 힘들어보인다.
+
+### startTransition
+
+구현체: [src/ReactStartTransition.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactStartTransition.js)
+
+문서: https://19.react.dev/reference/react/startTransition
+
+UI 업데이트를 논블로킹으로 할 수 있게 해주는 API다.
+
+블로킹과 논블로킹의 차이는 제어권에 있다.
+
+상태 업데이트를 논블로킹으로 하게 되면, 컴포넌트가 제어권을 가지기 때문에 상태 업데이트의 완료 여부와 상관 없이 다른 작업(e.g. 다른 상태를 업데이트)을 계속 할 수 있게 된다.
+
+구현을 살펴보면 `ReactSharedInternals`의 T와 S를 사용한다.
+
+아직까지 이 부분의 동작이 정확히 어떻게 되는지는 알지 못하지만, T를 prevTransition으로 따로 복사하여 S를 통해 논블로킹 호출에 전달하고 다시 T에 prev를 복원시키는 것으로 보인다.
