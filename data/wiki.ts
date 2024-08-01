@@ -75,11 +75,11 @@ const etc = [
   'view transitions api',
   'LCP',
   'CLS',
-  'NPM',
+  'package.json',
   'indexedDB',
 ]
 
-const React = ['Intro', 'package-react']
+const React = ['Intro', 'package-react', 'package-react-dom', 'SSR vs RSC']
 
 export const wiki = {
   CSS,

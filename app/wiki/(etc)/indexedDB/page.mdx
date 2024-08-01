@@ -1,0 +1,119 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## IndexedDB
+
+TODO
+
+`IndexedDB`(idb)는 브라우저 내장 데이터베이스이다.
+
+idb의 구조는 다음과 같다.
+
+- 하나의 db 안에 여러 개의 `객체 저장소(object store)`가 존재한다.
+- 각 객체 저장소는 키와 값을 가진 데이터를 보관할 수 있다.
+
+## 객체 저장소 생성하기
+
+객체 저장소를 생성하고 사용하는 과정은 아래와 같이 요약된다.
+
+- 만들고 싶은 db 이름과 버전을 명시한다.
+- 버전이 다르다면 `onupgradeneeded 이벤트`가 발생하는데, 이때 새로운 객체 저장소를 만들 수 있다.
+- 객체 저장소에 데이터를 추가, 삭제하는 과정은 하나의 트랜잭션 내에서 이루어진다.
+
+객체 저장소를 새로 추가할 때마다 버전을 증가시켜서 db에 접근하면 된다.
+
+최초 접근은 db의 버전이 0이므로 버전 1을 전달하면 된다.
+
+<CodeSelector names={['idb.ts']} desc='ex1' />
+
+```ts showLineNumbers
+interface OpenIndexedDBProps {
+  dbName: string
+  objectStoreName: string
+  version: number
+}
+
+function openIndexedDB({ dbName, objectStoreName, version }: OpenIndexedDBProps) {
+  return new Promise<IDBDatabase>((resolve) => {
+    const idb = window.indexedDB
+    const request = idb.open(dbName, version)
+
+    request.onerror = () => {
+      throw new Error()
+    }
+
+    request.onsuccess = () => {
+      const db = request.result
+      resolve(db)
+    }
+
+    // 버전이 다르면 새로운 객체 저장소를 생성하라는 의미
+    request.onupgradeneeded = () => {
+      const db = request.result
+      if (!db.objectStoreNames.contains(objectStoreName)) {
+        // 추가할 데이터의 id 필드를 key로 설정한다.
+        db.createObjectStore(objectStoreName, { keyPath: 'id' })
+      }
+    }
+  })
+}
+
+// 새로운 my-object-store-1 객체 저장소를 생성한다.
+openIndexedDB({ dbName: 'my-db', objectStoreName: 'my-object-store-1', version: 1 })
+// Do something...
+
+// 다시 my-object-store-1 객체 저장소에 접근한다.
+openIndexedDB({ dbName: 'my-db', objectStoreName: 'my-object-store-1', version: 1 })
+// Do something...
+
+// 새로운 my-object-store-2 객체 저장소를 생성한다. -> 버전을 증가시킨다.
+openIndexedDB({ dbName: 'my-db', objectStoreName: 'my-object-store-2', version: 2 })
+// Do something...
+```
+
+## 객체 저장소에 데이터 추가하기
+
+아래와 같은 데이터를 객체 저장소에 추가한다고 해보자.
+
+<CodeSelector names={['idb.ts']} desc='ex2' />
+
+```ts showLineNumbers
+// 객체 저장소에는 { key: 'my-id', value: { id: 'my-id', name: 'kim' } }으로 저장된다.
+const data = {
+  id: 'my-id',
+  name: 'kim',
+}
+
+interface addDataToIndexedDBProps<T> {
+  dbName: string
+  objectStoreName: string
+  version: number
+  data: T
+}
+
+export async function addDataToIndexedDB<T>({
+  dbName,
+  objectStoreName,
+  version,
+  data,
+}: addDataToIndexedDBProps): Promise<boolean> {
+  const db = await openIndexedDB({ dbName, objectStoreName, version })
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(objectStoreName, 'readwrite')
+    const objectStore = transaction.objectStore(objectStoreName)
+    const request = objectStore.put(data)
+
+    request.onsuccess = () => {
+      resolve(true)
+    }
+
+    request.onerror = () => {
+      reject(new Error('idb error'))
+    }
+
+    transaction.oncomplete = () => {
+      db.close()
+    }
+  })
+}
+```
