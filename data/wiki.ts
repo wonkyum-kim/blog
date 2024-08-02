@@ -79,7 +79,13 @@ const etc = [
   'indexedDB',
 ]
 
-const React = ['Intro', 'package-react', 'package-react-dom', 'SSR vs RSC']
+const React = [
+  'Intro',
+  'package-react',
+  'package-react-dom',
+  'package-react-reconciler',
+  'SSR vs RSC',
+]
 
 export const wiki = {
   CSS,

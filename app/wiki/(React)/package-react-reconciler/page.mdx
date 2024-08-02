@@ -1,0 +1,128 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# 📝 작성 중...
+
+## react-reconciler 패키지
+
+TODO
+
+- React 훅의 구현이 있으며 ReactSharedInternals에 주입한다.
+
+## Fiber
+
+`Fiber`는 처리 되어야 하거나 처리 된 컴포넌트에 대한 작업이다.
+
+컴포넌트 하나당 하나 이상의 Fiber 객체가 존재할 수 있다.
+
+fiber 객체는 `createFiber`를 통해 생성되며 아래와 같이 구성된다.
+
+<CodeSelector names={['react-reconciler/src/ReactFiber.js']} desc='ex1' />
+
+```ts showLineNumbers
+const fiber: Fiber = {
+  // Instance
+  // tag, key - defined at the bottom as dynamic properties
+  elementType: null, // 재조정 중에 identity를 유지하는데 사용되는 element.type의 값
+  type: null, // 이 fiber와 연관된 resolved된 function or class
+  stateNode: null, // 이 fiber와 연관된 local state
+
+  // Fiber
+  return: null, // 작업을 마무리하고 반환하는 fiber. 부모 fiber와 같다.
+  // 단일 연결 리스트 트리 구조와 같다.
+  child: null,
+  sibling: null,
+  index: 0,
+
+  ref: null, // 이 노드에 부착된 ref
+  refCleanup: null,
+
+  // pendingProps - defined at the bottom as dynamic properties
+  memoizedProps: null, // ouput을 만드는데 사용된 props
+  updateQueue: null, // 상태 업데이트와 콜백들을 저장하는 큐
+  memoizedState: null, // output을 만드는데 사용된 상태
+  dependencies: null, // context, events...
+
+  // Effects
+  flags: NoFlags,
+  subtreeFlags: NoFlags,
+  deletions: null,
+
+  lanes: NoLanes,
+  childLanes: NoLanes,
+
+  // Fiber의 풀링버전.
+  // 업데이트된 모든 fiber는 결국 한 쌍을 가진다.
+  alternate: null,
+
+  // dynamic properties at the end for more efficient hermes bytecode
+  tag, // fiber의 타입을 확인하는 태그
+  key, // 고유 식별자
+  pendingProps, // input props
+  // fiber와 그 서브트리의 프로퍼티를 나타내는 비트필드.
+  // E.g. ConcurrentMode flag는 서브트리가 기본적으로 비동기임을 나타낸다.
+  // fiber가 생성되면, 부모의 mode를 상속받는다.
+  // 추가적인 flag는 생성 시간에 설정되고, fiber의 라이프 타임동안 변경되지 않는다.
+  mode,
+}
+```
+
+## renderWithHooks
+
+react-reconciler/src/ReactFiberHooks.js에 있는 `renderWithHooks` 함수는 ReactSharedInternals.H에 React 훅을 할당한다.
+
+이때, 현재 fiber객체(current)에 해당하는 컴포넌트가 마운트되어야 하는지 아니면 업데이트되어야 하는지에 따라서 다른 훅을 할당해준다.
+
+<CodeSelector names={['renderWithHooks', 'useState']} desc='ex2' />
+
+```ts showLineNumbers {12-13}
+export function renderWithHooks<Props, SecondArg>(
+  current: Fiber | null,
+  workInProgress: Fiber,
+  Component: (p: Props, arg: SecondArg) => any,
+  props: Props,
+  secondArg: SecondArg,
+  nextRenderLanes: Lanes
+): any {
+  // ...
+  ReactSharedInternals.H =
+    current === null || current.memoizedState === null
+      ? HooksDispatcherOnMount
+      : HooksDispatcherOnUpdate
+  // ...
+  let children = __DEV__
+    ? callComponentInDEV(Component, props, secondArg)
+    : Component(props, secondArg)
+  // ...
+  finishRenderingHooks(current, workInProgress, Component)
+
+  return children
+}
+```
+
+```ts showLineNumbers
+// 컴포넌트가 마운트 될 때 사용되는 useState
+function mountState<S>(
+  initialState: (() => S) | S,
+): [S, Dispatch<BasicStateAction<S>>] {
+  const hook = mountStateImpl(initialState);
+  const queue = hook.queue;
+  const dispatch: Dispatch<BasicStateAction<S>> = (dispatchSetState.bind(
+    null,
+    currentlyRenderingFiber,
+    queue,
+  ): any);
+  queue.dispatch = dispatch;
+  return [hook.memoizedState, dispatch];
+}
+
+// 컴포넌트가 업데이트 될 때 사용되는 useState
+function updateState<S>(
+  initialState: (() => S) | S,
+): [S, Dispatch<BasicStateAction<S>>] {
+  return updateReducer(basicStateReducer, initialState);
+}
+```
+
+`finishRenderingHooks`에서는 렌더 페이즈를 마무리하고 정리한다.
+
+TODO: enableLazyContextPropagation

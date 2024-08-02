@@ -1,5 +1,7 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 
+# 📝 작성 중...
+
 ## react 패키지
 
 `react` 패키지는 React 컴포넌트를 정의하는데 필요한 기능만 포함되어 있다.
@@ -18,12 +20,13 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 크게 6가지 부분으로 구성되어 있다.
 
-- Internal: React 내부에서 사용되는 객체(지만 외부로 노출되어 있다.)
-- Legacy API: 현재는 사용이 권장되지 않는 API(클래스형 컴포넌트 등...)
-- Component: 미리 정의된 React 컴포넌트 (react는 단순히 export 할 뿐이고, 정의는 shared에 구현은 다른 곳에 있는 것 같다.)
+- Internal: React 내부에서 사용되는 객체
+- Legacy API: 현재는 사용이 권장되지 않는 API
+- Component: 미리 정의된 React 컴포넌트
 - API: 컴포넌트를 정의하는데 도움이 되는 API
-- Hook: React 훅 (react가 아니라 react-reconciler에 구현되어 있는 것 같아서 넘어간다.)
-- Unstable: 여기서는 다루지 않고 넘어간다.
+- Hook: React 훅
+
+아래 설명은 client 기준으로 진행한다. server는 나중에 살펴보기로 한다.
 
 ## [Internal]
 
@@ -31,11 +34,21 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 구현체: [src/ReactSharedInternalsClient.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactSharedInternalsClient.js)
 
-실제 React 내부 코드에서는 저 긴 이름 대신에 `ReactSharedInternals`로 사용한다.
+react 패키지 내부에서 사용하는 객체.
 
-외부에서 사용은 권장하지 않지만 사용할 수 있도록은 해두었다.
+개발자에게 export 될 때에는 사용하지 말라는 의미에서 이름이 길게 지어졌고, 내부 코드에서는 `ReactSharedInternals`라는 이름으로 사용된다.
 
-원래 이름은 `SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED`였는데, React 19에서 이름을 바꿔버린 바람에 이것을 사용하는 다른 라이브러리들에서 고생을 좀 하는 것 같다.
+ReactSharedInternals는 react 패키지에서 비어있는 상태로 존재한다.
+
+이 객체는 `shared` 패키지의 ReactSharedInternals.js에서 import되고 다시 export된다.
+
+shared 패키지에서 exoprt 된 ReactSharedInternals의 프로퍼티들은 외부 패키지에서 주입된다.
+
+- ReactSharedInternals.H: React 훅들이 들어있다. `react-reconciler` 패키지에서 주입된다.
+- ReactSharedInternals.A: TODO
+- ReactSharedInternals.T: TODO
+- ReactSharedInternals.S: TODO
+- TODO...
 
 ## [Legacy API]
 
@@ -49,19 +62,11 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 React에서 children prop은 항상 배열이 아니다. 그래서 children을 다룰려면 `Children` 메서드가 필요한 것이다.
 
-children이 항상 배열이 아닌 이유는, 자식이 오직 하나일 때 배열로 만들게 되면 불필요한 메모리 오버헤드가 발생하기 때문이다.
+(children이 항상 배열이 아닌 이유는, 자식이 오직 하나일 때 배열로 만들게 되면 불필요한 메모리 오버헤드가 발생하기 때문이다.)
 
 React에서 자식 노드로 간주되는 것은 Empty nodes(null, undefined, and Booleans), strings, numbers, and React elements다.
 
 React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문에 그 자식 노드들은 개수에 포함되지 않는다.
-
-이 로직은 `mapIntoArray` 함수에 구현되어 있다.
-
-- Children.count: 자식 노드의 개수를 반환한다.
-- Children.forEach: 배열 메서드의 forEach와 같은 역할을 한다.
-- Children.map: 배열 메서드의 map과 같은 역할을 한다.
-- Children.only: children이 하나의 React 엘리먼트인지 단언한다.
-- Children.toArray: children을 배열에 담아서 반환한다.
 
 ### Component
 
@@ -105,53 +110,25 @@ React 19버전에서는 [ref 객체를 prop으로 전달하도록 되어 있다.
 
 JSX를 사용하지 않고 직접 React 엘리먼트를 만드는 함수다.
 
-`ReactElement` 함수를 사용하여 새로운 React 엘리먼트를 반환한다.
+`ReactElement` 함수를 사용하여 새로운 `React 엘리먼트`를 반환한다.
 
 그렇다면 React 엘리먼트란 무엇인가?
 
-ReactElement의 구현을 살펴보면 아래와 같이 type, key, ref, props를 가지고 있는 객체를 의미한다.
+아래와 같이 typeof, type, key, ref, props 프로퍼티를 가지고 있는 객체를 의미한다.
 
 <CodeSelector names={['src/jsx/ReactJSXElement.js']} desc='ex3' />
 
 ```js
-function ReactElement(
+element = {
+  $$typeof: REACT_ELEMENT_TYPE,
   type,
   key,
-  _ref,
-  self,
-  source,
-  owner,
+  ref,
   props,
-  debugStack,
-  debugTask,
-) {
-  // ...
-  let element;
-  if (...) {
-    // ...
-  } else if (!__DEV__ && disableStringRefs) {
-    // In prod, `ref` is a regular property and _owner doesn't exist.
-    element = {
-      // This tag allows us to uniquely identify this as a React Element
-      $$typeof: REACT_ELEMENT_TYPE,
-
-      // Built-in properties that belong on the element
-      type,
-      key,
-      ref,
-
-      props,
-    };
-  } else {
-    // ...
-  }
-
-  // ...
-  return element;
 }
 ```
 
-이 객체가 DOM으로 변환되는 과정은 나중에 다른 패키지와 같이 살펴보기로 한다.
+이 객체가 나중에 DOM으로 변환되는 것이다.
 
 ### createRef
 
@@ -177,7 +154,7 @@ function ReactElement(
 
 문서: https://19.react.dev/reference/react/isValidElement
 
-[React 엘리먼트](#createelement)인지 확인해주는 함수다. 그래서 구현은 매우 간단하다.
+React 엘리먼트인지 확인해주는 함수다. 그래서 구현은 매우 간단하다.
 
 React 노드는 함수형 컴포넌트가 반환할 수 있는 모든 것을 의미한다.
 
@@ -260,11 +237,9 @@ function Page() {
 
 ### use
 
-구현체: [src/ReactHooks.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactHooks.js)
-
 문서: https://19.react.dev/reference/react/use
 
-먼저 `use`가 무엇인지 살펴보자.
+훅은 살펴보지 않기로 했지만 `use`는 API로 구분되어 있으므로 무엇인지만 살펴본다.
 
 use는 Promise와 context 값을 읽는 새로운 API다.
 
@@ -280,29 +255,6 @@ use를 Promise와 함께 사용하는 가장 좋은 방법은 서버 컴포넌�
 
 - 서버 컴포넌트에서 async와 await를 사용하면 Promise 값이 resolve 되기까지 렌더링이 차단된다.
 - 클라이언트 컴포넌트에서 use를 사용하면 재렌더링이 발생한다.
-
-이제 실제 구현을 살펴보자.
-
-<CodeSelector names={['src/ReactHooks.js']} desc='ex4' />
-
-```js
-function resolveDispatcher() {
-  const dispatcher = ReactSharedInternals.H;
-  // Will result in a null access error if accessed outside render phase. We
-  // intentionally don't throw our own error because this is in a hot path.
-  // Also helps ensure this is inlined.
-  return ((dispatcher: any): Dispatcher);
-}
-
-export function use<T>(usable: Usable<T>): T {
-  const dispatcher = resolveDispatcher();
-  return dispatcher.use(usable);
-}
-```
-
-`ReactSharedInternals`는 아까 보았던 `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`와 같고, `H` 프로퍼티는 Dispatcher를 나타낸다.
-
-use 뿐만 아니라 모든 훅들도 Dispatcher에 상세 구현이 포함되어 있으므로 react 패키지에서는 역할에 대해서만 살펴보고 넘어간다.
 
 ### lazy
 
@@ -360,23 +312,13 @@ memo로 최적화하는 과정은 정확히 같은 props로 자주 재렌더링 
 
 `src/ReactCacheClient.js`를 보면 클라이언트 컴포넌트에서 cache는 아직 구현되지 않았다고 적혀있다.
 
-즉, 언젠가 지원해줄 것이라고 기대해 볼 수 있다.
-
-다시 서버 컴포넌트로 돌아와서, cache는 마치 `ReactQuery`와 비슷하게 작동한다.
-
 컴포넌트 외부에서 함수를 cache로 감싸고, 반환된 함수를 서버 컴포넌트 내부에서 사용하면 된다.
 
 다시 말하면, 감싸는 것은 컴포넌트 외부에서 반환된 함수를 사용하는 것은 컴포넌트 내부에서다.
 
 `memo`는 클라이언트 컴포넌트에서 props를 비교해 컴포넌트를 렌더링을 스킵하는 것이라면, cache는 서버 컴포넌트에서 data fetch나 계산 결과를 저장해두고 쓰는 것이라고 할 수 있다.
 
-`src/ReactCacheImpl.js`에서 dispatcher는 `ReactSharedInternals.A`인데, [H](#use)와는 달리 AsyncDispatcher다.
-
-> TODO: AsyncDispatcher에 대해 알아보기
-
-그리고 cache 함수의 구현을 보면 인자의 개수만큼 `cacheNode`를 계속 갱신하는데 아마도 이런 방식의 구현은 나중에 바뀌지 않을까 생각해본다.
-
-또한 아직까지 ReactQuery나 Next.js fetch에 비해 기능이 많이 부족하기 때문에 대체하기는 힘들어보인다.
+아직까지 ReactQuery나 Next.js fetch에 비해 기능이 많이 부족하기 때문에 대체하기는 힘들어보인다.
 
 ### startTransition
 
@@ -390,6 +332,14 @@ UI 업데이트를 논블로킹으로 할 수 있게 해주는 API다.
 
 상태 업데이트를 논블로킹으로 하게 되면, 컴포넌트가 제어권을 가지기 때문에 상태 업데이트의 완료 여부와 상관 없이 다른 작업(e.g. 다른 상태를 업데이트)을 계속 할 수 있게 된다.
 
-구현을 살펴보면 `ReactSharedInternals`의 T와 S를 사용한다.
+구현을 살펴보면 콜백함수를 논블로킹으로 호출하고 다시 원래 컨텍스트로 돌아감을 확인할 수 있다.
 
-아직까지 이 부분의 동작이 정확히 어떻게 되는지는 알지 못하지만, T를 prevTransition으로 따로 복사하여 S를 통해 논블로킹 호출에 전달하고 다시 T에 prev를 복원시키는 것으로 보인다.
+## [Hooks]
+
+`react-reconciler` 패키지에서 구현되고 ReactSharedInternals에 주입되기 때문에 react 패키지에서는 단순히 사용만 하고 있다. (react/src/ReactHooks.js 참고)
+
+이 글에서는 훅이 주입되는 과정은 살펴보지 않고 구현과 역할에 대해서 살펴본다. (주입 과정은 react-reconciler에서 다루도록 한다.)
+
+### useId
+
+TODO...

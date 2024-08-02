@@ -1,5 +1,7 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 
+# 📝 작성 중...
+
 ## react-dom 패키지
 
 `react-dom` 패키지는 DOM의 엔트리 포인트 역할을 하고 React를 위한 렌더러를 제공한다.
@@ -10,7 +12,11 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 ### \_\_DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
 
-TODO
+구현체: https://github.com/facebook/react/blob/main/packages/react-dom/src/ReactDOMSharedInternals.js
+
+react-dom 패키지 내부에서 사용되는 객체다.
+
+내부 코드에서는 `ReactDOMSharedInternals`라는 이름으로 사용된다.
 
 ### createPortal
 
@@ -130,7 +136,45 @@ react 패키지의 훅도 마찬가지였지만, 자세한 구현은 dispatch에
 
 ## react-dom/client
 
-TODO
+### createRoot
+
+구현체: [src/client/ReactDOMRoot.js](https://github.com/facebook/react/blob/main/packages/react-dom/src/client/ReactDOMRoot.js)
+
+문서: https://19.react.dev/reference/react-dom/client/createRoot
+
+브라우저 DOM 엘리먼트 안에 내용을 표시하기 위해서 React 루트를 생성하는 함수다.
+
+<CodeSelector names={['index.js', 'index.html']} desc='ex2' />
+
+```jsx
+import { createRoot } from 'react-dom/client'
+import App from './App.js'
+import './styles.css'
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <title>My app</title>
+  </head>
+  <body>
+    <!-- This is the DOM node -->
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+`createRoot`의 구현을 보면 react-reconciler와 react-dom-bindings 패키지 코드를 사용하고 있어서 지금 자세히 살펴보기는 어렵다.
+
+### hydrateRoot
+
+구현체:
+
+문서: https://19.react.dev/reference/react-dom/client/hydrateRoot
 
 ## react-dom/server
 
