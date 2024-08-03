@@ -1,11 +1,10 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# 📝 작성 중...
+
 ## React란 무엇인가
 
 `React`는 사용자 인터페이스를 만들기 위한 JavaScript 라이브러리다.
-
-React의 특징은 다음과 같다.
-
-1. 선언적인 UI
-2. 컴포넌트
 
 ## 선언적인 UI
 
@@ -30,3 +29,54 @@ React에서는 자체적인 상태를 관리하는 캡슐화된 컴포넌트를 
 컴포넌트는 JSX 문법으로 작성할 수 있는데, 이는 Babel의 `@babel/preset-react` 프리셋이 빌드 타임에 JSX 문법을 자바스크립트로 변환시켜주기 때문에 가능하다.
 
 컴포넌트 로직은 HTML이 아닌 자바스크립트(JSX)로 작성되므로, 앱을 통해 풍부한 데이터를 쉽게 전달하고 DOM 밖에서 상태를 유지할 수 있다.
+
+## 용어 정리
+
+패키지를 살펴보기 전에 몇 가지 용어를 정리하고 넘어간다.
+
+### React node
+
+`React node`는 함수형 컴포넌트가 반환할 수 있는 모든 것을 의미한다. (null, undefined, booleans, strings, numbers, React elements)
+
+### React element
+
+`React element`는 JSX 태그 또는 createElement가 반환하는 객체를 의미한다. (결국 JSX는 Babel에 의해 createElement로 변환된다.)
+
+<CodeSelector names={['react/src/jsx/ReactJSXElement.js']} desc='ex1' />
+
+```js
+function ReactElement(/* ... */) {
+  // ...
+  element = {
+    $$typeof: REACT_ELEMENT_TYPE,
+    type,
+    key,
+    ref,
+    props,
+  }
+  // ...
+  return element
+}
+```
+
+### Render
+
+`Render(렌더링)`은 브라우저의 렌더링과는 다른 의미로 사용된다.
+
+React에서 렌더링은 컴포넌트를 호출하는 것을 의미한다. (“Rendering” is React calling your components.)
+
+컴포넌트를 호출한다는 의미는 결국 React element를 반환한다는 것이다.
+
+그리고 업데이트된 컴포넌트는 자신 뿐만 아니라 중첩되어 있는 모든 컴포넌트의 렌더링을 유발한다.
+
+(단, children으로 중첩된 컴포넌트의 재렌더링은 발생하지 않는다.)
+
+### Commit
+
+`Commit(커밋)`은 컴포넌트의 렌더링 이후에 React가 DOM을 수정하는 과정을 의미한다.
+
+이때, React는 렌더링 사이에 차이가 발생한 부분만 DOM 노드를 변경한다.
+
+### Fiber
+
+TODO

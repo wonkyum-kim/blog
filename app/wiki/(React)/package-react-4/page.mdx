@@ -1,0 +1,123 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# 📝 작성 중...
+
+## APIs
+
+react 패키지에서는 컴포넌트를 정의하는데 도움이 되거나 자원에 접근할 수 있는 API들을 제공한다.
+
+### createContext
+
+컴포넌트 외부에서 `context` 객체를 생성할 수 있게 해주는 함수다.
+
+context 객체 그 자체는 아무런 정보도 가지고 있지 않으며, 단지 다른 컴포넌트들이 어떤 컨텍스트를 읽거나 제공받는지를 나타낸다.
+
+context 객체는 2가지 프로퍼티를 가진다. 하지만 19 버전부터 모두 deprecated 되었다.
+
+- `SomeContext.Provider`: 컴포넌트에 컨텍스트 값을 제공한다. (React 19부터는 그냥 SomeContext만 사용해도 동일하다.)
+- `SomeContext.Consumer`: 컨텍스트 값을 읽게 해준다. (`useContext`를 사용하는 것이 권장된다.)
+
+<CodeSelector names={['context']} desc='ex2' />
+
+```jsx
+// context object를 생성한다.
+// optional: 'light'라는 기본 값을 제공해준다.
+const ThemeContext = createContext('light')
+
+function App() {
+  const [theme, setTheme] = useState('dark')
+
+  // 기본 값 대신 'dark'라는 값을 context value로 설정한다.
+  // React 19부터는 ThemeContext.Provider 대신 ThemeContext로 사용해도 된다.
+  return (
+    <ThemeContext value={theme}>
+      <Page />
+    </ThemeContext>
+  )
+}
+
+function Page() {
+  // ThemeContext.Consumer는 이제 사용하지 않는다.
+  // 대신에 context value를 얻기 위해서 useContext를 사용한다.
+  // 또는 use 훅을 사용해도 된다.
+  const theme = useContext(ThemeContext)
+  return <div>{theme}</div>
+}
+```
+
+그리고 문서에는 나오지 않는 4가지 프로퍼티도 존재한다.
+
+- `$$typeof`: context 객체의 타입
+- `_currentValue`와 `_currentValue2`: React는 여러 concurrent 렌더러를 지원하는 해결 방법으로 렌더러를 primary와 secondary로 구분한다. secondary 렌더러는 분리된 필드에 컨텍스트 값을 저장하기 때문에 이와 같이 두 개의 필드가 필요한 것이다.
+- `_threadCount`: 단일 렌더러 내에서 이 컨텍스트가 현재 지원하는 concurrent 렌더러 수를 추적하는데 사용된다.
+
+### use
+
+`use`는 Promise와 context 값을 읽는 새로운 API다.
+
+하지만 다른 React 훅과는 달리 조건문이나 반복문 안에서도 사용이 가능하다.
+
+Promise와 함께 호출되었을 때, use는 Suspense, Error boundary와 결합시킬 수 있다.
+
+이전까지 Promise의 값을 얻으려면, 서버 컴포넌트의 async 함수 내에서 await를 사용해야 했는데 이제는 클라이언트 컴포넌트 내에서도 가능해졌다.
+
+이제 서버 컴포넌트에서 Promise를 생성해서 클라이언트 컴포넌트에 prop으로 넘기면, 클라이언트 컴포넌트에서 use를 사용하여 값을 얻을 수 있다.
+
+두 방법의 차이는 아래와 같다.
+
+- 서버 컴포넌트에서 async와 await를 사용하면 Promise 값이 resolve 되기까지 렌더링이 차단된다.
+- 클라이언트 컴포넌트에서 use를 사용하면 재렌더링이 발생한다.
+
+### lazy
+
+`lazy`는 로딩 중인 컴포넌트의 첫 렌더링이 완료될 때까지 특정 코드의 실행을 지연시켜주는 API다.
+
+lazy에 건네주는 함수는 지연시킬 코드이며 `load`(내부 코드에서는 `ctor`라고 부른다.)라고 부르고 `Promise` 또는 `thenable`을 반환한다.
+
+컴포넌트의 첫 렌더링이 완료되면 load를 호출하고, load가 반환한 Promise가 resolve 되면, `default`를 React 컴포넌트로 렌더링한다. (즉 default export 해야 한다는 의미, `lazyInitializer`의 구현을 살펴보면 알 수 있다.)
+
+resolved 되기 이전까지는 `Suspense`에 전달한 값을 보여주게 된다.
+
+반환된 Promise와 Promise의 resolved 값은 저장되기 때문에, React는 load를 다시 호출하지 않는다.
+
+### memo
+
+`memo`는 컴포넌트의 props가 변하지 않으면 재렌더링을 스킵하게 해주는 함수다.
+
+하지만 항상 스킵이 보장되는 것은 아니다. 성능 최적화를 위해서 React는 여전히 재렌더링할 수 있다.
+
+props의 비교는 `Object.is`로 진행되지만, 직접 비교를 하는 함수를 전달할 수도 있다.
+
+memo로 최적화하는 과정은 정확히 같은 props로 자주 재렌더링 되거나 재렌더링 로직이 비쌀 때만 가치가 있다.
+
+컴포넌트에 건네주는 props가 항상 다르다면, 예를 들어 객체나 함수를 건네준다면 memo는 의미가 없다.
+
+따라서 `useMemo`와 `useCallback`을 memo와 같이 사용해야한다.
+
+### cache ❌
+
+TODO: ReactSharedInternals.A에 관한 내용 추가.
+
+구현체: [src/ReactCacheImpl.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactCacheImpl.js)
+
+서버 컴포넌트에서 data fetch나 계산 결과를 저장하게 해주는 함수를 반환한다.
+
+클라이언트 컴포넌트에서 실행하면 캐싱 기능은 작동하지 않는다.
+
+`src/ReactCacheClient.js`를 보면 클라이언트 컴포넌트에서 cache는 아직 구현되지 않았다고 적혀있다.
+
+컴포넌트 외부에서 함수를 cache로 감싸고, 반환된 함수를 서버 컴포넌트 내부에서 사용하면 된다.
+
+다시 말하면, 감싸는 것은 컴포넌트 외부에서 반환된 함수를 사용하는 것은 컴포넌트 내부에서다.
+
+`memo`는 클라이언트 컴포넌트에서 props를 비교해 컴포넌트를 렌더링을 스킵하는 것이라면, cache는 서버 컴포넌트에서 data fetch나 계산 결과를 저장해두고 쓰는 것이라고 할 수 있다.
+
+### startTransition ❌
+
+TODO: ReactSharedInternals.T와 S에 관한 내용 추가
+
+구현체: [src/ReactStartTransition.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactStartTransition.js)
+
+UI 업데이트를 논블로킹으로 할 수 있게 해주는 API다.
+
+따라서 상태 업데이트를 논블로킹으로 하게 되면, 컴포넌트가 제어권을 가지기 때문에 상태 업데이트의 완료 여부와 상관 없이 다른 작업(e.g. 다른 상태를 업데이트)을 계속 할 수 있게 된다.

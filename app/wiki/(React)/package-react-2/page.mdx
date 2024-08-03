@@ -1,0 +1,51 @@
+## Legacy API
+
+현재는 사용이 권장되지 않는 API들이라서 깊게 다루지 않고 넘어가도록 한다.
+
+### Children
+
+`props.children`으로 전달된 children에 대해 여러 가지 작업을 할 수 있는 메서드를 가진 객체다.
+
+React에서 children prop은 항상 배열이 아니다. 그래서 children을 다룰려면 `Children` 메서드가 필요한 것이다.
+
+(children이 항상 배열이 아닌 이유는, 자식이 오직 하나일 때 배열로 만들게 되면 불필요한 메모리 오버헤드가 발생하기 때문이라고 한다.)
+
+React에서 자식 노드로 간주되는 것은 Empty nodes(null, undefined, and Booleans), strings, numbers, and React elements다.
+
+React elements를 만나면 그보다 더 깊이 순회하지는 않기 때문에 그 자식 노드들은 개수에 포함되지 않는다.
+
+### Component
+
+`Component`는 클래스형 컴포넌트를 만들기 위해 사용된다.
+
+클래스형 컴포넌트를 선언하는 방법은 `Component`를 extend하고 `render` 메서드를 정의해주면 된다.
+
+이제는 사용할 일이 거의 없기 때문에 자세히 보지 않고 넘어간다.
+
+### PureComponent
+
+`Component`와 비슷하지만 같은 props와 state에 대해 재렌더링을 방지 해준다고 한다.
+
+### cloneElement
+
+전달된 React element를 복사하여 반환하는 함수다.
+
+### createElement
+
+JSX를 사용하지 않고 직접 `React element`를 만드는 함수다.
+
+`ReactElement` 함수를 사용하여 새로운 React element를 반환한다.
+
+### createRef
+
+`useRef`가 나오기 전까지 ref 객체를 만들기 위해 사용하던 함수다.
+
+### forwardRef
+
+`forwardRef`는 ref를 컴포넌트에 전달하기 위해 사용되었던 함수다.
+
+하지만 19버전 부터는 props에 ref를 전달할 수 있으므로 넘어가도록 한다.
+
+### isValidElement
+
+React 엘리먼트인지 확인해주는 함수다.

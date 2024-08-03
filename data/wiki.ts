@@ -81,7 +81,11 @@ const etc = [
 
 const React = [
   'Intro',
-  'package-react',
+  'package-react-0',
+  'package-react-1',
+  'package-react-2',
+  'package-react-3',
+  'package-react-4',
   'package-react-dom',
   'package-react-reconciler',
   'SSR vs RSC',

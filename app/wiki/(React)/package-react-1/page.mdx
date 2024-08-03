@@ -1,0 +1,19 @@
+# 📝 작성 중...
+
+## ReactSharedInternalsClient.js
+
+### ReactSharedInternals
+
+`ReactSharedInternals`는 react 패키지 내부에서 사용하는 객체로 현재 코드에서는 비어있는 상태로 존재한다.
+
+이 객체는 `shared` 패키지의 ReactSharedInternals.js에서 import되고 다시 export되는데,
+
+shared 패키지에서 exoprt 된 ReactSharedInternals의 필드는 다른 React 패키지에서 주입되어 사용할 수 있게 된다.
+
+- `ReactSharedInternals.H`: Hook에 관련되어 있으며 `react-reconciler` 패키지에서 주입된다.
+- ReactSharedInternals.A: TODO
+- ReactSharedInternals.T: TODO
+- ReactSharedInternals.S: TODO
+- TODO...
+
+index.js에서 export 될 때에는 사용하지 말라는 의미에서 `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`라는 이름이 지어졌다.

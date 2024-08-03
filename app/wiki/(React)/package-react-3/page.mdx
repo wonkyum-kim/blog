@@ -1,0 +1,43 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# 📝 작성 중...
+
+## Components
+
+react 패키지는 JSX에 사용할 수 있는 몇 가지 빌트 인 컴포넌트를 제공한다.
+
+JSX에는 미리 정해진 태그를 전달하면 된다. 이 태그는 `shared` 패키지에 전역 심볼로 저장되어 있다.
+
+심볼을 JSX에 전달하면 어떻게 되는 것일까? Babel로 변환된 결과물을 아래와 같다.
+
+<CodeSelector names={['src/index.jsx', 'dist/index.js']} desc='ex1' />
+
+```jsx
+const Fragment = Symbol.for('react.fragment')
+const app = () => <Fragment></Fragment>
+```
+
+```js
+const Fragment = Symbol.for('react.fragment')
+const app = () => /*#__PURE__*/ React.createElement(Fragment, null)
+```
+
+`React.createElement`의 첫 번째 매개변수에 심볼을 그대로 넣어서 변환되는 것을 확인할 수 있다.
+
+나중에 이 심볼은 React element의 `$$typeof` 프로퍼티로 설정된다.
+
+### Fragment
+
+TODO
+
+### Profiler
+
+TODO
+
+### StrictMode
+
+TODO
+
+### Suspense
+
+TODO
