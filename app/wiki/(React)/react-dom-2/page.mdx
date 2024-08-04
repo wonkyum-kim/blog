@@ -1,0 +1,39 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+# 📝 작성 중...
+
+## react-dom/client
+
+### createRoot
+
+브라우저 DOM 엘리먼트 안에 내용을 표시하기 위해서 React 루트를 생성하는 함수다.
+
+<CodeSelector names={['index.js', 'index.html']} desc='ex2' />
+
+```jsx
+import { createRoot } from 'react-dom/client'
+import App from './App.js'
+import './styles.css'
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <title>My app</title>
+  </head>
+  <body>
+    <!-- This is the DOM node -->
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+TODO: createRoot의 호출 과정 살펴보기
+
+### hydrateRoot
+
+TODO

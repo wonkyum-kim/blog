@@ -1,0 +1,69 @@
+# 📝 작성 중...
+
+## ReactFiber.js
+
+`ReactFiber.js`에는 Fiber 객체를 정의하고 생성하는 코드가 들어있다.
+
+### createFiber
+
+`Fiber` 객체를 생성하여 반환하는 함수. Fiber 객체를 만드는 모든 함수는 이 함수를 호출하게 된다.
+
+Fiber는 아래와 같은 필드로 이루어져 있다.
+
+| key           | value                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| tag           | Fiber의 타입을 식별하는 태그. ReactWorkTag.js에서 확인할 수 있다.                            |
+| key           | ReactElement.key와 같다.                                                                     |
+| elementType   | ReactElement.type과 같다.                                                                    |
+| type          | i.e. ReactElement.type, 그 외에 여러 값이 더 가능                                            |
+| stateNode     | 이 Fiber와 연관되어 있는 local state                                                         |
+| return        | 부모 Fiber 객체                                                                              |
+| child         | 첫 번째 자식 Fiber 객체. 자식이 여러 개이면, index로 구분할 수 있다.                         |
+| sibling       | 다음 형제 Fiber 객체.                                                                        |
+| index         | 여러 형제들 사이에서 자신이 몇 번째 자식인지 나타낸다.                                       |
+| ref           |                                                                                              |
+| refCleanup    |                                                                                              |
+| pendingProps  | ReactElement.props와 같다.                                                                   |
+| memoizedProps | 렌더링이 완료된 후 pendingProps를 저장한다.                                                  |
+| updateQueue   | 상태 업데이트와 콜백 함수들을 저장하는 큐                                                    |
+| memoizedState | 현재 Fiber의 훅이 링크드 리스트 형태로 저장되어 있다.                                        |
+| dependencies  | 이 Fiber의 디펜던시(contexts, events)                                                        |
+| mode          | Fiber와 그 서브트리의 프로퍼티들을 설명하는 비트필드. ReactTypeofMode.js에서 확인할 수 있다. |
+| flags         | 업데이트, 클론 등 다양한 상황에 대한 플래그. ReactFiberFlags.js에서 확인할 수 있다.          |
+| subtreeFlags  |                                                                                              |
+| deletions     | 삭제된 Fiber 배열                                                                            |
+| lanes         | 작업의 우선순위를 관리한다. ReactFiberLane.js에서 확인할 수 있다.                            |
+| childLanes    |                                                                                              |
+| alternate     | 반대편 Fiber 트리(current/workInProgress)를 가리킨다.                                        |
+
+### isFunctionClassComponent
+
+TODO: 어디서 호출되는가?
+
+### createWorkInProgress
+
+TODO: 어디서 호출되는가?
+
+작업을 진행할 반대편 파이버(`workInProgress`)를 만드는 함수다. 이것을 `더블 버퍼링 풀링 기술`이라고 부른다.
+
+사용되지 않는 노드를 풀링하여 재사용하면, 지연 생성하는 방식으로 업데이트 되지 않는 노드에 대한 추가 객체 할당을 피할 수 있고 필요한 경우 추가 메모리를 회수할 수 있도록 해준다.
+
+(We use a double buffering pooling technique because we know that we'll only ever need at most two versions of a tree. We pool the "other" unused node that we're free to reuse. This is lazily created to avoid allocating extra objects for things that are never updated. It also allow us to reclaim the extra memory if needed.)
+
+### resetWorkInProgress
+
+이 함수를 사용하면 Fiber가 첫 번째 패스 이전에 createFiber 또는 createWorkInProgress에서 설정했던 값으로 재설정된다.
+
+이상적으로는 필요하지 않은 함수이지만, 불행하게도 많은 코드는 current에서 읽고 workInProgress에서 써야하는 경우에 workInProgress에서 읽고 있다.
+
+(This resets the Fiber to what createFiber or createWorkInProgress would have set the values to before during the first pass. Ideally this wouldn't be necessary but unfortunately many code paths reads from the workInProgress when they should be reading from current and writing to workInProgress.)
+
+### createHostRootFiber
+
+루트 노드의 Fiber 객체를 만드는 함수.
+
+### createFiberFromElement
+
+React element를 받아서 그에 해당하는 Fiber 객체를 생성한다.
+
+이와 비슷한 여러 함수(i.e. createFiberFromFragment)가 있지만 그 역할은 이것과 비슷하므로 생략한다.

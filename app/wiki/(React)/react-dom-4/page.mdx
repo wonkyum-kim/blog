@@ -1,0 +1,75 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## react-dom
+
+react-dom 패키지에서 제공하는 APIs와 Hooks에 대해 살펴본다.
+
+구현은 다른 패키지에 있는 경우가 많아서 역할에 대해서만 살펴본다.
+
+### createPortal
+
+`createPortal`은 DOM의 다른 부분에 children을 렌더링하도록 해준다.
+
+주로 modal을 만들거나 React로 만들어지지 않은 부분에 React 컴포넌트를 렌더링하고 싶을 때 사용된다.
+
+### flushSync
+
+`flushSync`는 React가 제공된 콜백 내부의 모든 업데이트를 동기식으로 플러시하도록 한다.
+
+즉, DOM이 즉시 업데이트되는 것을 보장한다.
+
+<CodeSelector names={['jsx']} desc='ex1' />
+
+```jsx
+flushSync(() => {
+  setState('hi')
+})
+
+// 다음 줄 부터 DOM이 업데이트 되었음이 보장된다.
+```
+
+flushSync는 퍼포먼스에 안좋은 영향을 끼칠 수 있지만, 브라우저 API와 같은 서드 파티와 React를 같이 써야할 때 주로 사용한다.
+
+예를 들어 `View Transition API`에서 같이 사용하면 좋다.
+
+### prefetchDNS
+
+DNS를 조회하여 IP 주소를 미리 얻도록 하는 방법. 리소스 요청 전 DNS 조회 시간 단축할 목적으로 사용한다.
+
+### preconnect
+
+DNS 조회 외에도 TCP 핸드셰이크와 TLS 네고시에이션까지 미리 수행하는 방법.
+
+리소스 요청 전 모든 초기 연결 설정 작업 완료할 목적으로 사용한다.
+
+### preload
+
+현재 페이지 렌더링에 필요한 중요한 리소스를 미리 로드하는 방법.
+
+페이지 로드 중 반드시 필요한 리소스를 미리 로드할 때 사용한다.
+
+### preloadModule
+
+외부 스크립트 중 ESM module을 미리 로딩(preload)하는 방법.
+
+preload의 스크립트 버전이라고 생각하면 된다.
+
+### preinit
+
+preload는 불러오는 것까지만 하지만, preinit은 실행까지 한다.
+
+### preinitModule
+
+preinit과 비슷하지만, 스크립트가 ESM인 경우 사용한다.
+
+### requestFormReset
+
+https://19.react.dev/blog/2024/04/25/react-19#form-actions 에 따르면 `<form>`을 수동으로 초기화 시키는 API라고 한다.
+
+자세한 것은 문서가 나와야 알 수 있을 것이다.
+
+### useFormStatus
+
+`useFormStatus`는 지난 form 제출의 상태 정보를 제공하는 훅이다.
+
+반드시 `<form>`이 있는 컴포넌트가 렌더링하는 다른 자식 컴포넌트에서 사용해야 한다는 것이 특이하다.
