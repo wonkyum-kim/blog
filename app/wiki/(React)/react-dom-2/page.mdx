@@ -6,33 +6,147 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 ### createRoot
 
-브라우저 DOM 엘리먼트 안에 내용을 표시하기 위해서 React 루트를 생성하는 함수다.
+`createRoot`는 `ReactDOMRoot`를 생성하는 함수다.
 
-<CodeSelector names={['index.js', 'index.html']} desc='ex2' />
+<CodeSelector names={['index.js']} desc='ex1' />
 
 ```jsx
 import { createRoot } from 'react-dom/client'
-import App from './App.js'
-import './styles.css'
 
+// root: ReactDOMRoot
 const root = createRoot(document.getElementById('root'))
-root.render(<App />)
 ```
 
-```html
-<!doctype html>
-<html>
-  <head>
-    <title>My app</title>
-  </head>
-  <body>
-    <!-- This is the DOM node -->
-    <div id="root"></div>
-  </body>
-</html>
+> 지금부터 createRoot가 동작하는 과정을 살펴볼 것인데, react-reconciler 부분을 먼저 읽고 오는 것이 도움이 된다.
+
+1단계: createContainer를 호출하여 FiberRootNode를 생성한다.
+
+createContainer는 createFiberRoot를 호출하고, createFiberRoot는 FiberRootNode를 생성하여 반환한다.
+
+FiberRootNode는 Fiber 객체를 포함하고 있는 객체라고 생각하면된다.
+
+disableLegacyMode가 true이기 때문에 Fiber.mode는 ConcurrentMode로 설정된다.
+
+실제 Fiber 객체가 생성되는 createFiber 부분은 react-reconciler를 참고한다.
+
+(TODO)캐시 관련해서는 아직 무엇인지 파악하지 못했다.
+
+마지막으로 Fiber 객체에 update 큐를 추가해주고 마무리된다.
+
+<CodeSelector
+  names={['createRoot', 'createContainer', 'createFiberRoot', 'createHostRootFiber']}
+  desc='ex2'
+/>
+
+```ts {6-11} showLineNumbers
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: createContainer를 호출하여 FiberRootNode를 생성한다.
+  const root = createContainer(
+    container,
+    ConcurrentRoot
+    /* ... */
+  )
+  /* ... */
+}
 ```
 
-TODO: createRoot의 호출 과정 살펴보기
+```ts {7-11} showLineNumbers
+export function createContainer(
+  containerInfo: Container,
+  tag: RootTag
+  /* ... */
+): OpaqueRoot {
+  // ...
+  return createFiberRoot(
+    containerInfo,
+    tag
+    /* ... */
+  )
+}
+```
+
+```ts {7-12, 16-19, 43-44} showLineNumbers
+export function createFiberRoot(
+  containerInfo: Container,
+  tag: RootTag,
+  /* ... */
+): FiberRoot {
+
+  // 1. FiberRootNode를 생성한다.
+  const root: FiberRoot = (new FiberRootNode(
+    containerInfo,
+    tag,
+    /* ... */
+  ): any);
+
+  /* ... */
+
+  // 2. FiberRootNode.current에 Fiber 객체를 넣는다.
+  const uninitializedFiber = createHostRootFiber(tag, isStrictMode);
+  root.current = uninitializedFiber;
+  uninitializedFiber.stateNode = root;
+
+  // 3. cache 관련
+  if (enableCache) {
+    const initialCache = createCache();
+    retainCache(initialCache);
+
+    // The pooledCache is a fresh cache instance that is used temporarily
+    // for newly mounted boundaries during a render. In general, the
+    // pooledCache is always cleared from the root at the end of a render:
+    // it is either released when render commits, or moved to an Offscreen
+    // component if rendering suspends. Because the lifetime of the pooled
+    // cache is distinct from the main memoizedState.cache, it must be
+    // retained separately.
+    root.pooledCache = initialCache;
+    retainCache(initialCache);
+    const initialState: RootState = {
+      element: initialChildren,
+      isDehydrated: hydrate,
+      cache: initialCache,
+    };
+    uninitializedFiber.memoizedState = initialState;
+  } else { /* ... */ }
+
+  // 4. Fiber 객체에 updateQueue를 추가한다.
+  initializeUpdateQueue(uninitializedFiber);
+
+  return root;
+}
+```
+
+```ts {4, 10} showLineNumbers
+export function createHostRootFiber(tag: RootTag, isStrictMode: boolean): Fiber {
+  let mode
+  if (disableLegacyMode || tag === ConcurrentRoot) {
+    mode = ConcurrentMode
+    /* ... */
+  } else {
+    mode = NoMode
+  }
+  /* ... */
+  return createFiber(HostRoot, null, null, mode)
+}
+```
+
+2단계: TODO
+
+<CodeSelector names={['createRoot']} desc='ex3' />
+
+```ts showLineNumbers
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 2단계:
+  markContainerAsRoot(root.current, container)
+}
+```
 
 ### hydrateRoot
 

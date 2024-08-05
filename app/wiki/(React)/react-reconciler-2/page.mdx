@@ -2,12 +2,87 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 # 📝 작성 중...
 
-## ReactFiberReconciler.js
+## ReactFiberClassUpdateQueue.js
 
-### createContainer
+`UpdateQueue`는 우선순위가 지정된 업데이트의 연결 리스트다.
 
-### createHydrationContainer
+파이버와 마찬가지로, 업데이트 큐는 더블 버퍼링을 사용하므로 쌍으로 제공된다.
 
-### updateContainer
+`current 큐`는 화면의 가시적인 상태를 나타내고, `work-in-progress 큐`는 커밋되기 전에 비동기적으로 변형 및 처리될 수 있다.
 
-### updateContainerSync
+- work-in-progress 렌더링이 완료되기 전에 삭제되면, current 큐를 복제하여 새로운 work-in-progress를 만든다.
+- 업데이트를 스케줄 하려면, 두 큐 모두 업데이트를 추가해야한다.
+- 각 큐는 처리되지 않은 첫 번째 업데이트에 대한 포인터를 유지한다.
+- current 큐의 포인터는 work-in-progress를 스왑할 때, 커밋 단계에서만 업데이트 된다.
+
+work-in-progress 포인터는 항상 current 큐의 포인터보다 같거나 더 큰 위치를 가지게 된다.
+
+<CodeSelector names={['pointer']} desc='ex1' />
+
+```text
+Current pointer:           A - B - C - D - E - F
+Work-in-progress pointer:              D - E - F
+                                       ^
+```
+
+두 큐에 모두 업데이트를 추가하는 이유는 업데이트를 처리하지 않고 삭제할 수 있기 때문이다.
+
+예를 들어 work-in-progress 큐에만 업데이트를 추가하는 경우, current에서 복제하여 work-in-progress의 렌더링이 다시 시작될 때마다 일부 업데이트가 손실될 수 있다.
+
+마찬가지로, current 큐에만 업데이트를 추가하면, work-in-progress 큐가 커밋되어 current 큐와 스왑될 때마다 업데이트가 손실된다.
+
+그러나 두 큐에 모두 추가하면, 업데이트가 다음 work-in-progress의 일부가 될 것이 보장된다.
+
+그리고 work-in-progress 큐는 커밋하면 current 큐가 되므로, 동일한 업데이트를 두 번 적용할 위험이 없다.
+
+---
+
+업데이트는 우선순위에 따라 정렬되지 않고 삽입된다. 따라서 새 업데이트는 항상 리스트의 끝에 추가된다.
+
+하지만 우선순위는 여전히 중요하다. 렌더링 단계에서 업데이트 큐를 처리할 때, 우선순위가 충분한 업데이트만 결과에 포함된다.
+
+우선순위가 충분하지 않아 업데이트를 건너뛰면, 나중에 우선순위가 낮은 렌더링 중에 처리되도록 큐에 남는다.
+
+중요한 점은, 건너뛴 업데이트 이후의 모든 업데이트도 우선순위에 관계 없이 큐에 남아있다는 것이다.
+
+즉, 우선순위가 높은 업데이트는 때때로 두 개의 별도 우선순위로 두 번 처리된다.
+
+또한 큐의 첫 번째 업데이트가 적용되기 전 상태를 나타내는 `기본 상태(base state)`를 추적한다.
+
+예를 들어 기본 상태 ' '와 우선순위를 나타내는 숫자가 있고, 이전 상태에 문자를 추가하여 업데이트를 적용하는 큐가 주어지면, React는 이러한 업데이트를 두 개의 별도 렌더링으로 처리한다.
+
+<CodeSelector names={['queue']} desc='ex2' />
+
+```text
+A1 - B2 - C1 - D2
+
+First render, at priority 1:
+Base state: ''
+Updates: [A1, C1]
+Result state: 'AC'
+
+Second render, at priority 2:
+Base state: 'A'            <-  The base state does not include C1, because B2 was skipped.
+Updates: [B2, C1, D2]      <-  C1 was rebased on top of B2
+Result state: 'ABCD'
+```
+
+삽입 순서대로 업데이트를 처리하고, 이전 업데이트를 건너뛸 때 높은 우선순위 업데이트를 리베이스하기 때문에, 최종 결과는 우선순위에 관계 없이 결정적이다.
+
+즉, 중간 상태는 시스템 자원에 따라서 다를 수 있지만 최종 상태는 항상 동일하다.
+
+### initializeUpdateQueue
+
+Fiber 객체에 `updateQueue`를 추가하는 역할을 한다.
+
+### cloneUpdateQueue
+
+current 업데이트 큐를 work-in-progress 업데이트 큐에 복사한다.
+
+### createUpdate
+
+`Update` 객체를 생성한다.
+
+### enqueueUpdate
+
+TODO
