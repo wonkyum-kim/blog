@@ -1,3 +1,5 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
 # 📝 작성 중...
 
 ## ReactSharedInternalsClient.js
@@ -12,8 +14,22 @@ shared 패키지에서 exoprt 된 ReactSharedInternals의 필드는 다른 React
 
 - ReactSharedInternals.H: Hook에 관련되어 있으며 `react-reconciler` 패키지에서 주입된다.
 - ReactSharedInternals.A: TODO
-- ReactSharedInternals.T: TODO
+- ReactSharedInternals.T: Transition을 위한 BatchConfigTransition
 - ReactSharedInternals.S: TODO
 - TODO...
 
 index.js에서 export 될 때에는 사용하지 말라는 의미에서 `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`라는 이름이 지어졌다.
+
+### BatchConfigTransition
+
+<CodeSelector names={['BatchConfigTransition']} desc='BatchConfigTransition' />
+
+```ts showLineNumbers
+export type BatchConfigTransition = {
+  name?: string
+  startTime?: number
+  _updatedFibers?: Set<Fiber>
+}
+```
+
+ReactSharedInternals.T에 할당되는 객체다. 트랜지션에 대한 정보를 담고 있다.

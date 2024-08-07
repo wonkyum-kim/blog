@@ -1,0 +1,15 @@
+## 'passive' option
+
+터치 이벤트 리스너는 종종 스크롤링 퍼포먼스에 심각한 문제를 일으키기에, 크롬 브라우저는 터치 이벤트 리스너의 기본 값을 passive로 하였다.
+
+`addEventListener`의 `passive: true` 옵션은 브라우저에게 `preventDefault()`를 호출하지 않겠다고 알리는 역할을 한다.
+
+터치 이벤트(touchstart, touchmove)가 발생하면 스크롤링을 발생시키는데, 브라우저는 스크롤링을 발생시키는 이벤트를 감지했을 때 preventDefault가 호출되지 않았다고 판단되면 그제서야 스크롤링을 진행한다.
+
+이 과정에서 스크롤링 퍼포먼스에 문제가 발생했었는데, passive 옵션이 기본으로 설정되면서 이러한 문제가 해결되었다.
+
+하지만 이로인해 의도치 않은 스크롤이 발생할 수도 있는데, `touch-action: none` 스타일을 적용하면 해결된다.
+
+## References
+
+- https://developer.chrome.com/blog/scrolling-intervention?hl=ko

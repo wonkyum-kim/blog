@@ -133,20 +133,162 @@ export function createHostRootFiber(tag: RootTag, isStrictMode: boolean): Fiber 
 }
 ```
 
-2단계: TODO
+2단계: container에 Fiber 객체 설정하기
 
-<CodeSelector names={['createRoot']} desc='ex3' />
+container는 createRoot 호출 시 전달한 `document.getElementById('root')`다.
 
-```ts showLineNumbers
+여기에 Fiber 객체를 설정하는 과정을 거친다.
+
+<CodeSelector names={['createRoot', 'markContainerAsRoot']} desc='ex3' />
+
+```ts showLineNumbers {7-8}
 export function createRoot(
   container: Element | Document | DocumentFragment,
   options?: CreateRootOptions
 ): RootType {
   /* ... */
-  // 2단계:
+  // 1단계: createContainer를 호출하여 FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 설정하기
   markContainerAsRoot(root.current, container)
 }
 ```
+
+```ts showLineNumbers {3}
+export function markContainerAsRoot(hostRoot: Fiber, node: Container): void {
+  // $FlowFixMe[prop-missing]
+  node[internalContainerInstanceKey] = hostRoot
+}
+```
+
+3단계: 이벤트 설정
+
+listenToAllSupportedEvents를 보면, container에 listeningMarker라는 필드를 설정한다.
+
+그리고 selectionchange를 제외한 모든 네이티브 이벤트에 대해서 listenToNativeEvent를 호출한다.
+
+selectionchange를 제외하는 이유는 [버블링이 일어나지 않는 이벤트](https://developer.mozilla.org/en-US/docs/Web/API/Document/selectionchange_event)이기 때문이다.
+
+(그래서 html DOM에만 직접 이벤트를 설정한다. 21 - 26 라인)
+
+그리고 네이티브 이벤트 중 container에 위임하면 안되는 것들에 대해서 따로 처리하는 모습을 볼 수 있는데, 그 이유는 특정 이벤트가 DOM에서 일관되게 버블링되지 않기 때문이다.
+
+listenToNativeEvent는 addTrappedEventListener를 호출한다.
+
+이후 과정은 너무 복잡하고 브라우저의 스펙에 따라서 작성된 코드라서 분석하기가 어려웠다.
+
+그래도 간단히 살펴보면, 브라우저 이벤트들이 우선순위(FiberLane)에 따라서 실행되도록 하고, container에 특정 이벤트가 실행되었을 때 실행될 이벤트 리스너들을 addEventListenr로 추가하는 것을 볼 수 있었다.
+
+예를 들어, 컴포넌트에 onClick을 할당했을 때, 개발자가 할당한 핸들러 말고도 리액트에서 미리 할당된 숨겨진 핸들러가 먼저 작동되고 있었다는 것이다.
+
+<CodeSelector
+  names={['createRoot', 'listenToAllSupportedEvents', 'listenToNativeEvent']}
+  desc='ex4'
+/>
+
+```ts showLineNumbers {8-13}
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: createContainer를 호출하여 FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 설정하기
+  // 3단계: 이벤트 설정
+  const rootContainerElement: Document | Element | DocumentFragment =
+    container.nodeType === COMMENT_NODE
+      ? (container.parentNode: any)
+      : container;
+  listenToAllSupportedEvents(rootContainerElement);
+}
+```
+
+```ts showLineNumbers {5, 9-14, 21-26}
+const listeningMarker = '_reactListening' + Math.random().toString(36).slice(2);
+
+export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
+  if (!(rootContainerElement: any)[listeningMarker]) {
+    (rootContainerElement: any)[listeningMarker] = true;
+    allNativeEvents.forEach(domEventName => {
+      // We handle selectionchange separately because it
+      // doesn't bubble and needs to be on the document.
+      if (domEventName !== 'selectionchange') {
+        if (!nonDelegatedEvents.has(domEventName)) {
+          listenToNativeEvent(domEventName, false, rootContainerElement);
+        }
+        listenToNativeEvent(domEventName, true, rootContainerElement);
+      }
+    });
+    const ownerDocument =
+      (rootContainerElement: any).nodeType === DOCUMENT_NODE
+        ? rootContainerElement
+        : (rootContainerElement: any).ownerDocument;
+    if (ownerDocument !== null) {
+      // The selectionchange event also needs deduplication
+      // but it is attached to the document.
+      if (!(ownerDocument: any)[listeningMarker]) {
+        (ownerDocument: any)[listeningMarker] = true;
+        listenToNativeEvent('selectionchange', false, ownerDocument);
+      }
+    }
+  }
+}
+```
+
+```ts showLineNumbers {10}
+export function listenToNativeEvent(
+  domEventName: DOMEventName,
+  isCapturePhaseListener: boolean,
+  target: EventTarget
+): void {
+  let eventSystemFlags = 0
+  if (isCapturePhaseListener) {
+    eventSystemFlags |= IS_CAPTURE_PHASE
+  }
+  addTrappedEventListener(target, domEventName, eventSystemFlags, isCapturePhaseListener)
+}
+```
+
+4단계: ReactDOMRoot 반환
+
+FiberRootNode를 포함하고 있는 ReactDOMRoot 객체를 생성하여 반환한다.
+
+즉 다음과 같은 포함관계가 형성된 것이다.
+
+ReactDOMRoot \< FiberRootNode \< Fiber
+
+ReactDOMRoot에는 render와 unmount 메서드가 추가되는데, 이것은 밑에서 살펴보기로 한다.
+
+<CodeSelector names={['createRoot', 'ReactDOMRoot']} desc='ex5' />
+
+```ts showLineNumbers {9-10}
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: createContainer를 호출하여 FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 설정하기
+  // 3단계: 이벤트 설정
+  // 4단계: ReactDOMRoot 반환
+  return new ReactDOMRoot(root)
+}
+```
+
+```ts showLineNumbers {2}
+function ReactDOMRoot(internalRoot: FiberRoot) {
+  this._internalRoot = internalRoot
+}
+```
+
+### ReactDOMRoot.render
+
+createRoot가 반환한 객체의 render 메서드에 대해서 살펴본다.
+
+TODO
+
+### ReactDOMRoot.unmount
+
+TODO
 
 ### hydrateRoot
 

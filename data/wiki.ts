@@ -67,6 +67,7 @@ const Algorithm = [
   `segment tree`,
   `boj 1100-1109`,
   `boj 1110-1119`,
+  `boj 1120-1129`,
 ]
 
 const etc = [
@@ -77,6 +78,7 @@ const etc = [
   'CLS',
   'package.json',
   'indexedDB',
+  'scroll',
 ]
 
 const React = [
