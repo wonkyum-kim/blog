@@ -1,0 +1,91 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 로봇 레이스
+
+민식(Y)이가 영식(F)이보다 도착 칸(X)에 더 빨리 도착하는 가장 빠른 시작 시간을 출력해야 한다.
+
+두 로봇이 움직일 때 명령을 수행하거나 무시할 수 있으며 움직이지 못하는 곳으로의 이동은 자동으로 무시된다.
+
+그리고 두 로봇은 항상 각 로봇이 도착 칸에 되도록 빨리 가도록 최적의 선택을 한다.
+
+출발 점이 2개 이상일 때는 도착 점을 출발 점으로 바꿔서 생각해 볼 수 있다.
+
+즉, 명령을 거꾸로 살펴보면서 도착 점에서부터 출발해서 움직여, 출발 점에 언제 도착하는지 확인한다.
+
+현재 명령을 거꾸로 살펴보고 있다는 점을 생각하며 (nx, ny)에서 (x, y)로 이동할 때 (nx, ny)는 최대한 빨리 도착해야하고 (x, y)는 최대한 늦게 도착해야 한다.
+
+<CodeSelector names={['1137.js']} desc='ex1' />
+
+```js showLineNumbers {53-54}
+const [n, m] = [0, 0].map(() => input.getNumber)
+const board = new Array(n).fill('').map(() => input.get)
+const w = input.get
+
+let ys
+let fs
+const Y = array2d(50, 50, Infinity)
+const F = array2d(50, 50, Infinity)
+
+const dx = [0, 0, 1, -1]
+const dy = [1, -1, 0, 0]
+
+function inBound(yy, xx) {
+  return !(yy < 0 || yy > n - 1 || xx < 0 || xx > m - 1 || board[yy][xx] === '#')
+}
+
+function solve() {
+  for (let i = 0; i < n; ++i) {
+    for (let j = 0; j < m; ++j) {
+      if (board[i][j] === 'Y') ys = [i, j]
+      else if (board[i][j] === 'F') fs = [i, j]
+      else if (board[i][j] === 'X') F[i][j] = Y[i][j] = -1
+    }
+  }
+
+  const wi = []
+  for (let i = 0; i < w.length; ++i) {
+    if (w[i] === 'S') wi.push(2)
+    if (w[i] === 'N') wi.push(3)
+    if (w[i] === 'E') wi.push(0)
+    if (w[i] === 'W') wi.push(1)
+  }
+
+  let ans = -1
+  const Fn = array2d(50, 50)
+  const Yn = array2d(50, 50)
+
+  // 명령을 거꾸로 수행한다.
+  for (let i = w.length - 1; i >= 0; --i) {
+    for (let a = 0; a < 50; ++a) {
+      for (let b = 0; b < 50; ++b) {
+        Fn[a][b] = F[a][b]
+        Yn[a][b] = Y[a][b]
+      }
+    }
+
+    for (let x = n - 1; x >= 0; --x) {
+      for (let y = m - 1; y >= 0; --y) {
+        const nx = x + dx[wi[i]]
+        const ny = y + dy[wi[i]]
+
+        if (inBound(nx, ny)) {
+          Fn[x][y] = Math.min(Fn[x][y], Math.max(i, F[nx][ny]))
+          Yn[x][y] = Math.min(Yn[x][y], Math.max(i, Y[nx][ny]))
+        }
+      }
+    }
+
+    if (Fn[fs[0]][fs[1]] > Yn[ys[0]][ys[1]]) ans = i
+
+    for (let a = 0; a < 50; ++a) {
+      for (let b = 0; b < 50; ++b) {
+        F[a][b] = Fn[a][b]
+        Y[a][b] = Yn[a][b]
+      }
+    }
+  }
+  console.log(ans)
+}
+
+solve()
+```

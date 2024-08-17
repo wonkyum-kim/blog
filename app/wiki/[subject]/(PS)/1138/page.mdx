@@ -1,0 +1,41 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 한 줄로 서기
+
+키가 작은 사람부터 자기보다 키가 큰 사람이 왼쪽에 몇 명이 있는지 주어진다.
+
+키가 작은 사람부터 배치를 해야 키가 큰 사람을 방해받지 않고 배치할 수 있다. (그리디)
+
+자신보다 왼쪽에 키가 작은 사람은 몇 명이 오든지 상관이 없으므로, 키 큰 사람이 들어갈 빈칸을 남겨두고 배치하면 된다.
+
+즉, 자신보다 왼쪽 자리 중에서 비어있지 않은 자리는 자신보다 키가 작은 사람이 이미 들어가 있는 것이다.
+
+N이 10보다 작거나 같은 자연수이므로 브루트 포스로도 해결된다.
+
+<CodeSelector names={['1138.js']} desc='ex1' />
+
+```js showLineNumbers
+function solve() {
+  const n = input.getNumber
+  const ans = new Array(n).fill(-1)
+
+  for (let i = 0; i < n; ++i) {
+    const [a, b] = [i + 1, input.getNumber]
+
+    let count = 0
+    for (let j = 0; j < n; ++j) {
+      if (ans[j] === -1) count++
+      else continue
+
+      if (count - 1 === b) {
+        ans[j] = a
+        break
+      }
+    }
+  }
+
+  console.log(ans.join(' '))
+}
+
+solve()
+```

@@ -1,0 +1,67 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 조각 놓기
+
+퍼즐의 목표는 다른 조각을 더 이상 놓을 수 없게 적은 수의 조각을 놓는 것이다.
+
+조각과 조각 사이의 거리와, 조각과 보드의 모서리 사이의 거리는 꼭 정수가 아니어도 된다.
+
+따라서 조각을 몇 개 배치했을 때 남은 공간에 더 이상 남은 조각을 배치할 수 없어야 한다.
+
+즉, 남은 조각들 중 가장 작은 길이의 조각이 남은 공간에 배치할 수 없으면 된다.
+
+`dp[i][j]`를 i개 조각을 선택했을 때, 길이의 합이 j이면 남은 조각들 중 가장 길이가 작은 조각이라고 해보자.
+
+0 ~ i개 조각을 전부 더했을 때 합을 S라고 한다면, `dp[i][S] = v[i + 1]`이 된다.
+
+이후 배낭 문제를 응용하여 dp 배열을 채우면 된다.
+
+i개를 사용하여 j를 만들 수 있다면, 남은 공간은 n - j가 된다.
+
+이 남은 공간을 가장 작은 길이로 분할하려면, 모든 조각이 떨어져 있고 맨 처음 조각과 마지막 조각이 모서리에 닿으면 안된다.
+
+즉, i + 1개로 분할된다.
+
+(n - j) / (i + 1) 공간에 `dp[i][j]`가 들어가지 못하는 i를 구하면 된다.
+
+<CodeSelector names={['1136.js']} desc='ex1' />
+
+```js showLineNumbers
+function solve() {
+  const [n, m] = [0, 0].map(() => input.getNumber)
+  const v = [0]
+  for (let i = 1; i <= m; ++i) v.push(input.getNumber)
+  v.sort((a, b) => a - b)
+
+  const dp = array2d(m + 1, n + 1, -1)
+
+  let sum = 0
+  for (let i = 0; i < m; ++i) {
+    sum += v[i]
+    if (sum > n) break
+    dp[i][sum] = v[i + 1]
+  }
+
+  for (let x = 1; x <= m; ++x) {
+    const add = v[x]
+    for (let i = m - 1; i >= 0; --i) {
+      for (let j = n - add; j >= 0; --j) {
+        if (dp[i][j] === -1) continue
+        dp[i + 1][j + add] = Math.max(dp[i + 1][j + add], dp[i][j])
+      }
+    }
+  }
+
+  for (let i = 0; i < m; ++i) {
+    for (let j = 0; j <= n; ++j) {
+      if (n - j < dp[i][j] * (i + 1)) {
+        console.log(i)
+        return
+      }
+    }
+  }
+  console.log(m)
+}
+
+solve()
+```

@@ -98,11 +98,14 @@ const React = [
   'SSR vs RSC',
 ]
 
+const PS = ['1136', '1137', '1138']
+
 export const wiki = {
   CSS,
   Git,
   TypeScript,
   React,
   Algorithm,
+  PS,
   etc,
 }
