@@ -2,7 +2,7 @@
 
 import styles from './menu.module.css'
 
-import { useState, useRef, RefObject } from 'react'
+import { useState, RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import { viewTransition } from '@/lib/viewTransition'
 import { wiki } from '@/data'
