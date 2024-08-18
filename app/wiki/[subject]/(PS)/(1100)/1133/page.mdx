@@ -1,0 +1,52 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 반복되지 않는 단어
+
+자연수 K가 주어졌을 때, 문자열 S에 연속해서 K번 나오는 부분 문자열이 없을 때, 그 문자열 S를 K-반복X라고 부른다.
+
+길이가 N이면서, K-반복X이면서 알파벳 처음 A개로만 이루어진 단어 중 사전 순으로 가장 앞서는 것을 출력해야 한다.
+
+문자를 하나씩 추가해보면서 모든 부분 문자열에 대하여 K-반복X인지 확인한다.
+
+이때 새로 추가한 문자를 포함해서 확인해야 하기 때문에 뒤에서부터 부분 문자열의 길이를 늘려야 한다.
+
+<CodeSelector names={['1133.js']} desc='ex1' />
+
+```js showLineNumbers
+const [k, n, a] = [0, 0, 0].map(() => input.getNumber)
+
+function check(curr) {
+  const length = curr.length
+  let subLength = 1
+
+  while (subLength * k <= length) {
+    const sub = curr.substr(length - subLength, subLength)
+    let count = 0
+    while (count < k) {
+      if (curr.substr(length - subLength * (count + 1), subLength) !== sub) break
+      count++
+      if (count === k) return false
+    }
+    subLength++
+  }
+  return true
+}
+
+function dfs(curr) {
+  if (curr.length === n) {
+    console.log(curr)
+    return true
+  }
+  for (let i = 0; i < a; ++i) {
+    const next = curr + String.fromCharCode(i + 65)
+    if (check(next) && dfs(next)) return true
+  }
+  return false
+}
+
+function solve() {
+  if (!dfs('')) console.log(-1)
+}
+
+solve()
+```

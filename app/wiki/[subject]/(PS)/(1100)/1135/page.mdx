@@ -1,0 +1,39 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 뉴스 전하기
+
+전달에 걸리는 시간은 결국 가장 늦게 전달되는 노드에 의해 결정되기 때문에 가장 많은 시간이 걸리는 곳에 먼저 전달하는 것이 이득이 된다.
+
+<CodeSelector names={['1135.js']} desc='ex1' />
+
+```js showLineNumbers
+let adj
+
+function dfs(curr) {
+  const v = []
+  for (const next of adj[curr]) v.push(dfs(next))
+  v.sort((a, b) => a - b)
+
+  let ans = 0
+  let count = adj[curr].length
+
+  for (let i = 0; i < v.length; ++i) {
+    ans = Math.max(ans, v[i] + count)
+    count--
+  }
+  return ans
+}
+
+function solve() {
+  const n = input.getNumber
+  adj = array2d(n, 0)
+
+  input.getNumber
+  for (let i = 1; i < n; ++i) {
+    adj[input.getNumber].push(i)
+  }
+  console.log(dfs(0))
+}
+
+solve()
+```

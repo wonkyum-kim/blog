@@ -1,0 +1,68 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 오일러 회로
+
+`오일러 회로`는 [오일러 경로](/wiki/Algorithm/Eulerian-path) 중 특수한 경우다.
+
+먼저 오일러 회로가 존재하는지 살펴봐야 하는데, 양방향 그래프의 경우 모든 정점의 차수가 짝수면 존재한다.
+
+오일러 회로의 경로를 구하기 위해서 `Hierholzer's algorithm`를 사용한다.
+
+인접 행렬로 모든 정점에 대해 간선이 있는지 조사하는 방법은 시간 초과가 발생하므로, 인접 리스트로 간선의 존재 유무를 살펴본다.
+
+인접 리스트의 경우 역방향 간선을 지울 수 있는 방법이 없으므로, 인접 행렬도 같이 사용하여 간선을 지울 수 있는지를 판단한다.
+
+자바스크립트로 문제를 푸는 경우 StackSizeExceeded 에러가 발생하므로, dfs를 스택을 구현하였다.
+
+<CodeSelector names={['1199.js']} desc='ex1' />
+
+```js showLineNumbers
+const n = input.getNumber
+const adj = new Array(n)
+const matrix = array2d(n, n)
+for (let i = 0; i < n; ++i) adj[i] = []
+const degree = new Array(n).fill(0)
+const ans = []
+
+function dfs(start) {
+  const stack = [start]
+
+  while (stack.length) {
+    const curr = stack[stack.length - 1]
+
+    if (adj[curr].length) {
+      const next = adj[curr][adj[curr].length - 1]
+      adj[curr].pop()
+
+      if (matrix[curr][next] && matrix[next][curr]) {
+        matrix[curr][next]--
+        matrix[next][curr]--
+        stack.push(next)
+      }
+    } else {
+      stack.pop()
+      ans.push(curr + 1)
+    }
+  }
+}
+
+function solve() {
+  for (let i = 0; i < n; ++i) {
+    for (let j = 0; j < n; ++j) {
+      const x = input.getNumber
+      for (let k = 0; k < x; ++k) adj[i].push(j)
+      matrix[i][j] += x
+      degree[i] += x
+    }
+    if (degree[i] & 1) {
+      console.log(-1)
+      return
+    }
+  }
+
+  dfs(0)
+  console.log(ans.join(' '))
+}
+
+solve()
+```

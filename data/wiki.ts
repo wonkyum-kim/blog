@@ -65,6 +65,7 @@ const Algorithm = [
   `sweeping`,
   'bitfield',
   `segment tree`,
+  `Eulerian path`,
   `boj 1100-1109`,
   `boj 1110-1119`,
   `boj 1120-1129`,
@@ -98,7 +99,7 @@ const React = [
   'SSR vs RSC',
 ]
 
-const PS = ['1136', '1137', '1138']
+const PS = ['1131', '1132', '1133', '1135', '1136', '1137', '1138', '1139', '1199']
 
 export const wiki = {
   CSS,

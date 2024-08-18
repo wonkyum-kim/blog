@@ -1,0 +1,89 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 합
+
+10개의 알파벳이 다 쓰이지 않는다면 0도 쓰이지 않는다는 것이다.
+
+따라서 이 경우에는 일반적으로 그리디하게 풀 수 있다.
+
+10개의 알파벳이 다 쓰였다면, 맨 앞자리에 쓰이지 않은 것들 중 가장 작은 알파벳에 0을 부여한다.
+
+나머지 알파벳들은 그리디 하게 부여하면 된다.
+
+<CodeSelector names={['1132.js']} desc='ex1' />
+
+```js showLineNumbers
+function translate(x) {
+  return x.charCodeAt() - 65
+}
+
+function solve() {
+  const n = input.getNumber
+  const count = new BigInt64Array(10).fill(0n)
+  const used = new Array(10).fill(false)
+  const first = new Array(10).fill(false)
+
+  let needZero = true
+  for (let i = 0; i < n; ++i) {
+    const str = input.get
+    const length = str.length
+
+    for (let j = 0; j < length; ++j) {
+      const index = length - 1 - j
+      const x = translate(str[index])
+      count[x] += BigInt(10 ** j)
+      used[x] = true
+    }
+    first[translate(str[0])] = true
+  }
+
+  for (let i = 0; i < 10; ++i) {
+    if (!used[i]) {
+      needZero = false
+      break
+    }
+  }
+
+  let ans = 0n
+
+  const pq = new PriorityQueue()
+
+  if (!needZero) {
+    for (let i = 0; i < 10; ++i) {
+      if (!used[i]) continue
+      pq.push(count[i])
+    }
+    let times = 9n
+    while (!pq.empty()) {
+      const a = pq.top()
+      pq.pop()
+      ans += times * a
+      times--
+    }
+  } else {
+    // 0이 될 수 있는 것들만 고른다.
+    for (let i = 0; i < 10; ++i) {
+      if (!used[i] || first[i]) continue
+      pq.push(-count[i])
+    }
+    // 0이 될 수 있는 것들 중 가장 작은 것을 지운다.
+    pq.pop()
+    // 0이 될 수 없는 것들도 추가한다.
+    for (let i = 0; i < 10; ++i) {
+      if (!first[i]) continue
+      pq.push(-count[i])
+    }
+    let times = 1n
+    while (!pq.empty()) {
+      const a = pq.top()
+      ans += times * -a
+      times++
+      pq.pop()
+    }
+  }
+
+  console.log(ans.toString())
+}
+
+solve()
+```
