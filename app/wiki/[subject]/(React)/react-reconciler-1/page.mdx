@@ -1,5 +1,3 @@
-# 📝 작성 중...
-
 ## ReactFiber.js
 
 `ReactFiber.js`에는 Fiber 객체를 정의하고 생성하는 코드가 들어있다.
@@ -12,18 +10,18 @@ Fiber는 아래와 같은 필드로 이루어져 있다.
 
 | key           | value                                                                                        |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| tag           | Fiber의 타입을 식별하는 태그. ReactWorkTag.js에서 확인할 수 있다.                            |
-| key           | ReactElement.key와 같다.                                                                     |
-| elementType   | ReactElement.type과 같다.                                                                    |
+| tag           | Fiber의 타입을 식별하는 태그                                                                 |
+| key           | ReactElement.key                                                                             |
+| elementType   | ReactElement.type                                                                            |
 | type          | i.e. ReactElement.type, 그 외에 여러 값이 더 가능                                            |
 | stateNode     | 이 Fiber와 연관되어 있는 local state                                                         |
 | return        | 부모 Fiber 객체                                                                              |
-| child         | 첫 번째 자식 Fiber 객체. 자식이 여러 개이면, index로 구분할 수 있다.                         |
-| sibling       | 다음 형제 Fiber 객체.                                                                        |
-| index         | 여러 형제들 사이에서 자신이 몇 번째 자식인지 나타낸다.                                       |
+| child         | 첫 번째 자식 Fiber 객체                                                                      |
+| sibling       | 다음 형제 Fiber 객체                                                                         |
+| index         | 여러 형제들 사이에서 자신이 몇 번째 자식인지 나타낸다                                        |
 | ref           |                                                                                              |
 | refCleanup    |                                                                                              |
-| pendingProps  | ReactElement.props와 같다.                                                                   |
+| pendingProps  | ReactElement.props                                                                           |
 | memoizedProps |                                                                                              |
 | updateQueue   | 업데이트를 저장하는 큐                                                                       |
 | memoizedState | 현재 Fiber의 훅이 링크드 리스트 형태로 저장되어 있다.                                        |

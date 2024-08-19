@@ -1,0 +1,358 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## react-dom/client
+
+### createRoot
+
+`createRoot`는 `ReactDOMRoot`를 생성하는 함수다.
+
+<CodeSelector names={['index.js']} desc='ex1' />
+
+```jsx
+import { createRoot } from 'react-dom/client'
+
+// root: ReactDOMRoot
+const root = createRoot(document.getElementById('root'))
+```
+
+> 지금부터 createRoot가 동작하는 과정을 살펴볼 것인데, react-reconciler 부분을 먼저 읽고 오는 것이 도움이 된다.
+
+1단계: FiberRootNode를 생성한다.
+
+<CodeSelector
+  names={['createRoot', 'createContainer', 'createFiberRoot', 'createHostRootFiber']}
+  desc='ex2'
+/>
+
+```ts {6-12} showLineNumbers
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: FiberRootNode를 생성한다.
+  // createRoot는 createContainer를 호출한다.
+  const root = createContainer(
+    container,
+    ConcurrentRoot
+    /* ... */
+  )
+  /* ... */
+}
+```
+
+```ts {7-12} showLineNumbers
+export function createContainer(
+  containerInfo: Container,
+  tag: RootTag
+  /* ... */
+): OpaqueRoot {
+  // ...
+  // createContainer는 createFiberRoot를 호출한다.
+  return createFiberRoot(
+    containerInfo,
+    tag
+    /* ... */
+  )
+}
+```
+
+```ts {7-12, 16-20, 24-25} showLineNumbers
+export function createFiberRoot(
+  containerInfo: Container,
+  tag: RootTag,
+  /* ... */
+): FiberRoot {
+
+  // FiberRootNode는 Fiber 객체를 포함하고 있는 객체라고 생각하면된다.
+  const root: FiberRoot = (new FiberRootNode(
+    containerInfo,
+    tag,
+    /* ... */
+  ): any);
+
+  /* ... */
+
+  // root.current를 uninitializedFiber로 설정한다.
+  // uninitializedFiber.stateNode를 root로 설정한다.
+  const uninitializedFiber = createHostRootFiber(tag, isStrictMode);
+  root.current = uninitializedFiber;
+  uninitializedFiber.stateNode = root;
+
+  /* ... */
+
+  // uninitializedFiber에 updateQueue를 추가한다.
+  initializeUpdateQueue(uninitializedFiber);
+
+  return root;
+}
+```
+
+```ts {4-5, 11-12} showLineNumbers
+export function createHostRootFiber(tag: RootTag, isStrictMode: boolean): Fiber {
+  let mode
+  if (disableLegacyMode || tag === ConcurrentRoot) {
+    // ConcurrentMode로 설정된다.
+    mode = ConcurrentMode
+    /* ... */
+  } else {
+    mode = NoMode
+  }
+  /* ... */
+  // creaetFiber는 react-reconciler를 참고한다.
+  return createFiber(HostRoot, null, null, mode)
+}
+```
+
+2단계: container에 Fiber 객체 연결하기
+
+<CodeSelector names={['createRoot', 'markContainerAsRoot']} desc='ex3' />
+
+```ts showLineNumbers {7-9}
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 연결하기
+  // container는 document.getElementById('root')와 같다.
+  markContainerAsRoot(root.current, container)
+}
+```
+
+```ts showLineNumbers {2-3}
+export function markContainerAsRoot(hostRoot: Fiber, node: Container): void {
+  // container.internalContainerInstanceKey에 uninitializedFiber를 연결한다.
+  node[internalContainerInstanceKey] = hostRoot
+}
+```
+
+3단계: 이벤트 설정
+
+<CodeSelector names={['createRoot']} desc='ex4' />
+
+```ts showLineNumbers {8-17}
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 연결하기
+  // 3단계: 이벤트 설정
+  // rootContainerElement는 container와 같다. (주석 노드가 아니므로)
+  const rootContainerElement: Document | Element | DocumentFragment =
+    container.nodeType === COMMENT_NODE
+      ? (container.parentNode: any)
+      : container;
+  // createRoot는 listenToAllSupportedEvents를 호출한다.
+  // 이후 과정은 React와 DOM의 이벤트를 연결하는 과정이다.
+  // 각 이벤트마다 설정하는 것이 다르고 복잡하므로 자세히 살펴보지 않고 넘어간다.
+  listenToAllSupportedEvents(rootContainerElement);
+}
+```
+
+4단계: ReactDOMRoot 반환
+
+<CodeSelector names={['createRoot', 'ReactDOMRoot']} desc='ex5' />
+
+```ts showLineNumbers {9-11}
+export function createRoot(
+  container: Element | Document | DocumentFragment,
+  options?: CreateRootOptions
+): RootType {
+  /* ... */
+  // 1단계: FiberRootNode를 생성한다.
+  // 2단계: container에 Fiber 객체 연결하기
+  // 3단계: 이벤트 설정
+  // 4단계: ReactDOMRoot 반환
+  // 이후 ReactDOMRoot에는 render와 unmount 메서드가 추가된다.
+  return new ReactDOMRoot(root)
+}
+```
+
+```ts showLineNumbers {2-3}
+function ReactDOMRoot(internalRoot: FiberRoot) {
+  // ReactDOMRoot._internalRoot에 root를 연결한다.
+  this._internalRoot = internalRoot
+}
+```
+
+### ReactDOMRoot.render
+
+createRoot가 반환한 객체의 render 메서드에 대해서 살펴본다.
+
+<CodeSelector names={['index.js']} desc='ex6' />
+
+```js showLineNumbers {5}
+import { createRoot } from 'react-dom/client'
+import { App } from './App.js'
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+1단계: updateContainer를 호출한다.
+
+render 메서드는 ReactDOMRoot와 ReactDOMHydrationRoot가 공유한다.
+
+<CodeSelector names={['render']} desc='ex7' />
+
+```js showLineNumbers {4-5, 9-10}
+ReactDOMHydrationRoot.prototype.render = ReactDOMRoot.prototype.render =
+  // $FlowFixMe[missing-this-annot]
+  function (children: ReactNodeList): void {
+    // _internalRoot는 FiberRootNode다.
+    const root = this._internalRoot;
+
+    /* ... */
+
+    // 1단계: updateContainer를 호출한다.
+    updateContainer(children, root, null, null);
+  };
+```
+
+2단계: requestUpdateLane을 호출한다.
+
+첫 호출 시에는 transition은 null이 될 것이다.
+
+<CodeSelector
+  names={['updateContainer', 'requestUpdateLane', 'requestCurrentTransition']}
+  desc='ex8'
+/>
+
+```js showLineNumbers {10-11}
+export function updateContainer(
+  element: ReactNodeList,
+  container: OpaqueRoot,
+  parentComponent: ?React$Component<any, any>,
+  callback: ?Function,
+): Lane {
+  // Fiber 객체 (uninitializedFiber)
+  const current = container.current;
+
+  // 2단계: requestUpdateLane을 호출한다.
+  const lane = requestUpdateLane(current);
+
+  updateContainerImpl(
+    current,
+    lane,
+    element,
+    container,
+    parentComponent,
+    callback,
+  );
+  return lane;
+}
+```
+
+```js showLineNumbers {6-11, 13}
+export function requestUpdateLane(fiber: Fiber): Lane {
+  // Special cases
+  const mode = fiber.mode;
+  /* ...*/
+
+  // 2-1단계: ReactSharedInternals.T를 얻는다.
+  // 첫 호출 시에는 ReactSharedInternals.T가 null일 것이다.
+  const transition = requestCurrentTransition();
+  if (transition !== null) {
+    /* ... */
+  }
+}
+```
+
+```js showLineNumbers {2}
+export function requestCurrentTransition(): BatchConfigTransition | null {
+  return ReactSharedInternals.T;
+}
+```
+
+resolveUpdatePriority에서는 어떤 이벤트에 해당하는 우선순위를 나타내는 정수를 반환할 것인데, 일단은 DefaultEventPriority라고 생각된다.
+
+결국 lane은 우선순위를 나타내는 어떤 정수 값이라는 것을 확인할 수 있다.
+
+<CodeSelector
+  names={['requestUpdateLane', 'resolveUpdatePriority', 'eventPriorityToLane']}
+  desc='ex9'
+/>
+
+```js showLineNumbers {7-8}
+export function requestUpdateLane(fiber: Fiber): Lane {
+  // Special cases
+  const mode = fiber.mode;
+  /* ...*/
+
+  // 2-1단계: ReactSharedInternals.T를 얻는다.
+  // 2-2단계: resolveUpdatePriority와 eventPriorityToLane를 호출한다.
+  return eventPriorityToLane(resolveUpdatePriority());
+}
+```
+
+```js showLineNumbers {2, 10-17}
+export function resolveUpdatePriority(): EventPriority {
+  const updatePriority = ReactDOMSharedInternals.p; /* currentUpdatePriority */
+  // 첫 실행시에는 NoEventPriority일 것이다.
+  if (updatePriority !== NoEventPriority) {
+    return updatePriority;
+  }
+
+  // 아래 부분 코드의 동작은 정확히 모르겠다.
+
+  // CSR이므로 window.event는 undefined가 아닐 것 같다.
+  const currentEvent = window.event;
+  if (currentEvent === undefined) {
+    return DefaultEventPriority;
+  }
+  // 시작할 때 어떤 이벤트가 발생할 것인데,
+  // 아마도 DefaultEventPriority를 반환할 것 같다.
+  return getEventPriority(currentEvent.type);
+}
+```
+
+```js showLineNumbers {2-3}
+export function eventPriorityToLane(updatePriority: EventPriority): Lane {
+  // 아무것도 하지 않고 그대로 반환한다.
+  return updatePriority;
+}
+```
+
+3단계: updateContainerImpl을 호출한다.
+
+TODO
+
+<CodeSelector names={['updateContainer']} desc='ex10' />
+
+```js showLineNumbers {13-21}
+export function updateContainer(
+  element: ReactNodeList,
+  container: OpaqueRoot,
+  parentComponent: ?React$Component<any, any>,
+  callback: ?Function,
+): Lane {
+  // Fiber 객체 (uninitializedFiber)
+  const current = container.current;
+
+  // 2단계: requestUpdateLane을 호출한다.
+  const lane = requestUpdateLane(current);
+
+  // 3단계: updateContainerImpl을 호출한다.
+  updateContainerImpl(
+    current,
+    lane,
+    element,
+    container,
+    parentComponent,
+    callback,
+  );
+  return lane;
+}
+```
+
+### ReactDOMRoot.unmount
+
+TODO
+
+### hydrateRoot
+
+TODO

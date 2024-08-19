@@ -1,0 +1,66 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 게임
+
+[1131번](/wiki/PS/1131) 문제와 비슷하게 풀 수 있다.
+
+방문하지 않은 곳을 white, 방문한 곳을 gray로 두고 gray를 다시 방문한다면 사이클이 있음을 확인할 수 있다.
+
+<CodeSelector names={['1103.js']} desc='ex1' />
+
+```js showLineNumbers
+const n = input.getNumber
+const m = input.getNumber
+const board = array2d(n, m, 0)
+const dp = array2d(n, m, 0)
+
+const white = 0
+const gray = -1
+
+const dir = [
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+  [0, -1],
+]
+
+function dfs(y, x) {
+  if (dp[y][x] !== white && dp[y][x] !== gray) return dp[y][x]
+  if (dp[y][x] === white) {
+    for (const [dy, dx] of dir) {
+      const yy = y + dy * board[y][x]
+      const xx = x + dx * board[y][x]
+
+      if (yy > n - 1 || xx > m - 1 || yy < 0 || xx < 0 || board[yy][xx] === 0) {
+        dp[y][x] = Math.max(1, dp[y][x])
+        continue
+      }
+
+      const prev = dp[y][x]
+      dp[y][x] = gray
+      dp[y][x] = Math.max(dfs(yy, xx) + 1, prev)
+    }
+    return dp[y][x]
+  }
+
+  if (dp[y][x] === gray) {
+    return (dp[y][x] = Infinity)
+  }
+}
+
+function solve() {
+  for (let i = 0; i < n; ++i) {
+    const line = input.get
+    for (let j = 0; j < m; ++j) {
+      const x = line[j]
+      if (x === 'H') board[i][j] = 0
+      else board[i][j] = +x
+    }
+  }
+
+  const ans = dfs(0, 0)
+  console.log(ans === Infinity ? -1 : ans)
+}
+
+solve()
+```

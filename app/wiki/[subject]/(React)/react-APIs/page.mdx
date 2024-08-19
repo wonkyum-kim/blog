@@ -1,7 +1,5 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 
-# 📝 작성 중...
-
 ## APIs
 
 react 패키지에서는 컴포넌트를 정의하는데 도움이 되거나 자원에 접근할 수 있는 API들을 제공한다.
@@ -44,12 +42,6 @@ function Page() {
   return <div>{theme}</div>
 }
 ```
-
-그리고 문서에는 나오지 않는 4가지 프로퍼티도 존재한다.
-
-- `$$typeof`: context 객체의 타입
-- `_currentValue`와 `_currentValue2`: React는 여러 concurrent 렌더러를 지원하는 해결 방법으로 렌더러를 primary와 secondary로 구분한다. secondary 렌더러는 분리된 필드에 컨텍스트 값을 저장하기 때문에 이와 같이 두 개의 필드가 필요한 것이다.
-- `_threadCount`: 단일 렌더러 내에서 이 컨텍스트가 현재 지원하는 concurrent 렌더러 수를 추적하는데 사용된다.
 
 ### use
 
