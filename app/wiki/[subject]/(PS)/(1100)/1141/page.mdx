@@ -1,0 +1,36 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 접두사
+
+접두어를 부모, 접두어를 포함하고 있는 것을 자식이라고 했을 때 트리가 만들어진다.
+
+접두사X 집합인 부분집합의 최대 크기는 리프 노드의 개수가 된다.
+
+<CodeSelector names={['1141.js']} desc='ex1' />
+
+```js showLineNumbers
+function solve() {
+  const n = input.getNumber
+  const v = new Array(n)
+    .fill('')
+    .map(() => input.get)
+    .sort((a, b) => a.length - b.length)
+
+  const count = new Array(n).fill(0)
+  for (let i = 0; i < n - 1; ++i) {
+    for (let j = i + 1; j < n; ++j) {
+      if (v[j].startsWith(v[i])) {
+        count[i]++
+      }
+    }
+  }
+
+  let ans = 0
+  for (let i = 0; i < n; ++i) {
+    if (count[i] === 0) ans++
+  }
+  console.log(ans)
+}
+
+solve()
+```

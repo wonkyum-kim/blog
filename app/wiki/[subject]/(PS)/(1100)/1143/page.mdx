@@ -1,0 +1,118 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 경찰
+
+강한 연결 컴포넌트로 압축된 그래프를 만들었을 때 indegree가 0인 컴포넌트에 속한 노드들 중 비용이 가장 작은 곳에는 무조건 경찰서를 설치해야 한다.
+
+경찰서를 설치하는데 드는 비용의 최솟값을 구하기 위해서는 이제 남은 노드들에도 설치를 해봐야한다.
+
+가장 비용이 작은 순서대로 설치를 해보고 평균값이 작아지는지 확인하면 된다.
+
+<CodeSelector names={['1143.js']} desc='ex1' />
+
+```js showLineNumbers
+const v = input.getNumber
+const cost = new Array(v).fill(0).map(() => input.getNumber)
+
+const adj1 = array2d(v, 0)
+const adj2 = array2d(v, 0)
+const visited = new Array(v).fill(false)
+const finished = []
+
+function dfs1(curr) {
+  if (visited[curr]) return
+  visited[curr] = true
+  for (const next of adj1[curr]) dfs1(next)
+  finished.push(curr)
+}
+
+function dfs2(curr, u) {
+  if (visited[curr]) return
+  visited[curr] = true
+  u.push(curr)
+  for (const next of adj2[curr]) dfs2(next, u)
+}
+
+function Kosaraju() {
+  const scc = []
+  for (let i = 0; i < v; ++i) dfs1(i)
+
+  visited.fill(false)
+  for (let i = v - 1; i >= 0; --i) {
+    const u = []
+    dfs2(finished[i], u)
+    if (u.length !== 0) scc.push(u)
+  }
+  return scc
+}
+
+function solve() {
+  for (let i = 0; i < v; ++i) {
+    const str = input.get
+    for (let j = 0; j < v; ++j) {
+      if (str[j] === 'N') continue
+      adj1[i].push(j)
+      adj2[j].push(i)
+    }
+  }
+
+  const scc = Kosaraju()
+
+  const sccIndex = new Array(v).fill(0)
+  const sccMin = new Array(scc.length).fill(Infinity)
+  for (let i = 0; i < scc.length; ++i) {
+    scc[i].forEach((node) => {
+      sccIndex[node] = i
+      sccMin[i] = Math.min(sccMin[i], cost[node])
+    })
+  }
+
+  const indegree = new Array(scc.length).fill(0)
+
+  for (let i = 0; i < v; ++i) {
+    const curr = i
+    const currComponent = sccIndex[curr]
+    for (const next of adj1[curr]) {
+      const nextComponent = sccIndex[next]
+      // 서로 다른 컴포넌트에 연결된 간선들만 추가한다.
+      if (currComponent !== nextComponent) {
+        indegree[nextComponent]++
+      }
+    }
+  }
+
+  let ans = 0
+  let sum = 0
+  let count = 0
+
+  for (let comp = 0; comp < scc.length; ++comp) {
+    if (indegree[comp] === 0) {
+      count++
+      sum += sccMin[comp]
+      for (let j = 0; j < v; ++j) {
+        if (sccIndex[j] === comp && cost[j] === sccMin[comp]) {
+          cost[j] = -1
+          break
+        }
+      }
+    }
+  }
+
+  ans = sum / count
+  cost.sort((a, b) => a - b)
+
+  for (let i = 0; i < v; ++i) {
+    if (cost[i] === -1) continue
+    const calc = (sum + cost[i]) / (count + 1)
+    if (calc < ans) {
+      ans = calc
+      sum += cost[i]
+      count++
+    }
+  }
+
+  console.log(ans.toFixed(9))
+}
+
+solve()
+```
