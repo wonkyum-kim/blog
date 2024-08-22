@@ -1,0 +1,66 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 팀 편성
+
+현재 살펴보고 있는 정점 기준으로 연결되어 있지 않은 정점은 같은 팀에 속할 수 없다.
+
+따라서 다른 색으로 칠해도 된다.
+
+하지만 연결되어 있지 않은 점들이 모두 같은 팀이라고는 할 수 없다.
+
+방문한 정점을 다시 방문했을 때, 이전 정점과 같은 색으로 칠해져 있다면 모순이므로 -1을 출력한다.
+
+<CodeSelector names={['1154.js']} desc='ex1' />
+
+```js showLineNumbers
+const n = input.getNumber
+const matrix = array2d(n + 1, n + 1)
+const visited = new Array(n + 1).fill(-1)
+
+let flag = false
+
+function dfs(curr, color) {
+  if (visited[curr] !== -1) {
+    if (visited[curr] !== color) flag = true
+    return
+  }
+
+  visited[curr] = color
+  for (let i = 1; i <= n; ++i) {
+    if (curr === i) continue
+    if (matrix[curr][i] === 0) dfs(i, color === 1 ? 0 : 1)
+  }
+  return
+}
+
+function solve() {
+  while (true) {
+    const [a, b] = [0, 0].map(() => input.getNumber)
+    if (a === -1) break
+    matrix[a][b]++
+    matrix[b][a]++
+  }
+
+  for (let i = 1; i <= n; ++i) {
+    if (visited[i] === -1) dfs(i, 0)
+  }
+
+  if (flag) {
+    console.log(-1)
+    return
+  }
+
+  const ans1 = []
+  const ans2 = []
+  for (let i = 1; i <= n; ++i) {
+    if (visited[i] === 0) ans1.push(i)
+    else ans2.push(i)
+  }
+
+  console.log(1)
+  console.log(ans1.join(' '), -1)
+  console.log(ans2.join(' '), -1)
+}
+
+solve()
+```

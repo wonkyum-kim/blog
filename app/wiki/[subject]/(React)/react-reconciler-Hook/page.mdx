@@ -1,0 +1,79 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Hook
+
+리액트 훅의 구현은 `react-reconciler` 패키지에 있고 이것이 `shared` 패키지의 ReactSharedInternals.H에 주입된다.
+
+`react` 패키지는 ReactSharedInternals를 import하고 다시 export 하여 개발자가 사용할 수 있도록 하는 역할을 한다.
+
+## renderWithHooks
+
+ReactSharedInternals.H에 훅을 주입하는 역할을 하는 함수다.
+
+14 ~ 21 라인을 보면 전달 받은 lane과 workInProgress 파이버를 전역 함수에 할당해두고, workInProgress 파이버를 초기화 하는 것을 볼 수 있다.
+
+26 ~ 29 라인을 보면 current 파이버의 memoizedState가 없으면 HooksDispatcherOnMount를 할당하고, 있으면 HooksDispatcherOnUpdate를 할당하고 있다.
+
+HooksDispatcherOnMount와 HooksDispatcherOnUpdate는 아래에서 다시 살펴보도록 한다.
+
+34 ~ 42 라인을 보면, 렌더링 단계에서 업데이트가 발생한 경우 renderWithHooksAgain을 호출하는 것을 볼 수 있다.
+
+이것은 setState를 여러 번 호출해도 한 번만 업데이트가 되는 것과 같은 의미다.
+
+renderWithHooksAgain와 finishRenderingHooks는 아래에서 다시 살펴보도록 한다.
+
+<CodeSelector names={['renderWithHooks']} desc='ex1' />
+
+```ts showLineNumbers {1-4, 14-15, 19-21, 26-29, 34-42, 44}
+// These are set right before calling the component.
+let renderLanes: Lanes = NoLanes;
+// The work-in-progress fiber.
+let currentlyRenderingFiber: Fiber = (null: any);
+
+export function renderWithHooks<Props, SecondArg>(
+  current: Fiber | null,
+  workInProgress: Fiber,
+  Component: (p: Props, arg: SecondArg) => any,
+  props: Props,
+  secondArg: SecondArg,
+  nextRenderLanes: Lanes
+): any {
+  renderLanes = nextRenderLanes
+  currentlyRenderingFiber = workInProgress
+
+  /* ... */
+
+  workInProgress.memoizedState = null
+  workInProgress.updateQueue = null
+  workInProgress.lanes = NoLanes
+
+  if (__DEV__) {
+    /* ... */
+  } else {
+    ReactSharedInternals.H =
+      current === null || current.memoizedState === null
+        ? HooksDispatcherOnMount
+        : HooksDispatcherOnUpdate;
+  }
+
+  let children = Component(props, secondArg);
+
+  // Check if there was a render phase update
+  if (didScheduleRenderPhaseUpdateDuringThisPass) {
+    children = renderWithHooksAgain(
+      workInProgress,
+      Component,
+      props,
+      secondArg,
+    );
+  }
+
+  finishRenderingHooks(current, workInProgress, Component);
+
+  return children;
+}
+```
+
+## HooksDispatcherOnMount
+
+## HooksDispatcherOnUpdate

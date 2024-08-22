@@ -1,0 +1,41 @@
+## createFiber
+
+`Fiber` 객체를 생성하여 반환하는 함수. Fiber 객체를 만드는 모든 함수는 이 함수를 호출하게 된다.
+
+Fiber는 아래와 같은 필드로 이루어져 있다.
+
+| key           | value                                                        |
+| ------------- | ------------------------------------------------------------ |
+| tag           | Fiber의 타입을 식별하는 태그                                 |
+| key           | ReactElement.key                                             |
+| elementType   | ReactElement.type                                            |
+| pendingProps  | ReactElement.props                                           |
+| memoizedProps | pendingProps로 결과물을 만들었다면 memoizedProps에 저장된다. |
+| type          | resolvedType                                                 |
+| stateNode     | 이 Fiber와 연관되어 있는 local state (i.e. FiberRootNode)    |
+| return        | 부모 Fiber 객체를 가리킨다.                                  |
+| child         | 첫 번째 자식 Fiber 객체를 가리킨다.                          |
+| sibling       | 다음 형제 Fiber 객체를 가리킨다.                             |
+| index         | 여러 형제들 사이에서 자신이 몇 번째 자식인지 나타낸다        |
+| ref           |                                                              |
+| refCleanup    |                                                              |
+| updateQueue   | 업데이트를 저장하는 큐 (UpdateQueue 참고)                    |
+| memoizedState | 업데이트가 적용되기 전 상태 (UpdateQueue 참고)               |
+| dependencies  | 이 Fiber의 디펜던시(contexts, events)                        |
+| mode          |                                                              |
+| flags         |                                                              |
+| subtreeFlags  |                                                              |
+| deletions     | 삭제된 Fiber 배열                                            |
+| lanes         | 작업의 우선순위를 나타낸다.                                  |
+| childLanes    |                                                              |
+| alternate     | 반대편 Fiber 트리(current/workInProgress)를 가리킨다.        |
+
+## createHostRootFiber
+
+`react-dom/client` 패키지의 createRoot 함수를 호출하면 첫 Fiber 객체인 uninitializedFiber를 생성하는데, 이 함수를 호출한다.
+
+## createWorkInProgress
+
+작업을 진행할 반대편 파이버(`workInProgress`)를 만드는 함수다.
+
+workInProgress 파이버는 current 파이버를 복사하는 방식으로 만들어진다.

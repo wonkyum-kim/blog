@@ -1,0 +1,40 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Lane
+
+`Lane`은 오직 한 자리에 1이 들어있는 비트이다. (일부 집합을 나타내는 Lane 제외)
+
+(아래는 Lane을 우선순위가 높은 순서대로 나타낸 것이다.)
+
+| Lane                         |
+| ---------------------------- |
+| SyncHydrationLane            |
+| Sync                         |
+| InputContinuousHydrationLane |
+| InputContinuousLane          |
+| DefaultHydrationLane         |
+| DefaultLane                  |
+| TransitionHydrationLane      |
+| TransitionLane1~15           |
+| RetryLane1~4                 |
+| 그 외...(e.g. NoLane)        |
+
+각 Lane은 낮은 위치에 1이 있을 수록 우선순위가 높다. 즉, 값이 더 작을수록 더 큰 우선순위를 나타낸다.
+
+가장 낮은 위치의 비트는 음수와의 and 연산을 통해 얻을 수 있다.
+
+Hydration 관련 Lane이 기본 Lane보다 우선순위가 더 높게 설정되어 있다.
+
+{/* <CodeSelector names={['Lane']} desc='ex1' /> */}
+
+## EventPriority
+
+React가 처리해야할 이벤트들에는 우선순위가 있고 이를 Lane으로 구분하고 있다.
+
+| EventPriority           | Lane                | 예시                                 |
+| ----------------------- | ------------------- | ------------------------------------ |
+| NoEventPriority         | NoLane              |                                      |
+| DiscreteEventPriority   | SyncLane            | click, keydown 등 연속적이지 않은 것 |
+| ContinuousEventPriority | InputContinuousLane | drag, mousemove 등 연속적인 것       |
+| DefaultEventPriority    | DefaultLane         |                                      |
+| IdleEventPriority       | IdleLane            |                                      |

@@ -4,7 +4,7 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 react 패키지에서는 컴포넌트를 정의하는데 도움이 되거나 자원에 접근할 수 있는 API들을 제공한다.
 
-### createContext
+## createContext
 
 컴포넌트 외부에서 `context` 객체를 생성할 수 있게 해주는 함수다.
 
@@ -43,7 +43,7 @@ function Page() {
 }
 ```
 
-### use
+## use
 
 `use`는 Promise와 context 값을 읽는 새로운 API다.
 
@@ -60,7 +60,7 @@ Promise와 함께 호출되었을 때, use는 Suspense, Error boundary와 결합
 - 서버 컴포넌트에서 async와 await를 사용하면 Promise 값이 resolve 되기까지 렌더링이 차단된다.
 - 클라이언트 컴포넌트에서 use를 사용하면 재렌더링이 발생한다.
 
-### lazy
+## lazy
 
 `lazy`는 로딩 중인 컴포넌트의 첫 렌더링이 완료될 때까지 특정 코드의 실행을 지연시켜주는 API다.
 
@@ -72,7 +72,7 @@ resolved 되기 이전까지는 `Suspense`에 전달한 값을 보여주게 된�
 
 반환된 Promise와 Promise의 resolved 값은 저장되기 때문에, React는 load를 다시 호출하지 않는다.
 
-### memo
+## memo
 
 `memo`는 컴포넌트의 props가 변하지 않으면 재렌더링을 스킵하게 해주는 함수다.
 
@@ -86,7 +86,7 @@ memo로 최적화하는 과정은 정확히 같은 props로 자주 재렌더링 
 
 따라서 `useMemo`와 `useCallback`을 memo와 같이 사용해야한다.
 
-### cache ❌
+## cache ❌
 
 TODO: ReactSharedInternals.A에 관한 내용 추가.
 
@@ -104,7 +104,7 @@ TODO: ReactSharedInternals.A에 관한 내용 추가.
 
 `memo`는 클라이언트 컴포넌트에서 props를 비교해 컴포넌트를 렌더링을 스킵하는 것이라면, cache는 서버 컴포넌트에서 data fetch나 계산 결과를 저장해두고 쓰는 것이라고 할 수 있다.
 
-### startTransition ❌
+## startTransition ❌
 
 TODO: ReactSharedInternals.T와 S에 관한 내용 추가
 

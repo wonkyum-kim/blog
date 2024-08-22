@@ -1,0 +1,180 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 섬
+
+먼저 각 섬에 번호를 붙여준다. (bfs1)
+
+그리고 지도의 최외각 지역을 '\*'로 추가하고, 어느 섬에도 포함되지 않은 바다를 지우고 '\*'로 표시한다. (bfs2)
+
+외각에 있는 섬부터 내부의 바다를 지워가면서 인접 리스트를 만들 수 있다. (bfs3)
+
+마지막으로 위상 정렬을 하여 모든 섬의 높이를 구할 수 있다.
+
+<CodeSelector names={['1109.js']} desc='ex1' />
+
+```js showLineNumbers
+const [n, m] = [0, 0].map(() => input.getNumber)
+const board = array2d(n, m, '')
+for (let i = 0; i < n; ++i) {
+  const line = input.get
+  for (let j = 0; j < m; ++j) {
+    board[i][j] = line[j]
+  }
+}
+let visited = array2d(n, m, false)
+let count = 0
+const dir = [
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+  [0, -1],
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+]
+
+const dir2 = [
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+  [0, -1],
+]
+
+function bfs1(y, x) {
+  const q = new Queue()
+  q.push([y, x])
+
+  while (!q.empty()) {
+    const [a, b] = q.front()
+    q.pop()
+    visited[a][b] = true
+    board[a][b] = count.toString()
+    for (const [dy, dx] of dir) {
+      const aa = a + dy
+      const bb = b + dx
+      if (aa < 0 || bb < 0 || aa > n - 1 || bb > m - 1) continue
+      if (visited[aa][bb]) continue
+      if (board[aa][bb] !== 'x') continue
+      q.push([aa, bb])
+    }
+  }
+  count++
+}
+
+function bfs2(y, x) {
+  if (board[y][x] === '*') return
+  const q = new Queue()
+  q.push([y, x])
+  while (!q.empty()) {
+    const [a, b] = q.front()
+    board[a][b] = '*'
+    q.pop()
+    for (const [dy, dx] of dir2) {
+      const aa = a + dy
+      const bb = b + dx
+      if (aa < 0 || bb < 0 || aa > n + 1 || bb > m + 1) {
+        continue
+      }
+      if (board[aa][bb] === '*') continue
+      if (board[aa][bb] !== '.') continue
+      q.push([aa, bb])
+    }
+  }
+}
+
+function bfs3(y, x, adj, indegree) {
+  const q = new Queue()
+  const set = new Set()
+
+  q.push([y, x])
+  const curr = board[y][x]
+  while (!q.empty()) {
+    const [a, b] = q.front()
+    board[a][b] = '*'
+    q.pop()
+    for (const [dy, dx] of dir2) {
+      const aa = a + dy
+      const bb = b + dx
+      if (board[aa][bb] === '*') continue
+      if (board[aa][bb] !== '.' && board[aa][bb] !== curr) {
+        set.add(board[aa][bb])
+        continue
+      }
+      q.push([aa, bb])
+    }
+  }
+  for (const value of set) {
+    adj[+value].push(+curr)
+    indegree[+curr]++
+  }
+}
+
+function topologicalSort(n, indegree, adj, height) {
+  const q = new Queue()
+  const sorted = new Array(n).fill(0)
+  for (let i = 0; i < n; ++i) {
+    if (indegree[i] === 0) q.push(i)
+  }
+  for (let i = 0; i < n; ++i) {
+    if (q.empty()) break
+    const curr = q.front()
+    q.pop()
+    sorted[i] = curr
+    for (const next of adj[curr]) {
+      indegree[next]--
+      height[next] = Math.max(height[next], height[curr] + 1)
+      if (indegree[next] === 0) q.push(next)
+    }
+  }
+  return sorted
+}
+
+function solve() {
+  for (let i = 0; i < n; ++i) {
+    for (let j = 0; j < m; ++j) {
+      if (!visited[i][j] && board[i][j] === 'x') bfs1(i, j)
+    }
+  }
+
+  if (count === 0) {
+    console.log(-1)
+    return
+  }
+
+  board.unshift(new Array(m + 2).fill('.'))
+  board.push(new Array(m + 2).fill('.'))
+  for (let i = 1; i <= n; ++i) {
+    board[i].unshift('.')
+    board[i].push('.')
+  }
+
+  const adj = array2d(count, 0)
+  const indegree = new Array(count).fill(0)
+
+  bfs2(0, 0)
+
+  for (let i = 1; i <= n; ++i) {
+    for (let j = 1; j <= m; ++j) {
+      if (board[i][j] === '*') continue
+      bfs3(i, j, adj, indegree)
+    }
+  }
+
+  const height = new Array(count).fill(0)
+  topologicalSort(count, indegree, adj, height)
+
+  const maxHeight = height.reduce((acc, item) => {
+    acc = Math.max(acc, item)
+    return acc
+  }, 0)
+
+  const ans = new Array(maxHeight + 1).fill(0)
+  for (let i = 0; i < count; ++i) {
+    ans[height[i]]++
+  }
+  console.log(ans.join(' '))
+}
+
+solve()
+```

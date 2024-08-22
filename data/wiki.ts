@@ -59,17 +59,17 @@ const TypeScript = [
 ]
 
 const Algorithm = [
-  'prefix sum',
-  `maximum subarray problem`,
-  `knapsack problem`,
-  `sweeping`,
+  'Prefix sum',
+  `Maximum subarray problem`,
+  `Knapsack problem`,
+  `Sweeping`,
   'Bitfield',
-  `segment tree`,
+  `Segment tree`,
   `Eulerian path`,
   `SCC`,
-  `boj 1100-1109`,
-  `boj 1110-1119`,
-  `boj 1120-1129`,
+  `Sieve of Eratosthenes`,
+  // `boj 1110-1119`,
+  // `boj 1120-1129`,
 ]
 
 const etc = [
@@ -95,8 +95,10 @@ const React = [
   'react-dom-Client-APIs',
   'react-dom-4',
   'react-reconciler-Intro',
-  'react-reconciler-1',
-  'react-reconciler-2',
+  'react-reconciler-Fiber',
+  'react-reconciler-Lane',
+  'react-reconciler-UpdateQueue',
+  'react-reconciler-Hook',
   'SSR vs RSC',
 ]
 
@@ -104,9 +106,11 @@ const PS = [
   '1101',
   '1102',
   '1103',
+  '1106',
+  '1108',
+  '1109',
   '1131',
   '1132',
-  '1133',
   '1135',
   '1136',
   '1137',
@@ -114,6 +118,7 @@ const PS = [
   '1139',
   '1141',
   '1143',
+  '1154',
   '1199',
 ]
 
