@@ -1,0 +1,54 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 도로포장
+
+도로를 포장하지 않고 지나갈 때와 포장하고 지나갈 때 모두 우선순위 큐에 넣고 [다익스트라 알고리즘](/wiki/Algorithm/Dijkstra)을 실행한다.
+
+<CodeSelector names={['1162.js']} desc='ex1' />
+
+```js showLineNumbers
+let [n, m, k] = [0, 0, 0].map(() => input.getNumber)
+const adj = array2d(n + 1, 0)
+const dist = new Array(n + 1)
+for (let i = 0; i <= n; ++i) dist[i] = new BigInt64Array(k + 1).fill(9223372036854775807n)
+
+function Dijkstra(x) {
+  dist[1][0] = 0n
+  const pq = new PriorityQueue()
+  pq.push([0n, x, 0])
+  while (!pq.empty()) {
+    let [cost, curr, count] = pq.top()
+    cost *= -1n
+    pq.pop()
+    if (dist[curr][count] < cost) continue
+    for (const [next, w] of adj[curr]) {
+      if (dist[next][count] > BigInt(w) + cost) {
+        dist[next][count] = BigInt(w) + cost
+        pq.push([-dist[next][count], next, count])
+      }
+      if (count < k && dist[next][count + 1] > cost) {
+        dist[next][count + 1] = cost
+        pq.push([-dist[next][count + 1], next, count + 1])
+      }
+    }
+  }
+}
+
+function solve() {
+  while (m--) {
+    const [u, v, w] = [0, 0, 0].map(() => input.getNumber)
+    adj[u].push([v, w])
+    adj[v].push([u, w])
+  }
+
+  Dijkstra(1)
+
+  let ans = BigInt(9223372036854775807n)
+  for (let i = 0; i <= k; ++i) {
+    ans = ans < dist[n][i] ? ans : dist[n][i]
+  }
+  console.log(ans.toString())
+}
+
+solve()
+```

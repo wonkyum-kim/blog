@@ -6,25 +6,17 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 `react` 패키지는 ReactSharedInternals를 import하고 다시 export 하여 개발자가 사용할 수 있도록 하는 역할을 한다.
 
-## renderWithHooks
+## 컴포넌트가 mount 될 때 renderWithHooks
 
-ReactSharedInternals.H에 훅을 주입하는 역할을 하는 함수다.
+현재 작업 중인 Fiber는 전역 변수 `currentlyRenderingFiber`로 설정되어 현재 렌더링 중에 어디서든 접근할 수 있도록 한다.
 
-14 ~ 21 라인을 보면 전달 받은 lane과 workInProgress 파이버를 전역 함수에 할당해두고, workInProgress 파이버를 초기화 하는 것을 볼 수 있다.
+아직 마운트 되기 전에는 current Fiber가 null이므로, ReactSharedInternals.H에는 `HooksDispatcherOnMount`가 주입된다.
 
-26 ~ 29 라인을 보면 current 파이버의 memoizedState가 없으면 HooksDispatcherOnMount를 할당하고, 있으면 HooksDispatcherOnUpdate를 할당하고 있다.
-
-HooksDispatcherOnMount와 HooksDispatcherOnUpdate는 아래에서 다시 살펴보도록 한다.
-
-34 ~ 42 라인을 보면, 렌더링 단계에서 업데이트가 발생한 경우 renderWithHooksAgain을 호출하는 것을 볼 수 있다.
-
-이것은 setState를 여러 번 호출해도 한 번만 업데이트가 되는 것과 같은 의미다.
-
-renderWithHooksAgain와 finishRenderingHooks는 아래에서 다시 살펴보도록 한다.
+마지막으로 finishRenderingHooks가 호출된다.
 
 <CodeSelector names={['renderWithHooks']} desc='ex1' />
 
-```ts showLineNumbers {1-4, 14-15, 19-21, 26-29, 34-42, 44}
+```ts showLineNumbers {15-18, 20-23, 25-30, 34}
 // These are set right before calling the component.
 let renderLanes: Lanes = NoLanes;
 // The work-in-progress fiber.
@@ -38,35 +30,25 @@ export function renderWithHooks<Props, SecondArg>(
   secondArg: SecondArg,
   nextRenderLanes: Lanes
 ): any {
+
+  // `renderWithHooks`에서는 현재 작업할 Fiber와 Lane을 전역 변수로 설정하여
+  // 다른 함수에서도 사용할 수 있도록 한다.
   renderLanes = nextRenderLanes
   currentlyRenderingFiber = workInProgress
 
-  /* ... */
-
+  // workInProgress Fiber를 초기화 한다.
   workInProgress.memoizedState = null
   workInProgress.updateQueue = null
   workInProgress.lanes = NoLanes
 
-  if (__DEV__) {
-    /* ... */
-  } else {
-    ReactSharedInternals.H =
+  // 컴포넌트가 mount 될 때는 아직 current Fiber가 null이므로,
+  // ReactSharedInternals.H에 `HooksDispatcherOnMount`를 주입한다.
+  ReactSharedInternals.H =
       current === null || current.memoizedState === null
         ? HooksDispatcherOnMount
         : HooksDispatcherOnUpdate;
-  }
 
   let children = Component(props, secondArg);
-
-  // Check if there was a render phase update
-  if (didScheduleRenderPhaseUpdateDuringThisPass) {
-    children = renderWithHooksAgain(
-      workInProgress,
-      Component,
-      props,
-      secondArg,
-    );
-  }
 
   finishRenderingHooks(current, workInProgress, Component);
 
@@ -76,4 +58,220 @@ export function renderWithHooks<Props, SecondArg>(
 
 ## HooksDispatcherOnMount
 
-## HooksDispatcherOnUpdate
+`HooksDispatcherOnMount`는 컴포넌트가 마운트 될 때 사용되는 리액트 훅들을 모두 담고있는 객체다.
+
+이 중에서 useState에 대해 살펴본다.
+
+<CodeSelector names={['HooksDispatcherOnMount']} desc='ex2' />
+
+```ts showLineNumbers {14}
+const HooksDispatcherOnMount: Dispatcher = {
+  readContext,
+
+  use,
+  useCallback: mountCallback,
+  useContext: readContext,
+  useEffect: mountEffect,
+  useImperativeHandle: mountImperativeHandle,
+  useLayoutEffect: mountLayoutEffect,
+  useInsertionEffect: mountInsertionEffect,
+  useMemo: mountMemo,
+  useReducer: mountReducer,
+  useRef: mountRef,
+  useState: mountState,
+  useDebugValue: mountDebugValue,
+  useDeferredValue: mountDeferredValue,
+  useTransition: mountTransition,
+  useSyncExternalStore: mountSyncExternalStore,
+  useId: mountId,
+}
+```
+
+## mountState
+
+마운트 될 때 사용되는 useState는 `mountState`이다.
+
+반환 값의 hook.memoizedState와 dispatch는 각각 state와 setState가 된다.
+
+여기서 살펴볼 것은 hook과 dispatch가 되겠다.
+
+<CodeSelector names={['mountState']} desc='ex3' />
+
+```ts showLineNumbers {4, 7-12}
+function mountState<S>(
+  initialState: (() => S) | S,
+): [S, Dispatch<BasicStateAction<S>>] {
+  const hook = mountStateImpl(initialState);
+  const queue = hook.queue;
+
+  // bind를 사용한다.
+  const dispatch: Dispatch<BasicStateAction<S>> = (dispatchSetState.bind(
+    null,
+    currentlyRenderingFiber,
+    queue,
+  ): any);
+  queue.dispatch = dispatch;
+  return [hook.memoizedState, dispatch];
+}
+```
+
+bind를 사용하는 이유는 2가지가 있다.
+
+1. this를 설정하기 위해서
+2. 인자의 기본 값을 설정하기 위해서
+
+여기서 this는 null로 설정되어 있으므로 bind를 사용한 목적은 2번째가 된다.
+
+useState를 사용할 때, 사실은 currentlyRenderingFiber와 hook.queue가 기본 값으로 들어있던 것이다.
+
+<CodeSelector names={['useState']} desc='ex4' />
+
+```ts showLineNumbers {7,8}
+import { useState } from 'react'
+
+export function App() {
+  const [state, setState] = useState(0)
+
+  const handleClick = () => {
+    // bind로 인해서 setState(currentlyRenderingFiber, hook.queue, (prev) => prev + 1)로 호출된다.
+    setState((prev) => prev + 1)
+  }
+
+  // ...
+}
+```
+
+## Hook
+
+`Hook`은 단일 연결 리스트 구조이며, 크게 state와 queue, 다음 Hook 객체를 가리키는 포인터로 이루어져 있다.
+
+Hook은 `mountWorkInProgressHook`에서 만들어진다.
+
+<CodeSelector names={['mountStateImpl']} desc='ex5' />
+
+```ts showLineNumbers {2}
+function mountStateImpl<S>(initialState: (() => S) | S): Hook {
+  const hook = mountWorkInProgressHook();
+  if (typeof initialState === 'function') {
+    // useState에 초기화 함수를 전달한 경우
+    const initialStateInitializer = initialState;
+    initialState = initialStateInitializer();
+  }
+
+  // state
+  hook.memoizedState = hook.baseState = initialState;
+
+  const queue: UpdateQueue<S, BasicStateAction<S>> = {
+    pending: null,
+    lanes: NoLanes,
+    dispatch: null,
+    lastRenderedReducer: basicStateReducer,
+    lastRenderedState: (initialState: any),
+  };
+
+  // queue
+  hook.queue = queue;
+
+  return hook;
+}
+```
+
+Hook 객체도 다른 곳에서 사용할 수 있도록 전역 변수 `workInProgressHook`로 설정해둔다.
+
+Hook 연결 리스트는 현재 작업 중인 Fiber의 memoizedState에도 연결된다.
+
+<CodeSelector names={['mountWorkInProgressHook']} desc='ex6' />
+
+```ts showLineNumbers {11-12, 14-15}
+function mountWorkInProgressHook(): Hook {
+  const hook: Hook = {
+    memoizedState: null, // state
+    baseState: null, // state
+    baseQueue: null, // queue
+    queue: null, // queue
+    next: null, // pointer
+  }
+
+  if (workInProgressHook === null) {
+    // Fiber의 memoizedState와 workInProgressHook에 `hook` 객체를 할당한다.
+    currentlyRenderingFiber.memoizedState = workInProgressHook = hook
+  } else {
+    // 연결 리스트에 추가한다.
+    workInProgressHook = workInProgressHook.next = hook
+  }
+  return workInProgressHook
+}
+```
+
+## dispatch
+
+앞서서 살펴 보았듯이 맨 처음 2개 인자는 bind로 설정되어 있고, 개발자가 건네주는 것은 3번째 인자가 된다.
+
+setState는 렌더링 도중에 호출되거나 아니면 쉬고 있는 상태에서 호출될 수 있다.
+
+먼저 쉬고 있는 상태에서의 업데이트를 살펴본다.
+
+<CodeSelector names={['dispatchSetState']} desc='ex8' />
+
+```ts showLineNumbers {4, 22}
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
+): void {
+
+  const lane = requestUpdateLane(fiber);
+
+  const update: Update<S, A> = {
+    lane,
+    revertLane: NoLane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: (null: any),
+  };
+
+  // render phase
+  if (isRenderPhaseUpdate(fiber)) {
+    enqueueRenderPhaseUpdate(queue, update);
+  }
+  // idle phase
+  else {
+    const alternate = fiber.alternate;
+    // queue가 현재 비어있는 상태
+    if (
+      fiber.lanes === NoLanes &&
+      (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      const lastRenderedReducer = queue.lastRenderedReducer;
+      if (lastRenderedReducer !== null) {
+        try {
+          const currentState: S = (queue.lastRenderedState: any);
+          // action을 적용하여 계산한 상태를 eagerState라고 한다.
+          const eagerState = lastRenderedReducer(currentState, action);
+          // eagerState를 저장한다.
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+          // eagerState와 currentState가 서로 같다면, 재렌더링을 스케줄하지 않아도 된다.
+          if (is(eagerState, currentState)) {
+            enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update);
+            return;
+          }
+        } catch (error) {
+          // Suppress the error. It will throw again in the render phase.
+        } finally {
+          // ...
+        }
+      }
+    }
+
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+    if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, lane);
+      entangleTransitionUpdate(root, queue, lane);
+    }
+  }
+
+  markUpdateInDevTools(fiber, lane, action);
+}
+```

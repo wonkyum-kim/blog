@@ -68,6 +68,7 @@ const Algorithm = [
   `Eulerian path`,
   `SCC`,
   `Sieve of Eratosthenes`,
+  `Dijkstra`,
   // `boj 1110-1119`,
   // `boj 1120-1129`,
 ]
@@ -83,24 +84,23 @@ const etc = [
   'scroll',
 ]
 
-const React = [
-  'Start',
-  'react-Intro',
-  'react-Internals',
-  'react-Legacy',
-  'react-Components',
-  'react-APIs',
-  'react-dom-Intro',
-  'react-dom-Internals',
-  'react-dom-Client-APIs',
-  'react-dom-4',
-  'react-reconciler-Intro',
-  'react-reconciler-Fiber',
-  'react-reconciler-Lane',
-  'react-reconciler-UpdateQueue',
-  'react-reconciler-Hook',
-  'SSR vs RSC',
-]
+// const React = [
+//   'Start',
+//   'react-Intro',
+//   'react-Internals',
+//   'react-Components',
+//   'react-APIs',
+//   'react-dom-Intro',
+//   'react-dom-Internals',
+//   'react-dom-Client-APIs',
+//   'react-dom-4',
+//   'react-reconciler-Intro',
+//   'react-reconciler-Fiber',
+//   'react-reconciler-Lane',
+//   'react-reconciler-UpdateQueue',
+//   'react-reconciler-Hook',
+//   'SSR vs RSC',
+// ]
 
 const PS = [
   '1101',
@@ -119,6 +119,7 @@ const PS = [
   '1141',
   '1143',
   '1154',
+  '1162',
   '1199',
 ]
 
@@ -126,7 +127,7 @@ export const wiki = {
   CSS,
   Git,
   TypeScript,
-  React,
+  // React,
   Algorithm,
   PS,
   etc,

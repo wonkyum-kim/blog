@@ -20,7 +20,7 @@ Fiber는 아래와 같은 필드로 이루어져 있다.
 | ref           |                                                              |
 | refCleanup    |                                                              |
 | updateQueue   | 업데이트를 저장하는 큐 (UpdateQueue 참고)                    |
-| memoizedState | 업데이트가 적용되기 전 상태 (UpdateQueue 참고)               |
+| memoizedState | Hook 객체의 linked list                                      |
 | dependencies  | 이 Fiber의 디펜던시(contexts, events)                        |
 | mode          |                                                              |
 | flags         |                                                              |
