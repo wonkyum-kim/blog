@@ -1,82 +1,95 @@
 .container {
   width: 100%;
+  height: 4rem;
   padding: 1rem 2rem 0rem 2rem;
-  position: absolute;
-  z-index: 2;
+  position: relative;
   box-sizing: border-box;
-}
-
-.menu {
-  width: 100%;
-  padding-top: 1rem;
   display: flex;
-  flex-direction: column;
-  list-style-type: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  justify-content: center;
+  gap: 4rem;
   font-weight: 700;
-  filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
 }
 
 .list {
-  width: 100%;
-  display: flex;
-  gap: 4rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.list > li {
+  list-style-type: none;
+  user-select: none;
   cursor: pointer;
-  height: min-content;
-  color: black;
+  z-index: 3;
 }
 
-.subject {
+.list[data-curr='true'] {
+  color: red;
+}
+
+@starting-style {
+  .wiki {
+    opacity: 0;
+  }
+}
+
+.wiki {
+  background-color: white;
   display: grid;
   column-gap: 2rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: 2rem 8rem 2rem 8rem;
+  padding: 4rem 8rem 2rem 8rem;
+  position: absolute;
+  z-index: 2;
+  width: 70%;
+  filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
+  border-radius: 10px;
+  transition:
+    opacity 0.5s,
+    display 0.5s allow-discrete;
 }
 
-@keyframes slideFromBottom {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0px);
-  }
+.wiki-delete {
+  opacity: 0;
+  display: none;
 }
 
-.item {
+.wiki-item {
   cursor: pointer;
   display: flex;
   align-items: center;
   height: 4rem;
   padding-left: 1rem;
   border-bottom: solid var(--gray-300) 2px;
-  animation: slideFromBottom 0.5s;
-}
-
-@media (width < 425px) {
-  .list {
-    gap: 1.5rem;
-  }
-
-  .subject {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    padding: 2rem;
-  }
-
-  .container {
-    padding: 1rem 1rem 0rem 1rem;
-  }
 }
 
 @media (hover: hover) {
-  .item:hover {
+  .wiki-item:hover {
     background-color: var(--gray-200);
+  }
+}
+
+@media (768px <= width < 1024px) {
+  .wiki {
+    padding: 2rem 4rem 1rem 4rem;
+  }
+}
+
+@media (425px <= width < 768px) {
+  .container {
+    gap: 2rem;
+  }
+
+  .wiki {
+    padding: 2rem 2rem 1rem 2rem;
+  }
+}
+
+@media (width < 425px) {
+  .container {
+    gap: 1rem;
+  }
+
+  .wiki {
+    padding: 3rem 2rem 1rem 2rem;
+  }
+
+  .wiki-item {
+    height: 3rem;
+    padding-left: 0.5rem;
   }
 }

@@ -13,6 +13,12 @@
   height: 80px;
 }
 
+@media (width < 425px) {
+  .container {
+    padding-top: 0rem;
+  }
+}
+
 @media (width < 1024px) {
   .list {
     flex-direction: column;
