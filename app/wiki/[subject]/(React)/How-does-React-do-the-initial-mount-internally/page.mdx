@@ -1,0 +1,141 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## How does React do the initial mount internally?
+
+> https://jser.dev/2023-07-14-initial-mount/ 를 읽고 정리해본 글.
+
+아래 코드가 첫 렌더링 (initial mount)에서 어떻게 동작하는지에 대해 살펴본다.
+
+<CodeSelector names={['App.jsx']} desc='ex1' />
+
+```jsx showLineNumbers
+import { useState } from 'react'
+
+function Link() {
+  return <a href='https://jser.dev'>jser.dev</a>
+}
+
+export default function App() {
+  const [count, setCount] = useState(0)
+
+  const handleClick = () => {
+    setCount((prev) => prev + 1)
+  }
+
+  return (
+    <div>
+      <p>
+        <Link />
+        <br />
+        <button onClick={handleClick}>click me - {count}</button>
+      </p>
+    </div>
+  )
+}
+```
+
+## 1. Brief introduction on Fiber Architecture
+
+FiberNode로 이루어진 Fiber 트리는 FiberRootNode의 `current 포인터`가 가리킨다.
+
+Fiber 트리는 `current`와 `workInProgress` 두 개가 존재한다.
+
+current Fiber 트리는 실제로 화면에 보여지는 모습이고, workInProgress 트리는 작업 중인 모습이다.
+
+current 포인터를 변경하면서 두 트리를 이동할 수 있고 화면을 업데이트 한다.
+
+FiberNode 중 일부는 실제 DOM과 대응된다. (e.g. HostComponent)
+
+### 1.1 FiberRootNode
+
+FiberRootNode는 React 루트와 같은 역할을 하는 특별한 노드다.
+
+FiberRootNode.current는 실제 Fiber 트리를 가리킨다.
+
+새로운 Fiber 트리가 생성되면, current 포인터를 생성된 새로운 트리를 가리키도록 변경한다.
+
+정확하게는 새로 생성된 Fiber 트리의 루트 FiberNode인 `HostRoot`를 가리킨다.
+
+### 1.2 FiberNode
+
+FiberNode는 Fiber 트리를 이루고 있는 구성 요소이다.
+
+아래와 같은 프로퍼티들을 가지고 있다.
+
+- `tag`: FiberNode의 종류를 나타낸다.
+- `stateNode`: 백업 데이터. HostCompoenent의 경우 실제 DOM에 해당한다.
+- `elementType`: 컴포넌트 함수 또는 HTML 태그
+- `flags`: 커밋 단계에서 업데이트를 적용해야 하는 지를 나타낸다. subtreeFlags는 서브트리에 적용된다.
+- `lanes`: 보류된 업데이트의 우선순위를 나타낸다. childLanes는 서브트리에 적용된다.
+- `child, sibling, return`: 트리 구조를 만들기 위한 포인터
+- `memoizedState`: 중요한 데이터. FunctionComponent의 경우 hook을 의미한다.
+
+위에서 잠깐 언급 하였듯이 FiberNode의 종류는 tag를 통해 확인 가능하며 아래와 같은 것들이 있다.
+
+- `HostRoot`: Fiber 트리의 루트
+- `FunctionComponent`: 함수형 컴포넌트
+- `HostCompoenent`: 실제 DOM 노드
+
+## 2. Initial mount in Trigger phase
+
+`createRoot()`는 비어있는 HostRoot를 가지고 있는 `current Fiber 트리`를 생성한다.
+
+`root.render(<App />)`은 HostRoot의 업데이트를 스케줄한다.
+
+`<App />`은 update 객체의 payload에 저장된다.
+
+<CodeSelector names={['index.js']} desc='ex1' />
+
+```js showLineNumbers
+import { createRoot } from 'react-dom/client'
+import { App } from './App'
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+## 3. Initial mount in Render Phase
+
+### 3.1 performConcurrentWorkOnRoot()
+
+`performConcurrentWorkOnRoot()`는 initial mount와 re-render에서 렌더링을 시작하는 진입 점이다.
+
+이름과 달리, 필요하면 sync로 진행된다.
+
+sync로 렌더링을 진행해야 하는 경우는 `lane`을 보고 판단할 수 있다.
+
+Initial mount의 경우 DefaultLane에 해당하는데, blocking lane이라서 sync로 진행한다.
+
+(blocking lane은 렌더링이 인터럽트 되지 않아야 한다는 것을 의미한다.)
+
+### 3.2 renderRootSync()
+
+`renderRootSync()`는 while 루프이다.
+
+workLoopSync()에서 workInProgress가 null이 될 때까지 performUnitOfWork()를 실행한다.
+
+### 3.3 performUnitOfWork()
+
+`performUnitOfWork()`는 React가 단일 FiberNode에서 수행할 작업이 있는지 확인하는 곳이다.
+
+`beginWork()`를 호출하여 실제 렌더링을 발생시킨다.
+
+beginWork에서는 workInProgress FiberNode의 tag에 따라서 다른 렌더링을 진행하게 된다.
+
+뒤에서 자세하게 살펴본다.
+
+### 3.4 prepareFreshStack()
+
+renderRootSync()에서 performUnitOfWork()를 실행하기 이전에 `prepareFreshStack()`을 호출한다.
+
+매번 새로운 렌더링이 시작할 때마다, current HostRoot로부터 복사된 새로운 workInProgress Fiber 트리가 생성된다.
+
+이것을 performUnitOfWork에 전달하고 beginWork를 거치면, HostRoot에 해당하는 렌더링 과정이 실행된다.
+
+### 3.5 updateHostRoot()
+
+beginWork()에서 HostRoot의 렌더링을 시작할 때 호출하는 함수다.
+
+`processUpdateQueue()`에서 업데이트를 처리한다.
+
+`reconcileChildren()`을 호출하고 workInProgress.child를 반환하여 다음 FiberNode를 처리하도록 한다.

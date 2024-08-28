@@ -84,23 +84,24 @@ const etc = [
   'scroll',
 ]
 
-// const React = [
-//   'Start',
-//   'react-Intro',
-//   'react-Internals',
-//   'react-Components',
-//   'react-APIs',
-//   'react-dom-Intro',
-//   'react-dom-Internals',
-//   'react-dom-Client-APIs',
-//   'react-dom-4',
-//   'react-reconciler-Intro',
-//   'react-reconciler-Fiber',
-//   'react-reconciler-Lane',
-//   'react-reconciler-UpdateQueue',
-//   'react-reconciler-Hook',
-//   'SSR vs RSC',
-// ]
+const React = [
+  'How does React do the initial mount internally?',
+  // 'Start',
+  // 'react-Intro',
+  // 'react-Internals',
+  // 'react-Components',
+  // 'react-APIs',
+  // 'react-dom-Intro',
+  // 'react-dom-Internals',
+  // 'react-dom-Client-APIs',
+  // 'react-dom-4',
+  // 'react-reconciler-Intro',
+  // 'react-reconciler-Fiber',
+  // 'react-reconciler-Lane',
+  // 'react-reconciler-UpdateQueue',
+  // 'react-reconciler-Hook',
+  // 'SSR vs RSC',
+]
 
 const PS = [
   '1101',
@@ -127,7 +128,7 @@ export const wiki = {
   CSS,
   Git,
   TypeScript,
-  // React,
+  React,
   Algorithm,
   PS,
   etc,
