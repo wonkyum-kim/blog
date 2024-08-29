@@ -69,7 +69,6 @@ const Algorithm = [
   `SCC`,
   `Sieve of Eratosthenes`,
   `Dijkstra`,
-  // `boj 1110-1119`,
   // `boj 1120-1129`,
 ]
 
@@ -104,12 +103,12 @@ const React = [
 ]
 
 const PS = [
-  '1101',
   '1102',
   '1103',
   '1106',
   '1108',
   '1109',
+  '1114',
   '1131',
   '1132',
   '1135',

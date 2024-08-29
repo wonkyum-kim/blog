@@ -1,0 +1,63 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 통나무 자르기
+
+이분 탐색으로 mid보다 같거나 작은 길이로 자를 수 있는지 확인한다.
+
+자르고 생긴 오른쪽 통나무의 길이를 mid 이하로 만들면 되므로 lowerBound를 사용한다.
+
+<CodeSelector names={['1114.js']} desc='ex1' />
+
+```js showLineNumbers
+import { input, lowerBound } from './lib/index.js'
+
+let [L, K, C] = [0, 0, 0].map(() => input.getNumber)
+let cut = new Array(K)
+  .fill(0)
+  .map(() => input.getNumber)
+  .sort((a, b) => a - b)
+
+function foo(mid) {
+  let remain = L
+  let count = 0
+  let tong = 0
+  let index = -1
+  while (count < C) {
+    index = lowerBound(cut, remain - mid)
+    if (index === K) break
+    // cut[index]에서 자르면, left와 right로 나눠진다.
+    const left = cut[index]
+    const right = remain - cut[index]
+    tong = Math.max(tong, right)
+    remain = left
+    count++
+    // 더 이상 자를 수 없으면 탈출
+    if (index === 0) break
+  }
+
+  // 마지막에 자르고 남은 것도 비교해준다.
+  tong = Math.max(tong, remain)
+  return [tong <= mid, index]
+}
+
+function solve() {
+  let low = 1
+  let high = L
+  let ans = L
+  let ans2 = 0
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    const [possible, index] = foo(mid)
+    if (possible) {
+      high = mid - 1
+      ans = mid
+      ans2 = cut[index]
+    } else {
+      low = mid + 1
+    }
+  }
+  console.log(ans, ans2)
+}
+
+solve()
+```
