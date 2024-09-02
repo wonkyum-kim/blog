@@ -85,6 +85,7 @@ const etc = [
 
 const React = [
   'How does React do the initial mount internally?',
+  'How does React re-render internally?',
   // 'Start',
   // 'react-Intro',
   // 'react-Internals',
