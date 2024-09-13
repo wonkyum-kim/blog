@@ -23,7 +23,7 @@ function Component() {
   }
   return (
     <div>
-      <button onClick={handleClick}>click me - {count}</button> (
+      <button onClick={handleClick}>click me - {count}</button>(
       {count % 2 === 0 ? <span>even</span> : <b>odd</b>})
     </div>
   )
@@ -58,19 +58,19 @@ setState를 호출하면, current 트리의 루트부터 타겟 FiberNode까지 
 
 이벤트의 우선순위는 업데이트의 우선순위를 결정한다.
 
-click 이벤트의 경우, DiscreteEventPriority이고 높은 우선순위인 SyncLane으로 연결된다.
+click 이벤트의 경우, `DiscreteEventPriority`이고 높은 우선순위인 `SyncLane`으로 연결된다.
 
 ## 2. Re-render in Render phase
 
 ### 2.1 Basic rendering logic is the same as initial mount.
 
-SyncLane은 blocking lane이므로 performConcurrentWorkOnRoot()에서 concurrent mode로 동작하지 않는다.
+SyncLane은 blocking lane이므로 `performConcurrentWorkOnRoot()`에서 concurrent mode로 동작하지 않는다.
 
 ### 2.2 React reuses redundant Fiber Nodes before creating new ones
 
 initial mount에서는 FiberNode를 처음부터 만들었지만, re-render에서는 재사용하려고 노력한다.
 
-prepareFreshStack()에서 current 트리의 HostRoot를 복사한다.
+prepareFreshStack()에서 중복되는 `HostRoot`가 재사용된다.
 
 ### 2.3 The Update branch in beginWork()
 
@@ -93,36 +93,91 @@ memoizedProps는 현재 props이고, pendingProps는 다음 props로 생각해 �
 
 re-render가 끝나면, performUnitOfWork()에서 memoizedProps가 pendingProps로 설정된다.
 
-Component에 해당하는 FiberNode에는 lanes가 1이고 childLanes가 0이기 때문에 현재 노드를 렌더링한다.
+`<Component />`에 해당하는 FiberNode에는 lanes가 1이고 childLanes가 0이기 때문에 현재 노드를 렌더링한다.
 
 ### 2.6 updateFunctionComponent() re-renders function components and reconcile children
 
-`<Component />`는 div 하나를 반환하고 있다.
-
-(initial mount에서 다룬 부분은 빠르게 넘어간다.)
+`<Component />`는 div 하나를 반환하고 있기 때문에, reconcileSingleElement()가 실행된다.
 
 ### 2.7 reconcileSingleElement()
 
-div의 elementType이 current와 비교해서 달라지지 않았다면 FiberNode를 재사용할 수 있다.
+div의 elementType이 current와 비교해서 달라지지 않았다면 FiberNode를 재사용할 수 있다. (즉, HTML 태그가 달라지지 않았다는 의미)
 
-재사용할 때, props는 pendingProps로 변경해서 사용한다.
+`useFiber()`에서 FiberNode를 재사용할 때 props는 pendingProps로 변경해서 사용한다.
+
+재렌더링이 완료되면, 새로운 `<div />`로 이동하고 이전 `<div/>`의 lanes와 childLanes를 0으로 만든다.
 
 ### 2.8 Once a component is re-rendered, their subtree is re-rendered by default
 
+`<div />`의 children에서 작업을 할 것이 없기 때문에 bailout이 일어날 것 같지만, 그렇지 않다.
+
 컴포넌트가 렌더링될 때마다 React 엘리먼트를 포함한 새로운 객체를 생성하기 때문에 pendingProps는 매번 새로 생성된다.
 
-따라서 bailout은 발생하지 않고 updateHostComponent()가 실행된다.
+즉, props가 변경되었기 때문에 bailout은 발생하지 않고 `updateHostComponent()`가 실행된다.
 
 ### 2.9 updateHostComponent()
 
-재렌더링을 하면 span은 b로 바뀐다.
+재렌더링을 하면 `<span />`은 `<b />`로 바뀐다.
 
 따라서 nextChildren에는 b가 들어있고, current의 memoizedProps에는 span이 있다.
 
-## 2.10 reconcileChildrenArray() creates and deletes fibers as needed
+### 2.10 reconcileChildrenArray() creates and deletes fibers as needed
 
-reconcileChildrenArray()에서 key가 존재하면 엘리먼트의 재정렬이 있는지 확인하고 fiber를 재사용하는 최적화를 진행한다.
+`reconcileChildrenArray()`에서 key가 존재하면 엘리먼트의 재정렬이 있는지 확인하고 fiber를 재사용하는 최적화를 진행한다.
 
 그런데 예제 코드에서는 key가 없으므로 이 과정은 진행되지 않는다.
 
 current는 span이므로 b로 교체하기 위해서 deleteChild()로 커밋 단계에서 삭제할 것을 표시해둔다.
+
+`updateSlot()`은 새로운 props(pendingProps)를 사용하여 FiberNode를 생성하거나 재사용한다.
+
+재사용 여부는 elementType을 비교하여 결정된다.
+
+정리해보면 div의 첫 번째, 두 번째 자식은 재사용되고, 세 번째 자식은 span에서 b로 변경되어야 한다.
+
+span은 deleteChild()에서 삭제될 것이라고 마크되고, b는 새로 생성되어 placeChild()에서 삽입될 것이라고 마크된다.
+
+### 2.11 placeChild() and deleteChild() marks fiber with flags
+
+div에는 childDeletion이 마크되고, span에는 deletion이 마크된다.
+
+button으로 넘어가서 count가 변경되므로 props가 달라져서 updateHostComponent()가 실행된다.
+
+"click me - "는 bailout되고, 이어서 "0"은 "1"로 변경되므로 updateHostText()가 실행된다.
+
+### 2.12 updateHostText()
+
+initial mount에서 살펴봤듯이 completeWork()에서 업데이트가 마크되기 때문에 아무것도 하지 않는다.
+
+### 2.13 completeWork() marks the update of HostComponent and creates DOM nodes if necessary
+
+button의 경우 HostText 플로우로 가고(initial mount 참고) workInProgress.stateNode에는 이미 TextNode가 있으므로 업데이트가 진행된다.
+
+여기서 2.12의 updateHostText()와 이름이 같은 다른 함수가 실행되는데 updateQueue에 update를 넣는다.
+
+## 3. Re-render in Commit Phase
+
+### 3.1 commitMutationEffectsOnFiber() kicks off the commit of Insertion/Deletion/Update
+
+삭제 -> 업데이트 -> 삽입 순서로 진행된다.
+
+### 3.2. Deletion are processed first, before processing children and self.
+
+DOM에서 span 엘리먼트를 삭제한다.
+
+### 3.3 Insertions are processed next
+
+그 자리에 b가 들어간다.
+
+### 3.4 Updates are handled at last
+
+텍스트가 업데이트된다.
+
+## 4. Summary
+
+1. 상태가 변하면, 재렌더링을 하기 위해 타겟 FiberNode로 가는 경로에 lanes와 childLanes를 마크한다.
+2. 리액트는 전체 Fiber 트리를 재렌더링하지만 bailout 과정을 통해 불필요한 재렌더링을 피하는 최적화를 한다.
+3. 컴포넌트가 재렌더링되면 새로운 React element를 생성하고, 이전과 값이 같을지라도 그 자식들도 모두 새로운 props를 얻는다.
+4. 재렌더링이란 결국 리액트가 현재 Fiber 트리를 기반으로 새로운 Fiber 트리를 만들고 필요한 경우 FiberNode에 마크를 하는 과정을 말한다. (Placement, childDeletion, Update)
+5. 새로운 Fiber 트리가 완성되면 리액트는 flag에 따라서 FiberNode를 처리하며, 실제 DOM에 변경사항을 반영하는데 이를 커밋이라 한다.
+6. 새로운 Fiber 트리는 현재(current) Fiber 트리로 지정된다. 다음 렌더링에서 이 Fiber 트리의 노드는 재사용된다.

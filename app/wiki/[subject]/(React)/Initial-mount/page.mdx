@@ -1,0 +1,334 @@
+import Image from 'next/image'
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import pic4 from '/public/React/r4.jpeg'
+
+## React element
+
+`React element`란, JSX 문법이 Babel에 의해 바뀐 createElement 메서드로 생성되는 객체이다.
+
+(참고로 `React node`는 함수형 컴포넌트가 반환할 수 있는 모든 것(null, undefined, booleans, strings, numbers, React elements)을 의미하는 것이다.)
+
+React element는 아래와 같은 프로퍼티를 가진다.
+
+- `$$typeof`: 보안상의 이유로 들어있는 내부 프로퍼티이며 `REACT_ELEMENT_TYPE`라는 전역 심볼이 들어있다. 자세한 내용은 [여기](https://overreacted.io/why-do-react-elements-have-typeof-property/)서 확인 가능하다.
+- `type`: html의 태그에 해당하는 문자열이 들어있다.
+- `props`: ref와 key를 제외한 props가 들어있다.
+- `ref`: ref 객체가 들어있다.
+- `key`: key가 들어있다.
+
+## Fiber Architecture
+
+`FiberNode`로 이루어진 Fiber 트리는 `FiberRootNode`의 `current 포인터`가 가리킨다.
+
+Fiber 트리는 `current`와 `workInProgress` 두 개가 존재한다.
+
+current Fiber 트리는 실제로 화면에 보여지는 모습이고, workInProgress 트리는 작업 중인 모습이다.
+
+FiberRootNode의 current 포인터를 변경해서 트리를 교체하고 화면을 업데이트 한다.
+
+current Fiber 트리로부터 workInProgress Fiber 트리를 만드는 과정을 `렌더링(render)`이라 하고, workInProgress Fiber 트리를 실제 DOM 트리에 반영하는 것이 `커밋(commit)`이다.
+
+그리고 렌더링 과정에서 두 트리를 서로 비교하는 과정을 `재조정(reconcilation)`이라 한다.
+
+### FiberRootNode
+
+FiberRootNode는 React 루트와 같은 역할을 하는 특별한 노드다.
+
+FiberRootNode.current는 Fiber 트리를 가리킨다.
+
+새로운 Fiber 트리가 생성되면, current 포인터를 생성된 새로운 트리를 가리키도록 변경한다.
+
+### FiberNode
+
+FiberNode는 Fiber 트리를 이루고 있는 노드이며 아래와 같은 프로퍼티들을 가지고 있다.
+
+- `tag`: FiberNode의 타입을 나타낸다. 어떤 작업이 필요한지 결정하기 위해 재조정 알고리즘에서 사용된다.
+- `key`: React element의 key에 해당하는 것이다.
+- `elementType`: FiberNode와 연관된 컴포넌트 함수 또는 HTML 태그를 나타낸다.
+- `type`: 컴포넌트가 함수형인지 클래스형인지를 나타낸다.
+- `stateNode`: 일반적으로 fiberNode와 연관된 local state를 가리키는데 사용되며, 주로 DOM 노드를 가리키는데 사용된다.
+- `return`: 부모 fiberNode를 가리킨다.
+- `child`: 자식 fiberNode를 가리킨다.
+- `sibling`: 형제 fiberNode를 가리킨다.
+- `index`: 자신이 몇 번째 자식인지를 나타낸다. (두 번째 이후의 자식에 접근하기 위해서는 첫 번째 자식부터 거쳐야 한다.)
+- `pendingProps`: React element에서 업데이트된 props.
+- `memoizedProps`: 이전 렌더링에서 화면을 출력할 때 사용된 props.
+- `updateQueue`: 상태 업데이트, 콜백, DOM 업데이트를 가진 큐
+- `memoizedState`: output을 만드는데 사용된 fiber의 상태. 업데이트를 처리할 때 현재 화면에 렌더링된 상태가 반영된다.
+- `flags`: 커밋 단계에서 업데이트를 적용해야 하는 지를 나타낸다. subtreeFlags는 서브트리에 적용된다.
+- `lanes`: 보류된 업데이트의 우선순위를 나타낸다. childLanes는 서브트리에 적용된다.
+- `alternate`: 반대편 FiberNode를 가리킨다.
+
+FiberNode의 tag는 packages/react-reconciler/src/ReactWorkTag.js에서 확인 가능하며 대표적으로 아래와 같은 것들이 있다.
+
+- `HostRoot`: Fiber 트리의 루트
+- `FunctionComponent`: 함수형 컴포넌트에 해당하는 FiberNode
+- `HostCompoenent`: 실제 DOM 노드에 해당하는 FiberNode
+
+## Initial mount in Trigger phase
+
+`createRoot()`는 비어있는 HostRoot를 가지고 있는 `current Fiber 트리`를 생성한다.
+
+`root.render(<App />)`은 HostRoot의 업데이트를 스케줄한다.
+
+<CodeSelector names={['index.js']} desc='ex1' />
+
+```js showLineNumbers
+import { createRoot } from 'react-dom/client'
+import { App } from './App'
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+렌더링을 스케줄 하는 과정은 대략적으로 아래와 같이 진행된다.
+
+TODO
+
+1. root.render()
+2. updateContainer()
+3. createUpdate()
+4. enqueueUpdate()
+5. scheduleUpdateOnFiber()
+6. ensureRootIsScheduled()
+7. scheduleCallback()
+
+## Initial mount in Render Phase
+
+### performConcurrentWorkOnRoot()
+
+`performConcurrentWorkOnRoot()`는 initial mount와 re-render에서 렌더링을 시작하는 진입 점이다.
+
+이름과 달리, 필요하면 sync로 진행되는데, sync로 렌더링을 진행해야 하는 경우는 `lane`을 보고 판단할 수 있다.
+
+Initial mount의 경우 `DefaultLane`에 해당하는데, blocking lane이라서 sync로 진행한다.
+
+(blocking lane은 렌더링이 인터럽트 되지 않아야 한다는 것을 의미한다.)
+
+<CodeSelector names={['performConcurrentWorkOnRoot']} desc='pcwr1' />
+
+```ts showLineNumbers {8}
+const shouldTimeSlice =
+  !includesBlockingLane(root, lanes) &&
+  !includesExpiredLane(root, lanes) &&
+  (disableSchedulerTimeoutInWorkLoop || !didTimeout)
+
+let exitStatus =
+  // lanes가 DefaultLane이라서 renderRootSync로 진행된다.
+  shouldTimeSlice ? renderRootConcurrent(root, lanes) : renderRootSync(root, lanes)
+```
+
+### renderRootSync()
+
+초기 마운트의 경우 sync 모드로 진행되기 때문에 `renderRootSync()`가 호출된다.
+
+여기서 크게 두 가지 함수가 호출된다.
+
+1. prepareFreshStack()
+2. workLoopSync()
+
+<CodeSelector names={['renderRootSync']} desc='renderRootSync1' />
+
+```ts showLineNumbers {4, 10}
+// root나 lanes가 바뀌면 prepareFreshStack()을 호출한다.
+if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
+  // ...
+  prepareFreshStack(root, lanes)
+}
+
+do {
+  try {
+    // ...
+    workLoopSync()
+    break
+  } catch (thrownValue) {
+    handleThrow(root, thrownValue)
+  }
+} while (true)
+```
+
+### prepareFreshStack()
+
+매번 새로운 렌더링이 시작할 때마다, current Fiber 트리의 HostRoot로부터 새로운 workInProgress가 생성된다.
+
+이 FiberNode를 `전역 변수 workInProgress`로 설정해둠으로써 어디서든 접근할 수 있게 하고 있다.
+
+### performUnitOfWork()
+
+`workLoopSync()`는 그냥 while 루프이며, workInProgress가 null이 될 때까지 실행된다.
+
+workInProgress는 dfs와 같은 방식으로 이동하고 `performUnitOfWork()`를 실행한다.
+
+즉, 자식 방향으로 계속 이동하다가 더 이상 자식이 없으면 형제 노드로 이동 한다는 의미다.
+
+workInProgress는 현재 HostRoot이며, null이 된다는 의미는 HostRoot로부터 WorkInProgress Fiber 트리를 전부 완성했다는 의미가 된다.
+
+<CodeSelector names={['workLoopSync']} desc='workLoopSync' />
+
+```ts showLineNumbers
+// The work loop is an extremely hot path. Tell Closure not to inline it.
+/** @noinline */
+function workLoopSync() {
+  // Perform work without checking if we need to yield between fiber.
+  while (workInProgress !== null) {
+    performUnitOfWork(workInProgress)
+  }
+}
+```
+
+performUnitOfWork()에서 각 노드마다 `beginWork()`가 호출된다.
+
+<CodeSelector names={['performUnitOfWork']} desc='performUnitOfWork' />
+
+```ts showLineNumbers
+// next는 child 노드가 된다.
+next = beginWork(current, unitOfWork, entangledRenderLanes)
+
+// next가 null이면, completeUnitOfWork()에서 completeWork()를 실행한다.
+// sibling이 있으면 sibling으로 넘어간다.
+if (next === null) {
+  completeUnitOfWork(unitOfWork)
+}
+// child로 넘어간다.
+else {
+  workInProgress = next
+}
+```
+
+### beginWork()
+
+performUnitOfWork()는 `beginWork()`를 호출하여 FiberNode의 실제 렌더링을 발생시킨다. 이때 workInProgress.tag에 따라서 다른 렌더링을 진행하게 된다.
+
+<CodeSelector names={['beginWork']} desc='beginWork' />
+
+```ts showLineNumbers
+if (current !== null) {
+  // memoizedProps와 pendingProps는
+  const oldProps = current.memoizedProps
+  const newProps = workInProgress.pendingProps
+} else {
+}
+```
+
+### updateHostRoot()
+
+beginWork()에서 HostRoot의 렌더링을 시작할 때 호출하는 함수다.
+
+cloneUpdate()와 processUpdateQueue()를 통해 업데이트를 처리하는데 여기서는 넘어가도록 한다.
+
+`reconcileChildren()`을 호출한다.
+
+### reconcileChildren()
+
+reconcile은 diff와 같은 의미로 사용된다.
+
+current가 없다면 mount이고 있으면 re-render를 의미한다.
+
+한 가지 주의해야 할 점은 updateHostRoot()에서 reconcileChildren()을 호출할 때는 마운트 상황이긴 하지만 current에 HostRoot가 있다는 것이다.
+
+### reconcileChildFibers() vs mountChildFibers().
+
+reconcile의 목표는 이미 가지고 있는 것을 재사용하는 것이다.
+
+mount는 아무것도 재사용하지 않으므로 reconcile의 특별한 버전으로 생각할 수 있다.
+
+구현체를 보면 두 함수는 shouldTrackSideEffects 플래그를 제외하고는 같은 클로저 함수(`createChildReconciler()`)를 사용하고 있다.
+
+`reconcileXXX()`에서는 diffing을 진행하고, `placeSingleChild()`에서는 DOM에 삽입되어야 한다는 표시를 FiberNode에 하게 된다.
+
+### reconcileSingleElement()
+
+initial mount 상황에서 current.child가 null이기 때문에 diffing의 복잡한 과정들은 생략되고, element에 해당하는 FiberNode를 생성하여 반환만 하게 된다.
+
+createFiberFromElement()에서 새로운 FiberNode를 생성하게 되면 그 tag는 `IncompleteFunctionComponent`가 된다.
+
+### placeSingleChild()
+
+새로 만든 FiberNode의 flags에 Placement를 추가하여 DOM에 삽입되어야 한다고 표시한다.
+
+이 과정은 오직 initial mount에서 HostRoot 노드에만 해당된다.
+
+왜냐하면, 루트만 삽입해도 나머지는 연결되어 있기 때문에 자동적으로 삽입되기 때문이다.
+
+따라서 mountChildFibers()에서는 이 과정을 거치지 않고 효율적으로 진행하게 된다.
+
+### mountIndeterminateComponent()
+
+HostRoot의 child가 존재한다면, workInProgress가 null이 아니라서 renderRootSync()의 while 루프가 계속 실행된다.
+
+따라서 다시 performUnitOfWork()가 실행되고 beginWork()가 실행되는 과정이 반복된다.
+
+아까 새로 만든 workInProgress.tag는 IncompleteFunctionComponent이므로, `mountIncompleteFunctionComponent()`가 실행된다.
+
+이제 workInProgress의 tag를 `FunctionComponent`로 변경하고, `updateFunctionComponent()`을 호출한다.
+
+여기서는 다루지 않지만, `renderWithHooks()`를 실행하여 함수형 컴포넌트를 실행하고 children 엘리먼트를 반환 받는다.
+
+이때, current를 null로 전달해서 mountChildFibers()가 사용되도록 한다. (즉, `<App />`이 mount 된다.)
+
+여기서 workInProgress.child는 App이 반환하는 것이 div라 치면, HTML 태그에 해당하는 FiberNode의 tag는 `HostComponent`가 된다.
+
+### updateHostComponent()
+
+마찬가지로 다시 돌아와서 beginWork()가 호출되고, 현재 workInProgress의 tag가 HostComponent이므로, `updateHostComponent()`가 호출된다.
+
+이 과정은 Fiber 트리가 완성될 때까지 비슷한 플로우로 반복된다.
+
+### completeWork()
+
+`completeWork()`는 sibling이 beginWork()를 호출하기 전에 호출된다. 즉, dfs 트리에서 더 이상 탐색할 자식 노드가 없으면 종료하는 것과 같다.
+
+FiberNode의 stateNode는 HTML 태그의 경우(tag가 HostComponent인 경우) 실제 DOM 노드를 가리킨다.
+
+실제 DOM 노드의 생성은 completeWork()의 createInstance()에서 `docuement.createElement()`를 사용하여 만들어진다.
+
+DOM노드를 생성했으면, `appendAllChildren()`을 통해 부모와 연결한다.
+
+## Ininital mount in Commit phase
+
+<ImageContainer>
+  <Image
+    src={pic4}
+    alt='completeWork'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+지금까지 진행사항은 아래와 같다.
+
+1. workInProgress Fiber 트리가 완전히 구성되었다.
+2. 그에 해당하는 DOM 노드가 생성되고 조직화되었다.
+3. DOM 조작이 필요한 FiberNode에 flag가 설정되었다.
+
+### commitMutationEffects()
+
+`commitMutationEffects()`에서는 DOM 조작을 다룬다.
+
+finisedWork는 workInProgress Fiber 트리의 루트이며, commitMutationEffectsOnFiber()를 호출한다.
+
+Fiber 트리를 만드는 것은 탑 다운이었지만, DOM 트리를 만드는 것은 바텀 업으로 진행된다.
+
+그 이유는 html에 루트 노드 하나만 추가하면 더 간단하기 때문이다.
+
+이 과정은 `recursivelyTraverseMutationEffects()`에서 확인할 수 있다.
+
+### commitReconciliationEffects()
+
+여기서는 삽입을 진행한다. App의 FiberNode가 실제로 커밋된다.
+
+DOM 트리가 바텀 업으로 생성되었기 때문에 App에 해당하는 DOM만 추가해주면 된다.
+
+### commitPlacement()
+
+finishedWork의 DOM노드를 부모 컨테이너의 올바른 위치에 삽입(insert)하거나 추가(append)한다.
+
+이제 DOM이 마침내 삽입되었다.
+
+## References
+
+- https://jser.dev/2023-07-14-initial-mount/

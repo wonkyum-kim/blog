@@ -69,6 +69,10 @@ const Algorithm = [
   `SCC`,
   `Sieve of Eratosthenes`,
   `Dijkstra`,
+  `Cross product`,
+  `DFS`,
+  `Maximum flow`,
+  // `Centroid`,
   // `boj 1120-1129`,
 ]
 
@@ -84,7 +88,7 @@ const etc = [
 ]
 
 const React = [
-  'How does React do the initial mount internally?',
+  'Initial mount',
   'How does React re-render internally?',
   // 'Start',
   // 'react-Intro',

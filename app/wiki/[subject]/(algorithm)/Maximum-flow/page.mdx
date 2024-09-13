@@ -1,0 +1,113 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 최대 유량(Maximum flow)
+
+최대 유량 문제는 소스에서 싱크로 흐르는 유량을 최대한으로 만드는 방법을 찾는다.
+
+`소스(source)`는 들어오는 간선이 없는 노드이고, `싱크(sink)`는 나가는 간선이 없는 노드다.
+
+노드 u에서 노드 v로 가는 간선이 존재하고 이 간선의 `용량(capacity)`이 w일 때, 간선을 통해 이동하는 `유량(flow)`을 k라고 하면 k는 최대 w가 될 수 있다.
+
+소스와 싱크를 제외한 각 노드에서는 들어오는 유량과 나가는 유량은 같아야 한다.
+
+## 포드-풀커슨(Ford-Fulkerson) 알고리즘
+
+최대 유량을 찾는 방법으로 `포드-풀커슨 알고리즘`이 있다.
+
+1. 방향 그래프의 경우 간선마다 반대 방향의 간선을 추가하고 초기 각 간선의 가중치는 간선의 용량으로 설정한다. (반대 방향의 간선의 가중치는 0으로 둔다.)
+2. 유량이 0인 상태에서 각 단계마다 소스에서 싱크로 가는 경로 중 유량을 늘릴 수 있는 경로를 찾는다. 이 경로를 `증가 경로(augmenting path)`라고 한다.
+3. 각 단계마다 소스에서 싱크로 가는 경로 중 모든 간선의 가중치가 양수인 경로가 증가 경로가 되며, 경로가 여러가지라면 어떤 것을 선택해도 된다.
+4. 각 단계마다 증가 경로에 포함된 가중치의 최솟값이 x라면 경로 상의 간선의 유량을 x만큼 증가시킨다.
+5. 각 단계마다 증가 경로 상에 포함된 간선의 가중치를 x만큼 감소시키고, 반대 방향의 가중치를 x만큼 증가시킨다.
+
+증가 경로를 찾는 방식에 따라서 알고리즘의 성능이 좌우된다.
+
+## 에드몬드-카프(Edmonds-Karp) 알고리즘
+
+`에드몬드-카프 알고리즘`은 증가 경로를 BFS로 찾는 포드-풀커슨 알고리즘으로 $O(m^{2}n)$ 시간이 걸린다.
+
+## 용량 조절(Capacity scaling) 알고리즘
+
+`용량 조절 알고리즘`은 기준 값(delta)을 간선의 용량 중 가장 큰 값보다 같거나 큰 최소의 2의 거듭제곱으로 설정하며, delta 보다 작은 용량을 가진 간선을 제외한 그래프를 사용하여 최대 유량을 찾는다.
+
+증가 경로를 찾을 수 없는 경우 delta를 2로 나누는 것을 반복하며, 0이 되면 알고리즘을 종료한다.
+
+이 알고리즘은 dfs를 사용할 수 있고, $O(m^{2} \log{c})$ 시간이 걸린다. (c는 초기 delta 값)
+
+<CodeSelector names={['17412.js']} desc='ex1' />
+
+```js
+// 백준 17412번
+
+let [n, m] = [0, 0].map(() => input.getNumber)
+const adj = array2d(n, 0)
+const parent = new Array(n).fill(-1)
+const visited = new Array(n).fill(false)
+const id = new Array(n).fill(-1)
+
+// delta 보다 작은 용량을 가진 간선을 지운다.
+function dfs(curr, sink, delta) {
+  visited[curr] = true
+  if (curr === sink) return true
+  for (let i = 0; i < adj[curr].length; ++i) {
+    const [next, index, capacity] = adj[curr][i]
+    if (visited[next]) continue
+    if (capacity < delta) continue
+    parent[next] = curr
+    id[curr] = i
+    if (dfs(next, sink, delta)) return true
+  }
+  return false
+}
+
+function clear() {
+  parent.fill(-1)
+  visited.fill(false)
+  id.fill(-1)
+  return true
+}
+
+function capacityScaling(source, sink) {
+  // 간선의 최대 용량
+  let maxCapacity = 1
+  let maxFlow = 0
+
+  for (let delta = maxCapacity; delta > 0; delta >>= 1) {
+    // delta 이상의 flow를 가진 augmenting path를 모두 찾는다.
+    while (clear() && dfs(source, sink, delta)) {
+      let pathFlow = Infinity
+
+      // 경로에서 가장 작은 flow를 찾는다.
+      for (let v = sink; v != source; v = parent[v]) {
+        const u = parent[v]
+        pathFlow = Math.min(pathFlow, adj[u][id[u]][2])
+      }
+
+      // 정방향 간선의 용량은 줄이고 역방향 간선의 용량은 늘린다.
+      for (let v = sink; v != source; v = parent[v]) {
+        const u = parent[v]
+        const uvi = id[u]
+        const vui = adj[u][id[u]][1]
+        adj[u][uvi][2] -= pathFlow
+        adj[v][vui][2] += pathFlow
+      }
+
+      maxFlow += pathFlow
+    }
+  }
+  return maxFlow
+}
+
+function solve() {
+  while (m--) {
+    const [a, b] = [0, 0].map(() => input.getNumber - 1)
+    // 반대편 정점, 반대편 간선의 인덱스, 용량
+    adj[a].push([b, adj[b].length, 1])
+    adj[b].push([a, adj[a].length - 1, 0])
+  }
+
+  console.log(capacityScaling(0, 1))
+}
+
+solve()
+```
