@@ -1,0 +1,63 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Preorder Traversals
+
+BST를 preorder traversal 했을 때 올바른지 확인해야 한다.
+
+왼쪽 서브트리를 방문하는 조건은 현재 노드가 이전 노드보다 작은 것이다.
+
+그런데 현재 노드가 이전 노드보다 크다면, 이는 현재 노드보다 더 큰 부모 노드에서 분기가 일어난 것이다.
+
+노드를 방문하는 순서대로 스택에 추가한다면, 스택을 pop하면서 분기가 일어난 부모 노드를 찾을 수 있다.
+
+분기가 일어났을 때, 항상 오른쪽 서브트리가 생겨나는 방향으로 분기가 일어나므로 루트 노드보다 현재 노드는 항상 커야한다.
+
+처음 루트 노드를 -Infinity로 설정한다면, 오른쪽 서브트리가 생겨나는 분기가 일어났다고 가정할 수 있다.
+
+그리고 pop을 할 때마다 루트 노드를 pop한 노드로 설정하면 오른쪽 서브트리의 루트를 구할 수 있다.
+
+<CodeSelector names={['10441.js']} desc='ex1' />
+
+```js
+function isValidBSTPreorder(preorder) {
+  const stack = []
+  let root = -Infinity
+
+  for (let i = 0; i < preorder.length; i++) {
+    // 루트의 오른쪽 서브트리에 존재하므로 루트보다 커야한다.
+    if (preorder[i] <= root) return false
+
+    // 분기가 일어났는지 확인한다.
+    while (stack.length > 0 && preorder[i] >= stack[stack.length - 1]) {
+      root = stack.pop()
+    }
+
+    // 노드를 방문한다.
+    stack.push(preorder[i])
+  }
+
+  return true
+}
+
+function solve() {
+  const ans = []
+  let tc = 1
+  while (true) {
+    try {
+      const perorder = []
+      while (true) {
+        const x = input.getNumber
+        if (x < 0) break
+        perorder.push(x)
+      }
+      if (isValidBSTPreorder(perorder)) ans.push(`Case ${tc++}: yes`)
+      else ans.push(`Case ${tc++}: no`)
+    } catch {
+      break
+    }
+  }
+  console.log(ans.join(' '))
+}
+
+solve()
+```
