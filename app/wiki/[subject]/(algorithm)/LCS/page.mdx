@@ -1,0 +1,61 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## LCS(Longest Common Subsequence, 최장 공통 부분 수열)
+
+부분 수열(subsequence)이란, 수열에서 0개 이상의 요소를 뺀 것과 같으며, 엄격히 증가(strictly increasing)하는 인덱스를 선택해서 만든 것이다.
+
+`LCS`는 두 수열이 주어졌을 때, 두 수열의 부분 수열 중 가장 길이가 긴 것을 찾는 문제다.
+
+$X$와 $Y$의 LCS를 $Z$라고 하자.
+
+$Z$는 두 수열의 접두사들($X_m$, $Y_n$)의 LCS도 포함하므로 DP를 통해 문제를 풀 수 있게 된다.
+
+$x_m$ = $y_n$이면, $X_{m-1}$과 $Y_{n-1}$의 LCS 끝에 붙여주면 된다.
+
+$x_m$ != $y_n$이면, $X_{m-1}$과 $Y_{n}$의 LCS와 $X_{m}$과 $Y_{n-1}$의 LCS 중 더 긴 값을 찾으면 된다.
+
+<CodeSelector names={['LCS.js']} desc='ex1' />
+
+```js
+function LCS(x, y) {
+  const m = x.length
+  const n = y.length
+  // dp[i][j]: x[1, i]와 y[1, j]의 LCS 길이
+  const dp = array2d(m + 1, n + 1, 0)
+  for (let i = 1; i <= m; ++i) {
+    for (let j = 1; j <= n; ++j) {
+      if (x[i - 1] === y[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])
+    }
+  }
+  return dp[m][n]
+}
+```
+
+LCS의 길이 뿐만 아니라 LCS를 출력하고 싶다면, 거꾸로 찾아나가면 된다.
+
+<CodeSelector names={['LCS.js']} desc='ex2' />
+
+```js
+function LCS(x, y) {
+  // ...
+
+  let i = m
+  let j = n
+  let ans = ''
+  while (ans.length !== dp[m][n]) {
+    if (dp[i - 1][j] === dp[i][j]) {
+      i--
+      continue
+    }
+    if (dp[i][j - 1] === dp[i][j]) {
+      j--
+      continue
+    }
+    ans += x[i - 1]
+    i--
+    j--
+  }
+  return ans.split('').reverse().join('')
+}
+```

@@ -72,6 +72,7 @@ const Algorithm = [
   `Cross product`,
   `DFS`,
   `Maximum flow`,
+  `LCS`,
   // `Centroid`,
   // `boj 1120-1129`,
 ]
@@ -85,6 +86,7 @@ const etc = [
   'package.json',
   'indexedDB',
   'scroll',
+  'debugger',
 ]
 
 const React = [
