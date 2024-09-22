@@ -1,0 +1,54 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 트라이(Trie)
+
+문자열의 문자 하나를 노드로 만들어 트리를 만들 수 있는데, 접두어인 문자열은 같은 경로를 가지도록 만든 트리를 트라이라고 한다.
+
+`add()`는 트라이에 문자열을 추가하여 필요한 노드를 생성한다.
+
+`exist()`는 트라이에서 해당 문자열이 존재하는지 판단한다.
+
+<CodeSelector names={['index.js']} desc='ex1' />
+
+```js showLineNumbers
+class Trie {
+  constructor() {
+    this.tree = []
+    this.newNode()
+  }
+
+  newNode() {
+    const node = {
+      valid: false, // 해당 문자열을 가지는가?
+      child: new Array(26).fill(-1), // 'A' - 'Z'
+    }
+    this.tree.push(node)
+    return this.tree.length - 1
+  }
+
+  add(s) {
+    let node = 0
+    for (let i = 0; i < s.length; ++i) {
+      // 'A'의 아스키코드는 65
+      // 'a'의 아스키코드는 97
+      const c = s[i].charCodeAt() - 65
+      if (this.tree[node].child[c] === -1) {
+        const next = this.newNode()
+        this.tree[node].child[c] = next
+      }
+      node = this.tree[node].child[c]
+    }
+    this.tree[node].valid = true
+  }
+
+  exist(s) {
+    let now = 0
+    for (let i = 0; i < s.length; ++i) {
+      const c = s[i].charCodeAt() - 65
+      if (this.tree[now].child[c] === -1) return false
+      now = this.tree[now].child[c]
+    }
+    return this.tree[now].valid
+  }
+}
+```

@@ -73,6 +73,8 @@ const Algorithm = [
   `DFS`,
   `Maximum flow`,
   `LCS`,
+  `Trie`,
+  `Suffix array`,
   // `Centroid`,
   // `boj 1120-1129`,
 ]
@@ -87,6 +89,7 @@ const etc = [
   'indexedDB',
   'scroll',
   'debugger',
+  // 'MessageChannel'
 ]
 
 const React = [
