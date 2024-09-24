@@ -4,7 +4,7 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 `세그먼트 트리`는 구간 질의를 처리하는 것과 배열의 원소를 갱신하는 것을 $O(\log n)$ 시간에 처리해주는 자료구조다.
 
-세그먼트 트리는 이진 트리의 일종으로 내부 노드와 리프노드로 구분된다.
+세그먼트 트리는 이진 트리의 일종으로 루트의 인덱스는 1부터 시작하고 내부 노드와 리프노드로 구분된다.
 
 리프 노드는 원래 배열의 원소가 들어있으며, 내부 노드는 해당 구간의 연산을 처리한 값을 포함하고 있다.
 
@@ -12,73 +12,137 @@ import { CodeSelector } from '@/components/code-selector.tsx'
 
 따라서 쿼리마다 필요한 노드의 전체 개수는 $O(\log n)$개가 된다.
 
-세그먼트 트리에 제공하는 배열은 크기가 2의 거듭제곱이라고 가정한다. (2의 거듭제곱이 아니라면 2의 거듭제곱이 되도록 크기를 늘리고 0을 채워 넣는다.)
+세그먼트 트리에 제공하는 배열은 크기가 2의 거듭제곱이라고 가정한다.
 
-세그먼트 트리의 루트의 인덱스는 1부터 시작하며, 주어진 배열의 원소의 개수가 8이라면 내부 노드는 1부터 7까지가 되고, 리프 노드는 8부터 15가 된다.
+2의 거듭제곱이 아니라면 2의 거듭제곱이 되도록 크기를 늘리고 0을 채워 넣으면 된다.
+
+어떤 수 n보다 같거나 큰 가장 가까운 2의 거듭제곱을 찾는 방법은 아래와 같다.
+
+<CodeSelector names={['js']} desc='power' />
+
+```js
+const power = 1 << Math.ceil(Math.log2(n))
+```
+
+## 구현
+
+주어진 배열이 [3, 1, 4, 1, 5, 9, 2, 6] 일 때, 구간 합 질의를 처리하는 세그먼트 트리를 구현해보자.
+
+주어진 배열은 세그먼트 트리의 리프 노드가 되고, 내부 노드는 자식 노드 2개의 합이 된다.
+
+<CodeSelector names={[]} desc='seg-tree1' />
+
+```text
+             31
+      9               22
+  4       5      14       8
+3   1   4   1   5   9   2   6
+```
+
+3번째 부터 6번째 원소의 합을 구하고 싶으면 아래와 같은 노드들의 합만 구하면 된다.
+
+<CodeSelector names={[]} desc='seg-tree2' />
+
+```text
+             31
+      9                 22
+  4       5       [14]       8
+3   1   4   [1]  5    9   [2]   6
+```
+
+4번째 원소를 5에서 7로 갱신을 하면 아래와 같은 노드들을 바꾸면 된다.
+
+<CodeSelector names={[]} desc='seg-tree3' />
+
+```text
+             [33]
+      9                 [24]
+  4       5        [16]        8
+3   1   4   1   [7]     9     2   6
+```
+
+실제 구현은 아래와 같다.
 
 <CodeSelector names={['SegmentTree.js']} desc='ex1' />
 
-```js showLineNumbers {9,17,26-27}
+```js showLineNumbers
 // 합 세그먼트 트리
 class SegmentTree {
   constructor(arr) {
+    // 가장 가까운 2의 거듭제곱을 구한다.
     this.h = 1 << Math.ceil(Math.log2(arr.length))
+    // 트리의 크기는 주어진 배열의 2배가 된다.
     this.tree = new Array(this.h << 1).fill(0)
 
+    // 리프 노드에 원래 배열의 원소를 넣는다.
     for (let i = 0; i < arr.length; ++i) this.tree[this.h + i] = arr[i]
+    // 세그먼트 트리를 만든다.
     for (let k = this.h - 1; k > 0; k--) {
       this.tree[k] = this.tree[k << 1] + this.tree[(k << 1) | 1]
     }
   }
 
   update(k, x) {
+    // k번째 원소를 x만큼 늘린다.
+    // 세그먼트 트리에서 k번째 원소는 k + h에 위치하고 있다.
     k += this.h
+    // 리프 노드를 x만큼 늘린다.
     this.tree[k] += x
+    // 부모 노드로 올라가면서 갱신한다.
+    // 현재 노드의 부모 노드는 2로 나누면 찾을 수 있다.
+    // 루트 노드는 1이기 때문에 1보다 작아지면 종료한다.
     for (k >>= 1; k >= 1; k >>= 1) {
       this.tree[k] = this.tree[k << 1] + this.tree[(k << 1) | 1]
     }
   }
 
   sum(a, b) {
+    // a와 b는 각각 구간의 왼쪽 끝, 오른쪽 끝을 의미한다.
+    // a번째, b번째 원소는 트리에서 a + h, b + h에 위치하고 있다.
     a += this.h
     b += this.h
     let ans = 0
     while (a <= b) {
+      // a가 오른쪽 자식이면, 부모 노드를 변경하기 위해서 증가시킨다.
       if ((a & 1) === 1) ans += this.tree[a++]
+      // b가 왼쪽 자식이면, 부모 노드를 변경하기 위해서 감소시킨다.
       if ((b & 1) === 0) ans += this.tree[b--]
-      a = Math.floor(a / 2)
-      b = Math.floor(b / 2)
+      // 부모 노드로 이동한다.
+      a >>= 1
+      b >>= 1
     }
     return ans
   }
 }
 ```
 
-위 코드는 구간의 합을 구하는 세그먼트 트리다.
+## multiset과 세그먼트 트리
 
-최솟값이나 최댓값이 필요하다면, 코드를 적절히 변경하면 된다.
+세그먼트 트리를 multiset 처럼 사용하는 방법에 대해 알아보자.
 
-## k번째 원소 찾기
+### k번째 원소 찾기
 
-합 세그먼트 트리에서 k번째 원소를 찾을 수 있다.
+배열에서 k번째 원소를 찾는 방법은 정렬을 하고 인덱스가 k - 1번째인 원소를 반환하는 것이다.
 
-Counting sort처럼 각 정점에 집합에 존재하는 원소의 개수를 추가해주면 된다.
+그런데 계속 원소가 추가되거나 제거된다면 그때마다 정렬을 해야 하므로 많은 시간이 걸린다.
 
-예를 들어 트리에 1이 3개 5가 2개 존재한다면, 4번째 원소는 5가 되는 것이다.
+세그먼트 트리에서는 k번째 원소를 빠르게 찾을 수 있다.
 
-찾는 방법은 아래와 같다.
+예를 들어, 1이 3개, 5가 2개 존재한다면 [0,3,0,0,0,2,0,0] 배열로 합 세그먼트 트리를 만든다.
 
-- 세그먼트 트리의 루트 노드보다 k가 크다면, 전체 정점의 개수보다 k가 더 크다는 의미다.
+k번째 원소를 찾는 방법은 아래와 같다.
+
+- 세그먼트 트리의 루트 노드보다 k가 크다면 찾을 수 없으므로 -1을 반환한다.
 - 왼쪽 자식 정점이 k보다 같거나 크다면, 왼쪽 정점으로 이동한다.
 - 왼쪽 자식 정점이 k보다 작다면, 오른쪽 자식 정점으로 이동하고 k에서 왼쪽 자식 정점 값을 빼준다.
 - 현재 정점이 리프노드에 도달하면 멈춘다.
 
 전체 살펴볼 노드는 최대 $\log n$개 이므로, $O(\log n)$시간이 걸리게 된다.
 
-<CodeSelector names={['search.js']} desc='ex2' />
+<CodeSelector names={['kth.js']} desc='ex2' />
 
 ```js showLineNumbers
-function search(x) => {
+function kth(x) => {
   if (seg.tree[1] < x) return -1
   let curr = 1
   while (curr * 2 < seg.tree.length) {
@@ -94,6 +158,102 @@ function search(x) => {
     }
   }
   return curr - seg.h
+}
+```
+
+### lowerBound
+
+x이상인 가장 작은 수를 세그먼트 트리에서 찾을 수 있다.
+
+세그먼트 트리는 kth에서 설명한대로 구성한다.
+
+<CodeSelector names={['lowerBound.js']} desc='lowerBound' />
+
+```js
+function lowerBound(x) {
+  x += seg.h
+  // x이상인 수를 골라야 하기 때문에 오른쪽 형제의 부모로 이동해야 한다.
+  while ((x & (x + 1)) !== 0) {
+    // x이상인 수를 찾았다.
+    if (seg.tree[x] > 0) break
+    // 오른쪽 형제의 부모로 이동한다.
+    x = (x + 1) >> 1
+  }
+  // x이상인 수를 찾지 못함
+  if (seg.tree[x] === 0) return -1
+
+  // 부모 노드에서 내려간다.
+  while (x < seg.tree.length) {
+    // 왼쪽 자식으로 이동한다.
+    if (seg.tree[2 * x] > 0) x = 2 * x
+    // 오른쪽 자식으로 이동한다.
+    else x = 2 * x + 1
+  }
+  return x - seg.h // 확인 필요...
+}
+```
+
+## 분할정복과 세그먼트 트리
+
+TODO
+
+<CodeSelector names={['segmentTree.js']} desc='dncseg' />
+
+```js
+class SegmentTree {
+  constructor(arr) {
+    this.h = 1 << Math.ceil(Math.log2(arr.length))
+    this.tree = new Array(this.h << 1)
+
+    for (let i = 0; i < this.h; ++i) {
+      this.tree[i + this.h] = {
+        prefix: arr[i] ?? -Infinity,
+        suffix: arr[i] ?? -Infinity,
+        maxSum: arr[i] ?? -Infinity,
+        sum: arr[i] ?? 0,
+      }
+    }
+
+    for (let k = this.h - 1; k > 0; --k) {
+      this.tree[k] = this.merge(this.tree[k << 1], this.tree[(k << 1) | 1])
+    }
+  }
+
+  merge(a, b) {
+    return {
+      prefix: Math.max(a.prefix, a.sum + b.prefix),
+      suffix: Math.max(b.suffix, b.sum + a.suffix),
+      maxSum: Math.max(a.maxSum, b.maxSum, a.suffix + b.prefix),
+      sum: a.sum + b.sum,
+    }
+  }
+
+  update(k, x) {
+    k += this.h
+    this.tree[k].prefix += x
+    this.tree[k].suffix += x
+    this.tree[k].maxSum += x
+    this.tree[k].sum += x
+    for (k >>= 1; k >= 1; k >>= 1) this.tree[k] = this.merge(k << 1, (k << 1) | 1)
+  }
+
+  query(a, b) {
+    a += this.h
+    b += this.h
+    let aRes = {}
+    let bRes = {}
+    aRes.prefix = aRes.suffix = aRes.maxSum = bRes.prefix = bRes.suffix = bRes.maxSum = -Infinity
+    aRes.sum = bRes.sum = 0
+
+    while (a <= b) {
+      if ((a & 1) === 1) aRes = this.merge(aRes, this.tree[a++])
+      if ((b & 1) === 0) bRes = this.merge(this.tree[b--], bRes)
+      a = Math.floor(a / 2)
+      b = Math.floor(b / 2)
+    }
+
+    return this.merge(aRes, bRes).maxSum
+  }
 }
 ```
 

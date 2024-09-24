@@ -75,8 +75,16 @@ FiberNode의 tag는 packages/react-reconciler/src/ReactWorkTag.js에서 확인 �
 <CodeSelector names={['index.js']} desc='ex1' />
 
 ```js showLineNumbers
+import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from './App'
+
+function App() {
+  const [count, setCount] = useState(0)
+  const handleClick = () => {
+    setCount((prev) => prev + 1)
+  }
+  return <button onClick={handleClick}>{count}</button>
+}
 
 const root = createRoot(document.getElementById('root'))
 /**
@@ -233,8 +241,6 @@ workInProgress 포인터가 null이 된다는 의미는 결국 모든 노드를 
 
 Fiber 트리는 workInProgress 포인터가 이동하기 이전에 트리에 새로운 노드를 추가한다.
 
-새로 추가된 노드가 없으면 트리가 완성되었다는 의미가 되고, workInProgress 포인터는 null이 된다.
-
 다시 본론으로 돌아와서, while 루프 안에서 workInProgress 포인터가 가리키는 Fiber 노드에 대해서 `performUnitOfWork()`를 실행한다.
 
 <CodeSelector names={['workLoopSync']} desc='workLoopSync' />
@@ -271,60 +277,50 @@ else {
 }
 ```
 
-### beginWork()
+### 1. beginWork()
 
 `beginWork()`는 workInProgress 포인터가 가리키는 노드의 실제 렌더링이 진행되는 곳이다.
 
-<CodeSelector names={['beginWork']} desc='beginWork' />
+노드의 렌더링은 tag에 따라서 다른 플로우로 진행된다.
 
-```ts showLineNumbers
-// tag에 따라서 렌더링 과정이 달라진다.
-switch (workInProgress.tag) {
-  case LazyComponent: {
-    // ...
-  }
-  case FunctionComponent: {
-    // ...
-  }
-  // 그 밖의 다른 tag들 (e.g. HostRoot, Fragment, ...)
-}
-```
+지금부터는 각 함수가 실행되는 순서에 따라서 글을 작성하도록 한다.
 
-- 20240923
+### 2. updateHostRoot()
 
-### updateHostRoot()
+현재 노드의 tag가 HostRoot이기 때문에 beginWork()에서 `updateHostRoot()`가 실행된다.
 
-beginWork()에서 HostRoot의 렌더링을 시작할 때 호출하는 함수다.
+### 3. reconcileChildren()
 
-cloneUpdate()와 processUpdateQueue()를 통해 업데이트를 처리하는데 여기서는 넘어가도록 한다.
-
-`reconcileChildren()`을 호출한다.
-
-### reconcileChildren()
+updateHostRoot()는 `reconcileChildren()`를 호출한다.
 
 reconcile은 diff와 같은 의미로 사용된다.
 
-current가 없다면 mount이고 있으면 re-render를 의미한다.
+이전과 비교할 것이 없다면 mount 상황이고, 있다면 re-render 상황이라는 의미가 된다.
 
-한 가지 주의해야 할 점은 updateHostRoot()에서 reconcileChildren()을 호출할 때는 마운트 상황이긴 하지만 current에 HostRoot가 있다는 것이다.
+전자의 경우 `mountChildFibers()`가 호출되고, 후자의 경우 `reconcileChildFibers()`가 호출된다.
 
-### reconcileChildFibers() vs mountChildFibers().
+단, HostRoot의 경우에는 mount 상황이라도 reconcileChildFibers()가 호출된다.
 
-reconcile의 목표는 이미 가지고 있는 것을 재사용하는 것이다.
+### 4. reconcileChildFibers()
 
-mount는 아무것도 재사용하지 않으므로 reconcile의 특별한 버전으로 생각할 수 있다.
+이 함수의 역할은 재렌더링을 통해 새로운 Fiber 노드를 만들고 부모 노드와 연결시키는 것이다.
 
-구현체를 보면 두 함수는 shouldTrackSideEffects 플래그를 제외하고는 같은 클로저 함수(`createChildReconciler()`)를 사용하고 있다.
+지금 여기서 새로 만든 노드는 App 컴포넌트에 해당하는 Fiber 노드이고 이런 노드의 tag는 `FunctionComponent`가 된다.
 
-`reconcileXXX()`에서는 diffing을 진행하고, `placeSingleChild()`에서는 DOM에 삽입되어야 한다는 표시를 FiberNode에 하게 된다.
+그리고 새로 만든 노드의 부모(return)를 HostRoot로 설정한다.
 
-### reconcileSingleElement()
+<CodeSelector names={[]} desc='rel' />
 
-initial mount 상황에서 current.child가 null이기 때문에 diffing의 복잡한 과정들은 생략되고, element에 해당하는 FiberNode를 생성하여 반환만 하게 된다.
+```text
+           return
+HostRoot <-------- FunctionComponent
+```
 
-createFiberFromElement()에서 새로운 FiberNode를 생성하게 되면 그 tag는 `IncompleteFunctionComponent`가 된다.
+### 5. placeSingleElement()
 
-### placeSingleChild()
+TODO 20240924
+
+---
 
 새로 만든 FiberNode의 flags에 Placement를 추가하여 DOM에 삽입되어야 한다고 표시한다.
 
