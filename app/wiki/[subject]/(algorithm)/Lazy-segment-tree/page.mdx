@@ -1,0 +1,142 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 레이지 세그먼트 트리
+
+`레이지 세그먼트 트리`는 값의 변경을 구간 단위로 할 수 있게 해준다.
+
+이번에는 재귀 구현을 사용하는데, 비재귀 구현도 가능하지만 시간복잡도가 더 크다.
+
+레이지 세그먼트 트리에서는 `tree`와 `lazy` 2개의 트리를 관리한다.
+
+구간 안의 원소를 업데이트하는 과정은 아래와 같다.
+
+1. 구간 [start, end]가 [a, b]에 완전히 포함된다면, tree[node]와 lazy[node]를 증가시키고 멈춘다.
+2. 구간 [start, end]가 [a, b]와 부분적으로 겹친다면, lazy 값을 전파하고 재귀적으로 탐색한 다음 tree[node]를 갱신한다.
+
+<CodeSelector names={['LazySegmentTree.js']} desc='ex3' />
+
+```js showLineNumbers
+class LazySegmentTree {
+  constructor(arr) {
+    this.arr = arr
+    this.h = 1 << Math.ceil(Math.log2(arr.length))
+    this.tree = new Array(this.h << 1).fill(0)
+    this.lazy = new Array(this.h << 1).fill(0)
+
+    this.init(1, 0, this.h - 1)
+  }
+
+  init(node, start, end) {
+    if (start === end) {
+      this.tree[node] = this.arr[start] ?? 0
+    } else {
+      const mid = (start + end) >> 1
+      this.init(node * 2, start, mid)
+      this.init(node * 2 + 1, mid + 1, end)
+      this.tree[node] = this.tree[node * 2] + this.tree[node * 2 + 1]
+    }
+  }
+
+  // [a, b]를 담당하는 node에서 아래로 전파한다.
+  propagate(node, a, b) {
+    if (this.lazy[node] === 0) return
+    const mid = (a + b) >> 1
+    this.tree[node * 2] += (mid - a + 1) * this.lazy[node]
+    this.lazy[node * 2] += this.lazy[node]
+    this.tree[node * 2 + 1] += (b - mid) * this.lazy[node]
+    this.lazy[node * 2 + 1] += this.lazy[node]
+    this.lazy[node] = 0
+  }
+
+  // [a, b]를 x만큼 증가시킨다.
+  update(a, b, x, node = 1, start = 0, end = this.h - 1) {
+    if (b < start || end < a) return
+    if (a <= start && end <= b) {
+      this.tree[node] += (end - start + 1) * x
+      this.lazy[node] += x
+      return
+    }
+    this.propagate(node, start, end)
+    const mid = (start + end) >> 1
+    this.update(a, b, x, node * 2, start, mid)
+    this.update(a, b, x, node * 2 + 1, mid + 1, end)
+    this.tree[node] = this.tree[node * 2] + this.tree[node * 2 + 1]
+  }
+
+  // [a, b]의 합을 구한다.
+  sum(a, b, node = 1, start = 0, end = this.h - 1) {
+    if (b < start || end < a) return 0
+    if (a <= start && end <= b) return this.tree[node]
+
+    this.propagate(node, start, end)
+    const mid = (start + end) >> 1
+    return this.sum(a, b, node * 2, start, mid) + this.sum(a, b, node * 2 + 1, mid + 1, end)
+  }
+}
+```
+
+최댓값을 구하는 트리는 아래와 같이 변형하면 된다.
+
+<CodeSelector names={['LazySegmentTree.js']} desc='ex4' />
+
+```js
+class LazySegmentTree {
+  constructor(arr) {
+    this.arr = arr
+    this.h = 1 << Math.ceil(Math.log2(arr.length))
+    this.tree = new Array(this.h << 1).fill(0)
+    this.lazy = new Array(this.h << 1).fill(0)
+
+    this.init(1, 0, this.h - 1)
+  }
+
+  init(node, start, end) {
+    if (start === end) {
+      this.tree[node] = this.arr[start] ?? 0
+    } else {
+      const mid = (start + end) >> 1
+      this.init(node * 2, start, mid)
+      this.init(node * 2 + 1, mid + 1, end)
+      this.tree[node] = Math.max(this.tree[node * 2], this.tree[node * 2 + 1])
+    }
+  }
+
+  // [a, b]를 담당하는 node에서 아래로 전파한다.
+  propagate(node) {
+    if (this.lazy[node] === 0) return
+    this.tree[node * 2] += this.lazy[node] // 자식 구간에 lazy 값 적용
+    this.lazy[node * 2] += this.lazy[node] // 자식 노드에 lazy 값 추가
+    this.tree[node * 2 + 1] += this.lazy[node]
+    this.lazy[node * 2 + 1] += this.lazy[node]
+    this.lazy[node] = 0
+  }
+
+  // [a, b]를 x만큼 증가시킨다.
+  update(a, b, x, node = 1, start = 0, end = this.h - 1) {
+    if (b < start || end < a) return
+    if (a <= start && end <= b) {
+      this.tree[node] += x
+      this.lazy[node] += x
+      return
+    }
+    this.propagate(node)
+    const mid = (start + end) >> 1
+    this.update(a, b, x, node * 2, start, mid)
+    this.update(a, b, x, node * 2 + 1, mid + 1, end)
+    this.tree[node] = Math.max(this.tree[node * 2], this.tree[node * 2 + 1])
+  }
+
+  // [a, b]의 최댓값을 구한다.
+  max(a, b, node = 1, start = 0, end = this.h - 1) {
+    if (b < start || end < a) return -Infinity
+    if (a <= start && end <= b) return this.tree[node]
+
+    this.propagate(node)
+    const mid = (start + end) >> 1
+    return Math.max(
+      this.max(a, b, node * 2, start, mid),
+      this.max(a, b, node * 2 + 1, mid + 1, end)
+    )
+  }
+}
+```

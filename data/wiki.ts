@@ -65,6 +65,8 @@ const Algorithm = [
   `Sweeping`,
   'Bitfield',
   `Segment tree`,
+  `Lazy segment tree`,
+  `Fenwick tree`,
   `Eulerian path`,
   `SCC`,
   `Sieve of Eratosthenes`,
@@ -72,11 +74,11 @@ const Algorithm = [
   `Cross product`,
   `DFS`,
   `Maximum flow`,
+  `Minimum cut`,
   `LCS`,
   `Trie`,
   `Suffix array`,
   // `Centroid`,
-  // `boj 1120-1129`,
 ]
 
 const etc = [

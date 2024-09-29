@@ -195,7 +195,24 @@ function lowerBound(x) {
 
 ## 분할정복과 세그먼트 트리
 
-TODO
+배열에서 가장 큰 연속합을 구하는 방법에는 [Kadane's algorithm](/wiki/Algorithm/Maximum-subarray-problem)과 분할 정복을 사용하는 방법이 있다.
+
+분할 정복 방법과 세그먼트 트리를 사용하여 구간에서 가장 큰 연속합을 구할 수 있다.
+
+부모 노드는 자식 노드 2개로 분할된 것으로 볼 수 있고, 두 노드를 정복하면서 구간의 최대 연속합을 구할 수 있다.
+
+각 노드는 아래와 같은 프로퍼티를 가진다.
+
+- prefix: 맨 앞 원소를 포함하는 최대 연속 합
+- suffix: 맨 뒤 원소를 포함하는 최대 연속 합
+- maxSum: 구간 내의 최대 연속 합
+- sum: 구간의 모든 원소의 합
+
+두 구간을 합친 최대 연속합은 3가지 경우 중 하나가 된다.
+
+1. 왼쪽 구간에만 존재한다.
+2. 오른쪽 구간에만 존재한다.
+3. 왼쪽과 오른쪽 구간에 걸친다.
 
 <CodeSelector names={['segmentTree.js']} desc='dncseg' />
 
@@ -253,77 +270,6 @@ class SegmentTree {
     }
 
     return this.merge(aRes, bRes).maxSum
-  }
-}
-```
-
-## 레이지 세그먼트 트리
-
-`레이지 세그먼트 트리`는 값의 변경을 구간 단위로 할 수 있게 해준다.
-
-TODO
-
-<CodeSelector names={['LazySegmentTree.js']} desc='ex3' />
-
-```js showLineNumbers {18, 25, 37, 47, 56-57}
-class LazySegmentTree {
-  constructor(arr) {
-    this.arr = arr
-    this.h = 1 << Math.ceil(Math.log2(arr.length))
-    this.tree = new Array(this.h << 1).fill(0)
-    this.lazy = new Array(this.h << 1).fill(0)
-
-    this.init(1, 0, arr.length - 1)
-  }
-
-  init(node, start, end) {
-    if (start === end) {
-      this.tree[node] = this.arr[start]
-    } else {
-      const mid = (start + end) >> 1
-      this.init(node << 1, start, mid)
-      this.init((node << 1) | 1, mid + 1, end)
-      this.tree[node] = this.tree[node << 1] + this.tree[(node << 1) | 1]
-    }
-  }
-
-  propagate(node, start, end) {
-    if (this.lazy[node] === 0) return
-
-    this.tree[node] += (end - start + 1) * this.lazy[node]
-    if (start !== end) {
-      this.lazy[node << 1] += this.lazy[node]
-      this.lazy[(node << 1) | 1] += this.lazy[node]
-    }
-    this.lazy[node] = 0
-  }
-
-  update(left, right, x, node = 1, start = 0, end = this.arr.length - 1) {
-    this.propagate(node, start, end)
-    if (left > end || right < start) return
-    if (left <= start && end <= right) {
-      this.tree[node] += (end - start + 1) * x
-      if (start !== end) {
-        this.lazy[node << 1] += x
-        this.lazy[(node << 1) | 1] += x
-      }
-      return
-    }
-    const mid = (start + end) >> 1
-    this.update(left, right, x, node << 1, start, mid)
-    this.update(left, right, x, (node << 1) | 1, mid + 1, end)
-    this.tree[node] = this.tree[node << 1] + this.tree[(node << 1) | 1]
-  }
-
-  sum(left, right, node = 1, start = 0, end = this.arr.length - 1) {
-    this.propagate(node, start, end)
-    if (left > end || right < start) return 0
-    if (left <= start && end <= right) return this.tree[node]
-    const mid = (start + end) >> 1
-    return (
-      this.sum(left, right, node << 1, start, mid) +
-      this.sum(left, right, (node << 1) | 1, mid + 1, end)
-    )
   }
 }
 ```

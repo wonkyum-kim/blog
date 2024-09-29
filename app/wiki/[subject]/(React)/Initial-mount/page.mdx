@@ -318,17 +318,171 @@ HostRoot <-------- FunctionComponent
 
 ### 5. placeSingleElement()
 
-TODO 20240924
+새로 만든 Fiber 노드(FunctionComponent)의 flags에 `Placement`를 추가하여 DOM에 삽입되어야 한다고 표시한다.
 
----
+<CodeSelector names={[`placeSingleChild`]} desc='psc' />
 
-새로 만든 FiberNode의 flags에 Placement를 추가하여 DOM에 삽입되어야 한다고 표시한다.
+```ts {4}
+// newFiber: <App />에 해당하는 FunctionComponent
+function placeSingleChild(newFiber: Fiber): Fiber {
+  if (shouldTrackSideEffects && newFiber.alternate === null) {
+    newFiber.flags |= Placement | PlacementDEV
+  }
+  return newFiber
+}
+```
 
-이 과정은 오직 initial mount에서 HostRoot 노드에만 해당된다.
+모든 Fiber 노드에 대해서 추가될 때마다 flags를 수정하지는 않고 루트에 해당하는 것만 이 과정을 거치게 된다.
 
-왜냐하면, 루트만 삽입해도 나머지는 연결되어 있기 때문에 자동적으로 삽입되기 때문이다.
+### 6. beginWork()
 
-따라서 mountChildFibers()에서는 이 과정을 거치지 않고 효율적으로 진행하게 된다.
+이제 performUnitOfWork()에서 workInProgress 포인터가 \<App /\>에 해당하는 FunctionComponent를 가리키게 되고, while문 안에서 다시 performUnitOfWork()와 beginWork()가 호출된다.
+
+### 7. updateFunctionComponent()
+
+beginWork()에서 workInProgress 포인터가 가리키는 Fiber의 tag가 FunctionComponent 이므로 `updateFunctionComponent()`가 실행되는 플로우로 진행된다.
+
+### 8. renderWithHooks()
+
+`renderWithHooks()` 에서는 이름과 컴포넌트와 훅을 같이 렌더링한다.
+
+일반적으로 쓰는 useState(뿐만 아니라 모든 다른 리액트 훅도 마찬가지다.)는 그 상황에 따라서 각각 다른 구현체가 사용된다.
+
+앞으로 컴포넌트에서 사용될 리액트 훅을 `ReactSharedInternals.H`에 저장해둔다.
+
+지금 마운트 상황에서는 `HooksDispatcherOnMount`가 저장된다.
+
+사용할 리액트 훅 구현체를 저장한 다음, App 함수를 실행시킨다.
+
+<CodeSelector names={[`renderWithHooks`, `App`]} desc='rwh1' />
+
+```ts {3, 9} showLineNumbers
+ReactSharedInternals.H =
+  null === current || null === current.memoizedState
+    ? HooksDispatcherOnMount
+    : HooksDispatcherOnUpdate
+
+// ...
+
+// Component는 현재 App이다.
+current = Component(props, secondArg)
+```
+
+```js {2, 6} showLineNumbers
+function App() {
+  const [count, setCount] = useState(0)
+  const handleClick = () => {
+    setCount((prev) => prev + 1)
+  }
+  return <button onClick={handleClick}>{count}</button>
+}
+```
+
+App()을 실행시키면 `useState()`를 실행하고, `<button>`에 해당하는 React 엘리먼트를 만든다.
+
+### 9. useState()
+
+렌더링 과정에서는 useState()가 어떤 흐름으로 호출되는지만 살펴보고 자세한 과정은 다른 글에서 살펴보기로 한다.
+
+useState()를 실행시키면, 아까 ReactSharedInternals.H에 저장해둔 훅(HooksDispatcherOnMount)을 사용한다.
+
+<CodeSelector
+  names={[`useState`, `HooksDispatcherOnMount`, `mountStateImpl`, `mountWorkInProgressHook`]}
+  desc='useState'
+/>
+
+```ts showLineNumbers {2}
+exports.useState = function (initialState) {
+  return ReactSharedInternals.H.useState(initialState)
+}
+```
+
+```ts showLineNumbers {4, 6, 8}
+const HooksDispatcherOnMount = {
+  // ...
+  useState: function (initialState) {
+    initialState = mountStateImpl(initialState)
+    var queue = initialState.queue,
+      dispatch = dispatchSetState.bind(null, currentlyRenderingFiber$1, queue)
+    queue.dispatch = dispatch
+    return [initialState.memoizedState, dispatch]
+  },
+  // ...
+}
+```
+
+```ts showLineNumbers {2}
+function mountStateImpl(initialState) {
+  var hook = mountWorkInProgressHook()
+
+  // 초기화 함수를 전달했을 때 실행된다.
+  if ('function' === typeof initialState) {
+    var initialStateInitializer = initialState
+    initialState = initialStateInitializer()
+  }
+  hook.memoizedState = hook.baseState = initialState
+  hook.queue = {
+    pending: null,
+    lanes: 0,
+    dispatch: null,
+    lastRenderedReducer: basicStateReducer,
+    lastRenderedState: initialState,
+  }
+  return hook
+}
+```
+
+```ts showLineNumbers {10}
+function mountWorkInProgressHook() {
+  var hook = {
+    memoizedState: null, // useState에 저장되어 있는 값
+    baseState: null,
+    baseQueue: null,
+    queue: null,
+    next: null,
+  }
+  null === workInProgressHook
+    ? (currentlyRenderingFiber$1.memoizedState = workInProgressHook = hook)
+    : (workInProgressHook = workInProgressHook.next = hook)
+  return workInProgressHook
+}
+```
+
+### 10. createElement()
+
+button을 만들기 위해서 `createElement()`가 실행된다.
+
+### 11. finishRenderingHooks()
+
+renderWithHooks()의 마지막에 호출되며, ReactSharedInternals.H에 있는 훅을 지우는 과정을 거친다.
+
+### 12. reconcileChildren()
+
+updateFunctionComponent()로 돌아와서 마지막으로 reconcileChildren()이 호출된다.
+
+이번에는 mountChildFibers()가 호출된다.
+
+### 13. mountChildFibers()
+
+HostComponent의 return을 FunctionComponent로 만들고 끝이 난다.
+
+<CodeSelector names={[]} desc='rel2' />
+
+```text
+           return                       return
+HostRoot <-------- FunctionComponent  <-------- HostComponent
+                        (App)                     (button)
+```
+
+### 14. beginWork()
+
+다시 beginWork()가 실행되고, updateHostComponent()가 실행된다.
+
+### 15. updateHostComponent()
+
+마찬가지로 reconcileChildren(), mountChildFibers()가 실행된다.
+
+### 16. completeUnitOfWork()
 
 ### mountIndeterminateComponent()
 
