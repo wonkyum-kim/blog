@@ -1,0 +1,172 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import Image from 'next/image'
+import pic1 from '/public/React/fiber1.jpg'
+import pic2 from '/public/React/fiber2.jpg'
+
+## Fiber Architecture
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='current and workInProgress'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+`FiberNode`로 이루어진 Fiber 트리는 `FiberRootNode`의 `current 포인터`가 가리키며,
+
+Fiber 트리는 `current`와 `workInProgress` 두 개가 존재한다.
+
+current 트리는 실제로 화면에 보여지는 모습이고, workInProgress 트리는 작업 중인 모습이다.
+
+FiberRootNode의 current 포인터를 변경해서 트리를 교체하고 화면을 업데이트 한다.
+
+current 트리로부터 workInProgress 트리를 만드는 과정을 `렌더링(render)`이라 하고, workInProgress 트리를 실제 DOM 트리에 반영하는 것이 `커밋(commit)`이다.
+
+그리고 렌더링 과정에서 두 트리를 서로 비교하는 과정을 `재조정(reconcilation)`이라 한다.
+
+## FiberRootNode
+
+`FiberRootNode`는 React 루트와 같은 역할을 하는 특별한 노드다.
+
+FiberRootNode.current는 Fiber 트리를 가리킨다.
+
+새로운 Fiber 트리가 생성되면, current 포인터를 생성된 새로운 트리를 가리키도록 변경한다.
+
+## FiberNode
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='fiber tree'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+`FiberNode`는 위와 같이 Fiber 트리를 이루고 있는 노드이며 아래와 같은 프로퍼티들을 가지고 있다.
+
+- `tag`: FiberNode의 타입을 나타낸다.
+- `key`: React element의 key에 해당하는 것이다.
+- `elementType`: FiberNode와 연관된 컴포넌트 함수 또는 HTML 태그를 나타낸다.
+- `type`: 컴포넌트가 함수형인지 클래스형인지를 나타낸다.
+- `stateNode`: fiberNode와 연관된 local state를 가리키는데 사용된다.
+- `return`: 부모 fiberNode를 가리킨다.
+- `child`: 자식 fiberNode를 가리킨다.
+- `sibling`: 형제 fiberNode를 가리킨다.
+- `index`: 자신이 몇 번째 자식인지를 나타낸다. (두 번째 이후의 자식에 접근하기 위해서는 첫 번째 자식부터 거쳐야 한다.)
+- `pendingProps`: React element에서 업데이트된 props.
+- `memoizedProps`: 이전 렌더링에서 화면을 출력할 때 사용된 props.
+- `updateQueue`: 상태 업데이트, 콜백, DOM 업데이트를 가진 큐
+- `memoizedState`: output을 만드는데 사용된 fiber의 상태. 업데이트를 처리할 때 현재 화면에 렌더링된 상태가 반영된다.
+- `flags`: 커밋 단계에서 업데이트를 적용해야 하는 지를 나타낸다. subtreeFlags는 서브트리에 적용된다.
+- `lanes`: 보류된 업데이트의 우선순위를 나타낸다. childLanes는 서브트리에 적용된다.
+- `alternate`: 반대편 FiberNode를 가리킨다.
+
+### tag
+
+FiberNode의 [tag](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactWorkTags.js)는 해당 FiberNode의 타입을 나타낸다.
+
+대표적인 몇 개만 정리해보면 아래와 같다.
+
+| tagName           | value | desc              |
+| ----------------- | ----- | ----------------- |
+| FunctionComponent | 0     | 함수형 컴포넌트   |
+| ClassComponent    | 1     | 클래스형 컴포넌트 |
+| HostRoot          | 3     | Fiber 트리의 루트 |
+| HostComponent     | 5     | DOM 노드          |
+| HostText          | 6     |                   |
+| Fragment          | 7     |                   |
+| LazyComponent     | 16    |                   |
+
+### props
+
+tag가 `HostComponent`인 FiberNode는 ReactElement의 props를 가지고 있다.
+
+`memoizedProps`는 바뀌기 이전의 props이고, `pendingProps`는 바뀐 이후의 props이다.
+
+### alternate
+
+앞서 말했듯이 Fiber 트리는 2개가 존재한다.
+
+그리고 두 Fiber 트리에 각각 들어있는 두 FiberNode는 `alternate 포인터`로 반대편 트리에 존재하는 자신을 가리킬 수 있다.
+
+### stateNode
+
+FiberNode가 가지고 있는 여러 포인터 중 하나로, HostRoot에서 FiberRootNode를 가리키는데 사용된다.
+
+(반대로 FiberRootNode는 current 포인터로 HostRoot를 가리킨다.)
+
+### lanes
+
+`lane`은 업데이트의 우선순위를 나타내는 숫자이며 작은 lane 값일 수록 더 높은 우선순위를 가진다.
+
+예를 들어, SyncLane의 값은 0b0000000000000000000000000000010 이며 두 번째로 높은 우선순위를 가지게 된다.
+
+<CodeSelector names={['ReactFiberLane.js']} desc='ex1' />
+
+```ts showLineNumbers {10}
+// Lane values below should be kept in sync with getLabelForLane(), used by react-devtools-timeline.
+// If those values are changed that package should be rebuilt and redeployed.
+
+export const TotalLanes = 31
+
+export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000
+export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000
+
+export const SyncHydrationLane: Lane = /*               */ 0b0000000000000000000000000000001
+export const SyncLane: Lane = /*                        */ 0b0000000000000000000000000000010
+export const SyncLaneIndex: number = 1
+
+export const InputContinuousHydrationLane: Lane = /*    */ 0b0000000000000000000000000000100
+export const InputContinuousLane: Lane = /*             */ 0b0000000000000000000000000001000
+
+export const DefaultHydrationLane: Lane = /*            */ 0b0000000000000000000000000010000
+export const DefaultLane: Lane = /*                     */ 0b0000000000000000000000000100000
+
+export const SyncUpdateLanes: Lane = SyncLane | InputContinuousLane | DefaultLane
+
+const TransitionHydrationLane: Lane = /*                */ 0b0000000000000000000000001000000
+const TransitionLanes: Lanes = /*                       */ 0b0000000001111111111111110000000
+const TransitionLane1: Lane = /*                        */ 0b0000000000000000000000010000000
+const TransitionLane2: Lane = /*                        */ 0b0000000000000000000000100000000
+const TransitionLane3: Lane = /*                        */ 0b0000000000000000000001000000000
+const TransitionLane4: Lane = /*                        */ 0b0000000000000000000010000000000
+const TransitionLane5: Lane = /*                        */ 0b0000000000000000000100000000000
+const TransitionLane6: Lane = /*                        */ 0b0000000000000000001000000000000
+const TransitionLane7: Lane = /*                        */ 0b0000000000000000010000000000000
+const TransitionLane8: Lane = /*                        */ 0b0000000000000000100000000000000
+const TransitionLane9: Lane = /*                        */ 0b0000000000000001000000000000000
+const TransitionLane10: Lane = /*                       */ 0b0000000000000010000000000000000
+const TransitionLane11: Lane = /*                       */ 0b0000000000000100000000000000000
+const TransitionLane12: Lane = /*                       */ 0b0000000000001000000000000000000
+const TransitionLane13: Lane = /*                       */ 0b0000000000010000000000000000000
+const TransitionLane14: Lane = /*                       */ 0b0000000000100000000000000000000
+const TransitionLane15: Lane = /*                       */ 0b0000000001000000000000000000000
+
+const RetryLanes: Lanes = /*                            */ 0b0000011110000000000000000000000
+const RetryLane1: Lane = /*                             */ 0b0000000010000000000000000000000
+const RetryLane2: Lane = /*                             */ 0b0000000100000000000000000000000
+const RetryLane3: Lane = /*                             */ 0b0000001000000000000000000000000
+const RetryLane4: Lane = /*                             */ 0b0000010000000000000000000000000
+
+export const SomeRetryLane: Lane = RetryLane1
+
+export const SelectiveHydrationLane: Lane = /*          */ 0b0000100000000000000000000000000
+
+const NonIdleLanes: Lanes = /*                          */ 0b0000111111111111111111111111111
+
+export const IdleHydrationLane: Lane = /*               */ 0b0001000000000000000000000000000
+export const IdleLane: Lane = /*                        */ 0b0010000000000000000000000000000
+
+export const OffscreenLane: Lane = /*                   */ 0b0100000000000000000000000000000
+export const DeferredLane: Lane = /*                    */ 0b1000000000000000000000000000000
+```

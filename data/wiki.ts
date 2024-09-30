@@ -95,8 +95,11 @@ const etc = [
 ]
 
 const React = [
-  'Initial mount',
-  'How does React re-render internally?',
+  'React element',
+  'Fiber',
+  'Initial mount in trigger phase',
+  // 'Initial mount',
+  // 'How does React re-render internally?',
   // 'Start',
   // 'react-Intro',
   // 'react-Internals',

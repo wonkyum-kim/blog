@@ -1,0 +1,13 @@
+## React element
+
+`React element`란, JSX 문법이 Babel에 의해 바뀐 createElement 메서드가 생성하는 객체이다.
+
+(참고로 `React node`는 함수형 컴포넌트가 반환할 수 있는 모든 것(null, undefined, booleans, strings, numbers, React elements)을 의미하는 것이다.)
+
+React element는 아래와 같은 프로퍼티를 가진다.
+
+- `$$typeof`: 보안상의 이유로 들어있는 내부 프로퍼티이며 `REACT_ELEMENT_TYPE`라는 전역 심볼이 들어있다. 자세한 내용은 [여기](https://overreacted.io/why-do-react-elements-have-typeof-property/)서 확인 가능하다.
+- `type`: html의 태그에 해당하는 문자열이 들어있다.
+- `props`: ref와 key를 제외한 props가 들어있다.
+- `ref`: ref 객체가 들어있다.
+- `key`: key가 들어있다.

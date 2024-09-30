@@ -1,0 +1,57 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Initial mount in Trigger phase
+
+React는 총 4단계를 거쳐서 화면을 업데이트한다. (trigger -> schedule -> render -> commit)
+
+가장 첫 단계인 trigger에서는 task를 만들어서 scheduler에 넘기는 과정까지를 의미한다.
+
+앞으로 아래의 간단한 코드가 어떻게 동작하는지 살펴보도록 한다.
+
+<CodeSelector names={['index.js']} desc='example' />
+
+```js showLineNumbers
+import { useState } from 'react'
+import { createRoot } from 'react-dom/client'
+
+function App() {
+  const [count, setCount] = useState(0)
+  const handleClick = () => {
+    setCount((prev) => prev + 1)
+  }
+  return <button onClick={handleClick}>{count}</button>
+}
+
+const root = createRoot(document.getElementById('root'))
+root.render(<App />)
+```
+
+## createRoot()
+
+(글을 읽기 전에 [Fiber](/wiki/React/Fiber)에 대한 이해가 먼저 필요하다.)
+
+가장 먼저 실행되는 함수는 'react-dom/client'의 `createRoot()`다.
+
+createRoot()에서는 `FiberRootNode`와 `HostRoot`를 생성하고, FiberRootNode의 `current 포인터`가 HostRoot를 가리키도록 설정하면서 첫 Fiber 트리를 생성하게 된다.
+
+- TODO: HostRoot의 updateQueue
+
+## render()
+
+render에는 Babel에 의해서 `<App />`이 `createElement()`로 바뀌고 생성된 [React element](/wiki/React/React-element)가 전달된다.
+
+`updateContainerImpl()`에서 update 객체를 만들고, update.payload에 App 객체(React element)를 넣는다.
+
+`enqueueUpdate()`에서 `concurrentQueues 배열`에 HostRoot, HostRoot.updateQueue.shared, update 객체, lane을 push 한다. 그리고 HostRoot의 lanes를 DefaultLane(=32)로 설정한다.
+
+- concurrentQueues 배열?
+
+## scheduleUpdateOnFiber()
+
+`ensureRootIsScheduled()`에서 `scheduleImmediateTask()`를 호출한다.
+
+scheduleImmediateTask()는 전달 받은 콜백 함수를 [queueMicrotask()](https://developer.mozilla.org/ko/docs/Web/API/HTML_DOM_API/Microtask_guide)를 사용하여 microtask queue에 넣는다.
+
+전달한 콜백 함수는 `processRootScheduleInMicrotask` 라는 이름을 가지고 있는데, 콜 스택이 비게 되면 태스크 큐에서 불려와 실행된다.
+
+이 과정은 scheduler phase에서 살펴보도록 한다.
