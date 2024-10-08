@@ -1,4 +1,8 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import Image from 'next/image'
+import pic1 from '/public/React/mount1.jpg'
+import pic2 from '/public/React/mount2.jpg'
 
 ## Initial mount in Trigger phase
 
@@ -34,9 +38,19 @@ root.render(<App />)
 
 createRoot()에서는 `FiberRootNode`와 `HostRoot`를 생성하고, FiberRootNode의 `current 포인터`가 HostRoot를 가리키도록 설정하면서 첫 Fiber 트리를 생성하게 된다.
 
-- TODO: HostRoot의 updateQueue
-
 ## render()
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='render()'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
 
 render에는 Babel에 의해서 `<App />`이 `createElement()`로 바뀌고 생성된 [React element](/wiki/React/React-element)가 전달된다.
 
@@ -44,9 +58,19 @@ render에는 Babel에 의해서 `<App />`이 `createElement()`로 바뀌고 생�
 
 `enqueueUpdate()`에서 `concurrentQueues 배열`에 HostRoot, HostRoot.updateQueue.shared, update 객체, lane을 push 한다. 그리고 HostRoot의 lanes를 DefaultLane(=32)로 설정한다.
 
-- concurrentQueues 배열?
-
 ## scheduleUpdateOnFiber()
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='scheduleUpdateOnFiber()'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
 
 `ensureRootIsScheduled()`에서 `scheduleImmediateTask()`를 호출한다.
 
@@ -54,4 +78,4 @@ scheduleImmediateTask()는 전달 받은 콜백 함수를 [queueMicrotask()](htt
 
 전달한 콜백 함수는 `processRootScheduleInMicrotask` 라는 이름을 가지고 있는데, 콜 스택이 비게 되면 태스크 큐에서 불려와 실행된다.
 
-이 과정은 scheduler phase에서 살펴보도록 한다.
+이 과정은 schedule phase에서 살펴보도록 한다.

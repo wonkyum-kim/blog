@@ -1,0 +1,205 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import Image from 'next/image'
+import pic1 from '/public/Algorithm/kmp1.jpg'
+import pic2 from '/public/Algorithm/kmp2.jpg'
+import pic3 from '/public/Algorithm/kmp3.jpg'
+import pic4 from '/public/Algorithm/kmp4.jpg'
+import pic5 from '/public/Algorithm/kmp5.jpg'
+import pic6 from '/public/Algorithm/kmp6.jpg'
+import pic7 from '/public/Algorithm/kmp7.jpg'
+import pic8 from '/public/Algorithm/kmp8.jpg'
+
+## KMP 알고리즘
+
+`KMP 알고리즘`은 문자열 S에서 문자열 T가 존재하는지 찾는다.
+
+브루트포스 방법으로는 $O(nm)$ 시간이 걸리지만, KMP 알고리즘을 사용하면 $O(n+m)$ 시간으로 찾을 수 있다.
+
+## 실패 함수
+
+KMP를 구현하기 위해서 먼저 `실패 함수`라는 것을 작성해야한다.
+
+실패 함수는 단순히 `pi 배열`을 반환하는 함수다.
+
+pi 배열이란, 부분문자열 s[0, i]의 접두사와 접미사가 같을 때 최대 길이를 저장하는 배열이다. (단, 접두사와 접미사는 전체 문자열이 될 수 없다고 가정한다.)
+
+pi 배열의 의미는 j 위치에서 비교가 실패했을 때, j를 pi[j - 1]로 이동하라는 것이다.
+
+j는 t[i]와 비교할 문자열 t[j]를 설정하는 역할을 한다.
+
+예를 들어 'ababaca'의 pi배열을 구하는 과정은 아래와 같다.
+
+0. 먼저 i = 1, j = 0, pi[0] = 0으로 설정해둔다.
+
+1. t[i]와 t[j]가 서로 다르므로, pi[i] = 0으로 설정하고 i를 1 증가시킨다.
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+2. t[i]와 t[j]가 서로 같으므로, pi[i] = j + 1로 설정하고 i와 j를 1 증가시킨다.
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+3. t[i]와 t[j]가 서로 같으므로, pi[i] = j + 1로 설정하고 i와 j를 1 증가시킨다.
+
+<ImageContainer>
+  <Image
+    src={pic3}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+4. t[i]와 t[j]가 서로 같으므로, pi[i] = j + 1로 설정하고 i와 j를 1 증가시킨다.
+
+<ImageContainer>
+  <Image
+    src={pic4}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+5. t[i]와 t[j]가 서로 다르다. 이때 j > 0이면, j를 pi[j - 1]로 설정한다.
+
+<ImageContainer>
+  <Image
+    src={pic5}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+6. t[i]와 t[j]가 서로 다르다. 이때 j > 0이면, j를 pi[j - 1]로 설정한다.
+
+<ImageContainer>
+  <Image
+    src={pic6}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+7. t[i]와 t[j]가 서로 다르다. j가 0이므로 더 이상 j를 변경하지 않고 i만 1 증가시킨다. 그리고 pi[i] = 0으로 설정한다.
+
+<ImageContainer>
+  <Image
+    src={pic7}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+8. t[i]와 t[j]가 서로 같으므로, pi[i] = j + 1로 설정하고 마친다.
+
+<ImageContainer>
+  <Image
+    src={pic8}
+    alt='pi array'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+이를 코드로 작성하면 아래와 같다.
+
+<CodeSelector names={['failure function']} desc='failure' />
+
+```js
+function failure(t) {
+  const n = t.length
+  const pi = new Array(n).fill(0)
+  let j = 0
+  for (let i = 1; i < n; ++i) {
+    while (j > 0 && t[i] !== t[j]) j = pi[j - 1]
+    if (t[i] === t[j]) pi[i] = ++j
+  }
+  return pi
+}
+```
+
+## 문자열 제곱
+
+문자열을 k번 이어 붙인 것을 문자열 제곱이라고 하자. (https://www.acmicpc.net/problem/4354)
+
+실패 함수를 사용하여 문자열 s가 어떤 문자열 a의 n제곱일 때, 가장 길이가 큰 a를 찾을 수 있다.
+
+a의 길이는 s.length - pi[s.length - 1]이며, n은 s.length / a.length가 된다.
+
+(단, s.length % a.length === 0을 만족해야 한다.)
+
+## KMP 함수
+
+실패 함수로 구한 pi 배열로 t를 찾는다.
+
+이 과정은 실패 함수와 비슷하게 진행되며, t가 등장하는 모든 위치를 찾을 수 있다.
+
+<CodeSelector names={['KMP function']} desc='KMP' />
+
+```js
+function KMP(s, t) {
+  const n = s.length
+  const m = t.length
+  const pi = failure(t)
+  const index = []
+
+  let j = 0
+  for (let i = 0; i < n; ++i) {
+    while (j > 0 && s[i] !== t[j]) j = pi[j - 1]
+    if (s[i] !== t[j]) continue
+
+    if (j === m - 1) {
+      j = pi[j]
+      index.push(i - m + 1)
+    } else {
+      j++
+    }
+  }
+
+  // t가 s에서 나타나는 인덱스가 저장되어 있다.
+  return index
+}
+```

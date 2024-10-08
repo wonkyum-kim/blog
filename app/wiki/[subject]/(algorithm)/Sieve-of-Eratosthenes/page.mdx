@@ -1,27 +1,5 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 
-## 소수 (Prime)
-
-어떤 정수 $n > 1$에 대해 양의 인수가 1과 $n$뿐이면 $n$을 `소수(prime)`라고 부른다.
-
-정수 $n$이 소수가 아니라면 두 정수의 곱 $a \cdot b$로 나타낼 수 있고 이때, $a \leq \sqrt{n}$ 또는 $b \leq \sqrt{n}$ 이 성립한다.
-
-즉, 2이상 $\lfloor{\sqrt n}\rfloor$ 이하의 인수가 반드시 존재한다.
-
-따라서 $n$을 2이상 $\lfloor{\sqrt n}\rfloor$ 이하의 모든 정수로 나누어보고 나누어 떨어지는 경우가 없으면 $n$을 소수라고 판정할 수 있다.
-
-<CodeSelector names={['js']} desc='ex1' />
-
-```js
-function isPrime(n) {
-  if (n < 2) return false
-  for (let i = 2; i <= Math.sqrt(n); ++i) {
-    if (n % i === 0) return false
-  }
-  return true
-}
-```
-
 ## 에라토스테네스의 체(Sieve of Eratosthenes)
 
 2이상 $n$이하의 정수 $x$가 소수인지 판단하는 체를 만드는 알고리즘이다.
@@ -37,48 +15,8 @@ function Eratosthenes(n) {
   sieve[1] = false
   for (let i = 2; i <= n; ++i) {
     if (!sieve[i]) continue
-    for (let j = 2 * i; j <= n; j += i) {
-      sieve[j] = false
-    }
+    for (let j = 2 * i; j <= n; j += i) sieve[j] = false
   }
   return sieve
 }
 ```
-
-## 소인수 (Prime factor)
-
-정수 $a$로 $b$가 나누어 떨어지는 경우, $a$를 $b$의 인수(factor) 또는 약수(divisor)라고 한다.
-
-이때 $a$가 소수인 인수라면 이를 `소인수`라고 부른다.
-
-모든 정수 $n > 1$에 대해 다음과 같은 `소인수 분해(prime factorization)`이 존재한다.
-
-> $$n = p_1^{\alpha_1} p_2^{\alpha_2} \cdots p_k^{\alpha_k}$$
-
-$p_1, p_2, \cdots, p_k$는 서로 다른 소수이고 $\alpha_1, \alpha_2, \cdots, \alpha_k$는 양의 정수다.
-
-<CodeSelector names={['js']} desc='ex2' />
-
-```js
-function primeFactorization(n) {
-  for (let i = 2; i <= Math.sqrt(n); ++i) {
-    while (n % i === 0) {
-      console.log(i)
-      n /= i
-    }
-  }
-  if (n > 1) console.log(n)
-}
-```
-
-소인수 분해를 통해 $n$의 인수의 개수를 구할 수 있다.
-
-각각의 소수 $p_i$에 대해, 인수에 몇 번 나타날지에 대한 경우의 수가 $\alpha_i + 1$이기 때문에
-
-$n$의 인수의 개수를 $\tau(n)$이라고 한다면 다음 공식으로 구할 수 있다.
-
-> $$\tau(n) = \Pi_{i=1}^{k}(\alpha_i + 1)$$
-
-등비수열의 합 공식을 통해 $n$의 인수들의 합 $\sigma(n)$을 구할 수 있다.
-
-> $$\sigma(n) = \Pi_{i=1}^{k}(1 + p_i + \cdots + p_i^{\alpha_i}) = \Pi_{i=1}^{k}{p_i^{\alpha_i + 1} - 1 \over p_i - 1}$$

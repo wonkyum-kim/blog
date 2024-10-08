@@ -1,0 +1,52 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 순열
+
+`순열(permutation)`은 1부터 $n$까지의 정수가 한 번씩 등장하는 수열이다.
+
+## 순열 사이클 분할
+
+순열 A에서 i -> A[i]를 간선으로 그래프를 만들면 한 개 이상의 사이클이 형성된다.
+
+이를 `순열 사이클`이라고 한다. (https://www.acmicpc.net/problem/10451)
+
+순열을 사이클끼리 분해하는 것을 `순열 사이클 분할`이라고 한다.
+
+순열은 주기 $t$를 가지는데, 주기는 각 사이클의 한 점에서 동시에 출발했을 때 모든 사이클에서 동시에 처음 출발했던 점을 돌아오는 시간을 말한다.
+
+즉, 사이클에 속한 모든 노드의 개수의 최소 공배수가 주기가 된다. (https://www.acmicpc.net/problem/2487)
+
+<CodeSelector names={['2487.js']} desc='2487' />
+
+```js
+const n = input.getNumber
+const v = new Array(n).fill(0).map(() => input.getNumber)
+v.unshift(0)
+const visited = new Array(n + 1).fill(false)
+
+function dfs(x, count) {
+  if (visited[x]) return count
+  visited[x] = true
+  return dfs(v[x], count + 1)
+}
+
+function gcd(a, b) {
+  if (b === 0) return a
+  return gcd(b, a % b)
+}
+
+function lcm(a, b) {
+  return Math.floor(a / gcd(a, b)) * b
+}
+
+function solve() {
+  let ans = 1 // 주기
+  for (let i = 1; i <= n; ++i) {
+    if (visited[i]) continue
+    ans = lcm(ans, dfs(i, 0))
+  }
+  console.log(ans)
+}
+
+solve()
+```

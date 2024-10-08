@@ -1,0 +1,28 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 최대 공약수
+
+`유클리드 알고리즘`은 최대 공약수를 효율적으로 구하는 알고리즘이다.
+
+정수 $a$와 $b$의 최대 공약수 $gcd(a, b)$는 $a$와 $b$의 공통 약수 중 가장 큰 정수다.
+
+<CodeSelector names={['js']} desc='ex1' />
+
+```js
+function gcd(a, b) {
+  if (b === 0) return a
+  return gcd(b, a % b)
+}
+```
+
+## 최소 공배수
+
+정수 $a$와 $b$의 최소 공배수는 $a \times b \div gcd(a,b)$로 구할 수 있다.
+
+<CodeSelector names={['js']} desc='ex1' />
+
+```js
+function lcm(a, b) {
+  return Math.floor(a / gcd(a, b)) * b
+}
+```
