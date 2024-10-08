@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { CodeSelector } from '@/components/code-selector.tsx'
 import { ImageContainer } from '@/components/image-container/image-container.tsx'
-import pic4 from '/public/React/r4.jpeg'
 
 ## Initial mount in Trigger phase
 
@@ -454,18 +453,6 @@ FiberNode의 stateNode는 HTML 태그의 경우(tag가 HostComponent인 경우) 
 DOM노드를 생성했으면, `appendAllChildren()`을 통해 부모와 연결한다.
 
 ## Ininital mount in Commit phase
-
-<ImageContainer>
-  <Image
-    src={pic4}
-    alt='completeWork'
-    sizes='100vw'
-    style={{
-      width: '85%',
-      height: 'auto',
-    }}
-  />
-</ImageContainer>
 
 지금까지 진행사항은 아래와 같다.
 
