@@ -95,7 +95,7 @@ const etc = [
   'indexedDB',
   'scroll',
   'debugger',
-  // 'MessageChannel'
+  // 'MessageChannel' -> Scheduler.js
 ]
 
 const React = [

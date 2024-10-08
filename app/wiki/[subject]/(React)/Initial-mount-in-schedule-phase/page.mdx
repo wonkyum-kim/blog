@@ -1,17 +1,66 @@
 import { CodeSelector } from '@/components/code-selector.tsx'
 import { ImageContainer } from '@/components/image-container/image-container.tsx'
 import Image from 'next/image'
+import pic1 from '/public/React/sch1.jpg'
+import pic2 from '/public/React/sch2.jpg'
+import pic3 from '/public/React/sch3.jpg'
 
 ## Initial mount in Schedule phase
 
-Schedule phase는 마이크로태스크 큐에 있는 콜백 함수를 실행하는 과정이다.
+Schedule phase는 마이크로태스크/태스크 큐에 있는 콜백 함수를 실행하는 과정이다.
 
 ## processRootScheduleInMicrotask()
 
-TODO
+`processRootScheduleInMicrotask()`는 마이크로태스크 큐에 넣어두었던 콜백 함수이다.
 
-- scheduleTaskForRootDuringMicrotask()
-- schedulePerformWorkUntilDeadline()
-- flushSyncWorkOnAllRoots()
-- performWorkUntilDeadline()
-- workLoop()
+콜 스택이 비어있으면 processRootScheduleInMicrotask()이 실행된다.
+
+schedulerPriorityLevel 은 NormalSchedulerPriority가 할당되며, newTask를 만들고 taskQueue에 push된다.
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='processRootScheduleInMicrotask()'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+이어서 `schedulePerformWorkUntilDeadline()`이 실행된다.
+
+이름 그대로 performWorkUntilDeadline()를 태스크 큐에 넣어 나중에 실행되도록 한다.
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='processRootScheduleInMicrotask()'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+## performWorkUntilDeadline()
+
+콜 스택이 비어있으면 아까 태스크 큐에 넣어두었던 `performWorkUntilDeadline()`가 실행된다.
+
+이 과정에서 taskQueue에 push 했던 newTask를 꺼내오고, newTask.callback인 `performConcurrentWorkOnRoot()`를 실행시켜서 render phase에 진입하게 된다.
+
+performWorkUntilDeadline()는 가장 마지막인 commit phase가 끝날 때까지 콜 스택에 남아 있다가 남은 코드의 실행을 마무리하고 종료된다.
+
+<ImageContainer>
+  <Image
+    src={pic3}
+    alt='performWorkUntilDeadline()'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
