@@ -1,0 +1,35 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 광고
+
+3356번과 같은 문제다.
+
+어떤 문자열 s를 어떤 문자열 a와 a의 접두사(맨 마지막에만)를 이어붙인 것이라고 하자.
+
+s = a + a + ... + a + (a의 접두사)
+
+pi[s.length - 1]은 가장 긴 접두사 === 접미사의 길이가 되므로, s에서 pi[s.length - 1]만큼 뒤에서 제거하면 가장 짧은 a를 구할 수 있다.
+
+<CodeSelector names={['1305.js']} desc='ex1' />
+
+```js
+function failure(t) {
+  const n = t.length
+  const pi = new Array(n).fill(0)
+  let j = 0
+  for (let i = 1; i < n; ++i) {
+    while (j > 0 && t[i] !== t[j]) j = pi[j - 1]
+    if (t[i] === t[j]) pi[i] = ++j
+  }
+  return pi
+}
+
+function solve() {
+  const n = input.getNumber
+  const s = input.get
+  const pi = failure(s)
+  console.log(n - pi[n - 1])
+}
+
+solve()
+```

@@ -81,6 +81,7 @@ const Algorithm = [
   `LCS`,
   `Trie`,
   `Knuth-Morris-Pratt`,
+  `Aho-Corasick`,
   `Suffix array`,
   // `Centroid`,
 ]
@@ -141,6 +142,7 @@ const PS = [
   '1154',
   '1162',
   '1199',
+  '1305',
   '10441',
 ]
 
