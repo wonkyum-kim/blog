@@ -17,15 +17,19 @@ import pic19 from '/public/Algorithm/aho19.jpg'
 
 ## 아호 코라식 알고리즘
 
-`아호 코라식`은 주어진 문자열 집합 W와 문자열 S가 있을 때, S의 부분문자열 중에 W에 속한 문자열이 있는지 찾는 알고리즘이다.
+`아호 코라식`은 주어진 문자열 집합(딕셔너리라고 한다.) W와 문자열 S가 있을 때, S의 부분문자열 중에 W에 속한 문자열이 있는지 찾는 알고리즘이다.
 
-아호 코라식은 `KMP`와 `트라이`를 사용하여 $O(n + w_1 + w_2 + \cdots + w_k)$ 시간에 작동한다. ($n$은 S의 길이, $w_i$는 W[i]의 길이)
+아호 코라식은 `KMP`와 `트라이`를 사용하여 $O(n + w_1 + w_2 + \cdots + w_k + m)$ 시간에 작동한다. ($n$은 S의 길이, $w_i$는 W[i]의 길이, $m$은 매칭된 횟수)
 
-## 트라이 만들기
+## 트라이
 
-먼저 주어진 문자열 집합 W = ['a', 'ab', 'bab', 'bc', 'bca', 'c', 'caa']에 있는 문자열들로 트라이를 만든다.
+먼저 주어진 딕셔너리 W = ['a', 'ab', 'bab', 'bc', 'bca', 'c', 'caa']에 있는 문자열들로 `트라이`를 만든다.
 
-색이 진한 노드는 문자열 패턴의 마지막 노드임을 나타낸다.
+딕셔너리에 있는 모든 문자열의 모든 접두사가 트라이의 노드로 존재한다.
+
+예를 들어, 'bca'가 딕셔너리에 있으므로 'bca', 'bc', 'b', ''에 해당하는 노드가 존재한다.
+
+딕셔너리에 있는 문자열에 해당하는 노드(e.g. 'bca')는 진한 색으로 표시하였다.
 
 <ImageContainer>
   <Image
@@ -39,40 +43,31 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-## 실패 간선과 성공 간선 만들기
+## 접미사 간선과 딕셔너리 접미사 간선
 
-아호 코라식 알고리즘을 사용하기 위해서는 트라이에 실패 간선과 성공 간선을 만들어줘야 한다.
+아호 코라식 알고리즘을 사용하기 위해서는 트라이에 `접미사 간선`과 `딕셔너리 접미사 간선`을 만들어줘야 한다.
 
-`실패 간선`은 KMP와 마찬가지로 비교가 실패했을 경우 되돌아가기 위해 사용된다.
+빨간색의 `접미사 간선`은 각 노드에서 그래프에서 가능한 가장 긴 **엄격한 접미사** 노드로 향한다. (엄격한 접미사란, 전체 문자열을 제외한 접미사를 말한다.)
 
-`성공 간선`은 현재 노드가 문자열 패턴의 마지막 노드가 아니더라도 다른 문자열에서는 마지막 노드가 될 수 있다는 것을 의미한다.
+예를 들어, 'caa'에 해당하는 노드는 엄격한 접미사로 'aa', 'a', ''를 가진다.
 
-예를 들어, 9번 노드는 'a'를 나타내는데, 이는 'cab'의 중간에 있기 때문에 문자열 패턴의 마지막 노드가 아니다.
+그래프에 존재하는 가장 긴 엄격한 접미사는 'a' 이므로, 'caa'에서 'a'로 접미사 간선이 존재한다.
 
-하지만 W에는 분명히 'a'가 있기 때문에 9번 노드에 도달하더라도 'a'를 발견한 것을 놓치게 된다.
+접미사 간선은 루트에서 bfs를 실행하여 선형 시간에 계산할 수 있다.
 
-이때 9번 노드에 1번으로 가는 성공 간선을 만들어준다면 1번 노드를 보고 'a'를 발견한 것을 알 수 있게 된다.
+어떤 노드의 접미사 간선이 향하는 노드는 부모 노드의 접미사 간선을 따라 도착한 가장 긴 **접미사 노드**에서 현재 노드의 문자와 일치하는 문자를 가진 **접미사 노드의 자식**을 검색하여 찾을 수 있다.
 
-실패 간선을 만드는 과정은 아래와 같다.
+접미사 노드의 자식 노드에 해당 문자가 존재하지 않으면, 다시 접미사 간선을 따라가면서 그 다음으로 긴 접미사를 찾은 다음 해당 문자를 찾는다.
 
-1. 정점 x가 루트와 연결되어 있다면 x -> 루트 실패 간선을 만든다.
-2. 과정 1의 경우가 아니라면 어떤 정점을 x, x가 가리키고 있는 정점을 y, x의 실패 간선과 연결된 정점을 z, z의 자식 정점들 중 하나를 k라고 하자.
-3. 어떤 k가 y에 해당하는 값을 가지고 있다면 y -> k 실패 간선을 만든다.
-4. 모든 k가 y에 해당하는 값을 가지고 있지 않는다면 z를 z의 실패 간선과 연결된 정점으로 옮기고 과정 2로 돌아간다.
-5. 단 z가 루트일 때 과정 4에서 과정 1로 돌아가지 않고 y -> 루트 실패 간선을 만들고 종료한다.
+이 과정은 접미사 간선을 따라가서 만난 노드의 자식 노드가 방문한 노드의 문자와 일치하거나 루트에 도달할 때까지 반복된다.
 
-성공 간선을 만드는 과정은 아래와 같다.
+파란색 `딕셔너리 접미사 간선`은 각 노드에서 접미사 간선을 타고 처음 만나는 딕셔너리에 있는 노드로 향한다.
 
-1. 실패 간선을 만드는 과정 3에서 정점 k가 문자열 패턴의 마지막 노드이면, y -> k 성공 간선을 만든다.
-2. 정점 k가 문자열 패턴의 마지막 노드가 아니지만 성공 간선을 가지고 있고, 성공 간선만을 따라 쭉 거슬러 올라간 정점 u에 대하여 y -> u 성공 간선을 만든다. (즉, 문자열 패턴의 마지막 노드를 만날 때 까지 거슬러 올라간다.)
+이제 실제로 접미사 간선과 딕셔너리 접미사 간선을 만드는 과정을 살펴보자.
 
-실패 간선과 성공 간선은 bfs를 실행하는 과정에서 만들어진다.
+현재 정점이 0번 정점일 때, 1, 3, 8번 정점과 연결되어 있다.
 
-현재 정점을 빨간색, 현재 정점과 연결된 정점을 파란색, 현재 정점에서 실패 간선을 타고 도달한 정점을 초록색으로 표시한다.
-
-트라이의 간선은 검은색, 실패 간선은 빨간색, 성공 간선은 파란색으로 표시한다.
-
-현재 정점이 0번 정점일 때, 1, 3, 8번 정점과 연결되고 루트와 연결되어 있으므로 실패 간선을 만든다.
+'a', 'b', 'c'에서 가장 긴 엄격한 접미사는 ''이므로 루트와 연결하는 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -110,7 +105,9 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 1번, 다음 정점이 2번일 때, 2->3 실패 간선을 만든다.
+현재 정점이 1번, 다음 정점이 2번, 현재 정점의 접미사 정점이 0번일 때, 0번의 자식 중에서 'b'에 해당하는 노드는 3번 이므로 2->3 접미사 간선을 만든다.
+
+이것은 'ab'의 엄격한 접미사 중에 방문한 노드 중에서 가장 긴 것이 'b'라는 의미다.
 
 <ImageContainer>
   <Image
@@ -124,9 +121,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 3번, 다음 정점이 4번일 때, 4->1 실패 간선을 만든다.
+현재 정점이 3번, 다음 정점이 4번, 현재 정점의 접미사 정점이 0번일 때, 0번의 자식 중에서 'a'에 해당하는 노드는 1번이므로 4->1 접미사 간선을 만든다.
 
-1번 정점이 문자열 패턴의 마지막 정점이므로 4->1 성공 간선을 만든다.
+4번에서 접미사 간선을 타고 만날 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 1번이 처음이다.
+
+따라서 4->1 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -140,9 +139,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 3번, 다음 정점이 6번일 때, 6->8 성공 간선을 만든다.
+현재 정점이 3번, 다음 정점이 6번, 현재 정점의 접미사 정점이 0번일 때, 0번의 자식 중에서 'c'에 해당하는 노드는 8번이므로 6->8 접미사 간선을 만든다.
 
-8번 정점이 문자열 패턴의 마지막 정점이므로 6->8 성공 간선을 만든다.
+6번에서 접미사 간선을 타고 만날 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 8번이 처음이다.
+
+따라서 6->8 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -156,9 +157,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 8번, 다음 정점이 9번일 때, 9->1 실패 간선을 만든다.
+현재 정점이 8번, 다음 정점이 9번, 현재 정점의 접미사 정점이 0번일 때, 0번의 자식 중에서 'a'에 해당하는 노드는 1번이므로 9->1 접미사 간선을 만든다.
 
-1번 정점이 문자열 패턴의 마지막 정점이므로 9->1 성공 간선을 만든다.
+9번에서 접미사 간선을 타고 만난 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 1번이 처음이다.
+
+따라서 9->1 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -174,9 +177,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
 
 현재 정점이 2번일 때, 자식 노드가 없으므로 아무것도 하지 않고 넘어간다.
 
-현재 정점이 4번, 다음 정점이 5번일 때, 5->2 실패 간선을 만든다.
+현재 정점이 4번, 다음 정점이 5번, 현재 정점의 접미사 정점이 1번일 때, 1번의 자식 중에서 'ab'에 해당하는 정점은 2번이므로 5->2 접미사 간선을 만든다.
 
-2번 정점이 문자열 패턴의 마지막 정점이므로 5->2 성공 간선을 만든다.
+5번에서 접미사 간선을 타고 만난 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 2번이 처음이다.
+
+따라서 5->2 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -190,11 +195,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 6번, 다음 정점이 7번일 때, 7->9 실패 간선을 만든다.
+현재 정점이 6번, 다음 정점이 7번, 현재 정점의 접미사 정점이 8번일 때, 8번의 자식 중에서 'ca'에 해당하는 노드는 9번이므로 7->9 접미사 간선을 만든다.
 
-9번 정점은 문자열 패턴의 마지막 정점은 아니다.
+7번에서 접미사 간선을 타고 만난 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 1번이 처음이다.
 
-하지만 성공 간선을 가지고 있으므로 쭉 타고 올라가면 1번 노드에 도달하게 된다. 따라서 7->1 성공 간선을 만들 수 있다.
+따라서 7->1 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -208,7 +213,7 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-현재 정점이 9번, 다음 정점이 10번일 때, 1번 정점은 'a'를 값으로 가지는 정점을 자식으로 가지고 있지 않다.
+현재 정점이 9번, 다음 정점이 10번, 현재 정점의 접미사 정점이 1번일 때, 1번 정점은 'a'에 해당하는 정점을 자식으로 가지고 있지 않다.
 
 <ImageContainer>
   <Image
@@ -222,11 +227,11 @@ import pic19 from '/public/Algorithm/aho19.jpg'
   />
 </ImageContainer>
 
-1번 정점에서 실패 간선을 타고 0번 정점에 도달하면 0번 정점은 'a'를 값으로 가지는 1번 정점을 자식으로 가지고 있다.
+1번 정점에서 접미사 간선을 타고 0번 정점에 도달하면 0번 정점은 'a'에 해당하는 1번 정점을 자식으로 가지고 있으므로 10->1 접미사 간선을 만든다.
 
-그러므로 10->1 실패 간선을 만든다.
+10번에서 접미사 간선을 타고 만난 수 있는 노드 중에서 딕셔너리에 존재하는 노드는 1번이 처음이다.
 
-1번 정점이 문자열 패턴의 마지막 정점이므로 10->1 성공 간선을 만든다.
+따라서 10->1 딕셔너리 접미사 간선을 만든다.
 
 <ImageContainer>
   <Image
@@ -253,8 +258,6 @@ import pic19 from '/public/Algorithm/aho19.jpg'
 - 현재 정점이 문자열 패턴의 마지막 노드이면 W에 속한 문자열 중 하나를 발견한 것이다.
 - 현재 정점에 성공 간선이 있으면 W에 속한 문자열 중 하나를 발견한 것이다.
 
-실제로 움직이는 경로는 트리 간선과 실패 간선 뿐이며, 성공 간선은 문자열을 찾기 위해 살펴보기만 하는 것이라는 것에 주의한다.
-
 <ImageContainer>
   <Image
     src={pic19}
@@ -269,20 +272,24 @@ import pic19 from '/public/Algorithm/aho19.jpg'
 
 1. 0번에서 'a'를 값으로 가지고 있는 1번으로 이동한다. 'a'를 찾았다.
 2. 1번에서 'b'를 값으로 가지고 있는 2번으로 이동한다. 'ab'를 찾았다.
-3. 2번에서 'c'를 값으로 가지고 있는 자식이 없다. 실패 간선을 타고 3번으로 이동한다.
-4. 3번에서 'c'를 값으로 가지고 있는 6번으로 이동한다. 'bc'를 찾았다. 6번은 성공 간선도 가지고 있으므로 8번 노드에 해당하는 'c'도 찾았다.
-5. 6번에서 'c'를 값으로 가지고 있는 자식이 없다. 실패 간선을 타고 8번으로 이동한다.
-6. 8번에서 'c'를 값으로 가지고 있는 자식이 없다. 실패 간선을 타고 0번으로 이동한다.
+3. 2번에서 'c'를 값으로 가지고 있는 자식이 없다. 접미사 간선을 타고 3번으로 이동한다.
+4. 3번에서 'c'를 값으로 가지고 있는 6번으로 이동한다. 'bc'를 찾았다. 6번은 딕셔너리 접미사 간선도 가지고 있으므로 8번 노드에 해당하는 'c'도 찾았다.
+5. 6번에서 'c'를 값으로 가지고 있는 자식이 없다. 접미사 간선을 타고 8번으로 이동한다.
+6. 8번에서 'c'를 값으로 가지고 있는 자식이 없다. 접미사 간선을 타고 0번으로 이동한다.
 7. 0번에서 'c'를 값으로 가지고 있는 8번으로 이동한다. 'c'를 찾았다.
-8. 8번에서 'a'를 값으로 가지고 있는 9번으로 이동한다. 9번의 성공 간선을 타면 1번 노드에서 'a'를 찾을 수 있다.
+8. 8번에서 'a'를 값으로 가지고 있는 9번으로 이동한다. 9번의 딕셔너리 접미사 간선을 타면 1번 노드에서 'a'를 찾을 수 있다.
 9. 9번에서 'b'를 값으로 가지고 있는 자식이 없다. 1번으로 이동한다.
 10. 1번에서 'b'를 값으로 가지고 있는 2번으로 이동한다. 'ab'를 찾았다.
 
 ## 구현
 
+구현은 아래처럼 객체를 이용한 방식도 있고, 문자의 범위를 안다면(e.g. 소문자 26개) 배열을 사용할 수도 있다.
+
+메모리 초과나 시간 초과 여부에 따라서 적절한 방식을 선택해야 한다.
+
 <CodeSelector names={['AhoCorasick']} desc='AhoCorasick' />
 
-```js
+```js showLineNumbers
 class Trie {
   constructor(arr) {
     this.tree = []
@@ -293,10 +300,10 @@ class Trie {
 
   newNode() {
     const node = {
-      child: new Array(26).fill(null),
-      failure: null, // 실패 간선
-      success: null, // 성공 간선
-      valid: null, // 문자열 패턴의 마지막 노드
+      child: {},
+      suffix: null,
+      dictSuffix: null,
+      valid: null,
     }
     this.tree.push(node)
     return this.tree.length - 1
@@ -305,11 +312,8 @@ class Trie {
   add(s) {
     let node = 0
     for (let i = 0; i < s.length; ++i) {
-      const c = s[i].charCodeAt() - 97
-      if (this.tree[node].child[c] === null) {
-        this.tree[node].child[c] = this.newNode()
-      }
-      node = this.tree[node].child[c]
+      if (!(s[i] in this.tree[node].child)) this.tree[node].child[s[i]] = this.newNode()
+      node = this.tree[node].child[s[i]]
     }
     this.tree[node].valid = true
   }
@@ -317,31 +321,17 @@ class Trie {
   AhoCorasick(t) {
     let curr = 0
     const nodes = []
-    for (let i = 0; i < t.length; ++i) {
-      const c = t[i].charCodeAt() - 97
-      let next = this.tree[curr].child[c]
-
-      // 다음 노드로 이동 가능
-      if (next !== null) {
-        curr = next
+    for (const x of t) {
+      if (x in this.tree[curr].child) {
+        curr = this.tree[curr].child[x]
+      } else {
+        if (curr === 0) continue
+        curr = this.tree[curr].suffix
+        while (curr && !(x in this.tree[curr].child)) curr = this.tree[curr].suffix
+        curr = this.tree[curr].child[x] ?? 0
       }
-      // 다음 노드로 이동 불가능
-      else {
-        // 실패 간선을 타고 이동한다.
-        let failNode = this.tree[curr].failure
-        while (failNode !== null) {
-          const dest = this.tree[failNode].child[c]
-          if (dest !== null) {
-            curr = dest
-            break
-          }
-          failNode = this.tree[failNode].failure
-        }
-      }
-      // 현재 노드가 문자열 패턴의 마지막 노드
       if (this.tree[curr].valid) nodes.push(curr)
-      // 현재 노드에 성공 간선이 존재
-      if (this.tree[curr].success) nodes.push(this.tree[curr].success)
+      if (this.tree[curr].dictSuffix) nodes.push(this.tree[curr].dictSuffix)
     }
     return nodes
   }
@@ -352,29 +342,21 @@ class Trie {
     while (!q.empty()) {
       const curr = q.front()
       q.pop()
-      for (let i = 0; i < 26; ++i) {
-        const next = this.tree[curr].child[i]
-        if (next === null) continue
+      for (const key in this.tree[curr].child) {
+        const next = this.tree[curr].child[key]
 
-        // 루트는 바로 실패 간선을 연결한다.
-        if (curr === 0) {
-          this.tree[next].failure = curr
-        }
-        // 실패 간선을 타고 다음 정점을 찾아 실패 간선을 연결한다.
+        if (curr === 0) this.tree[next].suffix = curr
         else {
-          let fail = this.tree[curr].failure
-          while (fail !== null) {
-            const dest = this.tree[fail].child[i]
-            if (dest !== null) {
-              this.tree[next].failure = dest
-              this.tree[next].success = this.tree[dest].valid ? dest : this.tree[dest].success
-              break
-            }
-            fail = this.tree[fail].failure
-          }
+          let suffix = this.tree[curr].suffix
+          while (suffix > 0 && !this.tree[suffix].child[key]) suffix = this.tree[suffix].suffix
+          const suffixChild = this.tree[suffix].child[key] ?? 0
 
-          // 마지막까지 찾지 못했으면 루트에 실패 간선을 연결한다.
-          if (fail === null) this.tree[next].failure = 0
+          // suffix edge
+          this.tree[next].suffix = suffixChild
+          // dictionary suffix edge
+          this.tree[next].dictSuffix = this.tree[suffixChild].valid
+            ? suffixChild
+            : this.tree[suffixChild].dictSuffix
         }
         q.push(next)
       }
@@ -388,3 +370,7 @@ const trie = new Trie(W)
 const nodes = trie.AhoCorasick(S)
 console.log(nodes) // [1, 2, 6, 8, 8, 1, 2]
 ```
+
+## References
+
+- https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm
