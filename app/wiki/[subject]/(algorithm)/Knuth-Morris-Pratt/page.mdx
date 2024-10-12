@@ -9,6 +9,16 @@ import pic5 from '/public/Algorithm/kmp5.jpg'
 import pic6 from '/public/Algorithm/kmp6.jpg'
 import pic7 from '/public/Algorithm/kmp7.jpg'
 import pic8 from '/public/Algorithm/kmp8.jpg'
+import pic9 from '/public/Algorithm/kmp9.jpeg'
+import pic10 from '/public/Algorithm/kmp10.jpeg'
+import pic11 from '/public/Algorithm/kmp11.jpeg'
+import pic12 from '/public/Algorithm/kmp12.jpeg'
+import pic13 from '/public/Algorithm/kmp13.jpeg'
+import pic14 from '/public/Algorithm/kmp14.jpeg'
+import pic15 from '/public/Algorithm/kmp15.jpeg'
+import pic16 from '/public/Algorithm/kmp16.jpeg'
+import pic17 from '/public/Algorithm/kmp17.jpeg'
+import pic18 from '/public/Algorithm/kmp18.jpeg'
 
 ## KMP 알고리즘
 
@@ -16,31 +26,171 @@ import pic8 from '/public/Algorithm/kmp8.jpg'
 
 브루트포스 방법으로는 $O(nm)$ 시간이 걸리지만, KMP 알고리즘을 사용하면 $O(n+m)$ 시간으로 찾을 수 있다.
 
+i를 S가 T와 처음으로 일치가 시작할 것으로 생각되는 S의 인덱스라고 하고, j를 T의 인덱스라고 하자.
+
+S[3]에서 불일치가 발견되었다. T를 i = 3까지 오른쪽으로 쭉 민다.
+
+<ImageContainer>
+  <Image
+    src={pic9}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+여전히 S[3]에서 불일치가 발생한다. T를 i = 4까지 밀어보자.
+
+<ImageContainer>
+  <Image
+    src={pic10}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+이번에는 S[10]에서 불일치가 발견되었다. T를 i = 10까지 밀어보자.
+
+<ImageContainer>
+  <Image
+    src={pic11}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+밀던 도중에 i = 8에서 S의 일부분과 T의 일부분이 겹치는 지점이 발견되었다.
+
+밀던 것을 멈추고 다시 비교를 시작한다. 이때 S[8, 9]는 T[0, 1]과 서로 같으므로 S[10]과 T[2]부터 비교를 시작하면 된다.
+
+<ImageContainer>
+  <Image
+    src={pic12}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+S[10]에서 불일치가 발견되었다. T를 i = 10까지 밀어보자.
+
+<ImageContainer>
+  <Image
+    src={pic13}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+여전히 S[10]에서 불일치가 발생한다. T를 i = 11까지 밀어보자.
+
+<ImageContainer>
+  <Image
+    src={pic14}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+S[17]에서 불일치가 발견되었다. T를 i = 17까지 밀어보자.
+
+<ImageContainer>
+  <Image
+    src={pic15}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+밀던 도중에 i = 15에서 S의 일부분과 T의 일부분이 일치하는 것이 발견되었다.
+
+밀던 것을 멈추고 S[17]과 T[2]부터 비교를 시작한다.
+
+<ImageContainer>
+  <Image
+    src={pic16}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+완전히 일치하는 부분을 찾았다. 즉, T는 S의 부분문자열에 존재한다는 것을 발견했다.
+
+<ImageContainer>
+  <Image
+    src={pic17}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+즉 S를 한 번만 훑어보고 T가 존재하는지 찾았는데, 어떻게 이런 일이 가능한 것인가? 그리고 무슨 규칙으로 비교를 건너 뛴 것인가?
+
+답은 이전에 S와 T가 일치했던 부분 중에서 접두사와 접미사가 최대로 일치하는 부분까지를 건너 뛴 것이다. (KMP에서 접두사와 접미사는 엄격한 접두사와 엄격한 접미사를 의미한다. 즉, 문자열 전체를 제외한 접두사와 접미사를 의미한다.)
+
+이전에 살펴보았던 것을 다시 보자. 파란색 글씨는 이전 단계에서 S와 T가 서로 일치했던 부분이고, 초록색 칸과 파란색 칸은 각각 접두사와 접미사가 일치하는 부분 중에서 가장 긴 것을 고른 것이다.
+
+즉 접두사와 접미사가 서로 같고 가장 긴 것을 골랐기 때문에 'AB'는 S[7]까지 등장하지 않는다는 것을 알 수 있었고 건너 뛸 수 있었던 것이다.
+
+<ImageContainer>
+  <Image
+    src={pic18}
+    alt='kmp'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
 ## 실패 함수
 
-KMP를 구현하기 위해서 먼저 `실패 함수`라는 것을 작성해야한다.
+이제 KMP가 어떻게 동작하는 지는 알 것 같은데, 접두사와 접미사가 최대로 일치하는 부분을 어떻게 효율적으로 알아낼 것인가가 문제가 된다.
 
-왜 실패 함수라는 이름이 붙었을까?
+실패 함수는 `pi 배열`을 반환하여 이에 대한 답을 주는데, $O(m)$ 시간에 t[0, i]에 대해 접미사 = 접두사의 최대 길이를 구할 수 있다. ($m$은 t의 길이)
 
-실패 함수는 단순히 `pi 배열`을 반환하는 함수이며, pi 배열은 문자의 비교가 실패했을 때(즉, 문자가 서로 다를 때) 사용되기 때문이다.
+실패 함수가 반환하는 pi 배열을 미리 구하면 KMP에서 쉽게 건너 뛸 수 있는 부분을 알 수 있게 되는 것이다.
 
-아직까지 감이 잘 오지는 않겠지만 일단 pi 배열이 무엇인지 살펴보자.
+예를 들어 t = 'ababaca'의 pi배열을 구하는 과정은 아래와 같다.
 
-pi 배열이란, 부분문자열 t[0, i]의 접두사와 접미사가 같을 때 최대 길이를 저장하는 배열이다. (단, 접두사와 접미사는 전체 문자열이 될 수 없다고 가정한다.)
+- t[0, 0] = 'a' : 길이가 1이므로 바로 pi[0] = 0으로 설정한다.
 
-예를 들어, 'abcab'의 접두사 = 접미사인 문자열의 'ab'이며 길이는 2다.
-
-브루트포스로 pi 배열을 구하는 것은 쉽지만, 이것을 $O(m)$ 시간에 구하는 방법에 대해 알아보자. ($m$은 t의 길이)
-
-예를 들어 'ababaca'의 pi배열을 구하는 과정은 아래와 같다.
-
-### t[0, 0] = 'a'
-
-길이가 1이므로 바로 pi[0] = 0으로 설정한다.
-
-### t[0, 1] = 'ab'
-
-접두사는 'a'만 가능하고 접미사는 'b'만 가능하다. 둘이 같지 않으므로 pi[1] = 0으로 설정한다.
+- t[0, 1] = 'ab' : 접두사는 'a'만 가능하고 접미사는 'b'만 가능하다. 둘이 같지 않으므로 pi[1] = 0으로 설정한다.
 
 <ImageContainer>
   <Image
@@ -54,17 +204,7 @@ pi 배열이란, 부분문자열 t[0, i]의 접두사와 접미사가 같을 때
   />
 </ImageContainer>
 
-### t[0, 2] = 'aba'
-
-접두사는 'a', 'ab'가 가능하고, 접미사는 'ba', 'a'가 가능하다.
-
-가능한 접두사-접미사 쌍은 ['a', 'ba'], ['a', 'a'], ['ab', 'ba'], ['ab', 'a']로 총 2 \* 2 = 4가지가 나온다.
-
-사실 우리가 관심있는 것은 접두사와 접미사의 길이가 같은 것이므로 ['a', 'a'], ['ab', 'ba']만 살펴보면 된다.
-
-['<b>a</b>b', '<b>b</b>a']를 생각해보면 이미 이전 단계에서 앞 글자가 불가능하다고 판단했기 때문에 볼 필요가 없다는 것을 알 수 있다.
-
-['a', 'a']는 서로 같으므로 pi[2] = 1이 된다.
+- t[0, 2] = 'aba' : 접두사는 'a', 'ab'가 가능하고, 접미사는 'ba', 'a'가 가능하다. 가능한 접두사-접미사 쌍은 ['a', 'ba'], ['a', 'a'], ['ab', 'ba'], ['ab', 'a']로 총 2 \* 2 = 4가지가 나온다. 사실 우리가 관심있는 것은 접두사와 접미사의 길이가 같은 것이므로 ['a', 'a'], ['ab', 'ba']만 살펴보면 된다. ['<b>a</b>b', '<b>b</b>a']를 생각해보면 이미 이전 단계에서 앞 글자가 불가능하다고 판단했기 때문에 볼 필요가 없다는 것을 알 수 있다. ['a', 'a']는 서로 같으므로 pi[2] = 1이 된다.
 
 <ImageContainer>
   <Image
@@ -78,11 +218,7 @@ pi 배열이란, 부분문자열 t[0, i]의 접두사와 접미사가 같을 때
   />
 </ImageContainer>
 
-### t[0, 3] = 'abab'
-
-이전 단계에서 1글자(a)가 서로 같음을 확인했으니까 여기서 더 늘릴 수 있는지를 보면 된다.
-
-b가 같아서 접두사, 접미사를 'ab'로 만들 수 있으므로 pi[3] = 2로 설정한다.
+- t[0, 3] = 'abab' : 이전 단계에서 1글자(a)가 서로 같음을 확인했으니까 여기서 더 늘릴 수 있는지를 보면 된다. b가 같아서 접두사, 접미사를 'ab'로 만들 수 있으므로 pi[3] = 2로 설정한다.
 
 <ImageContainer>
   <Image
@@ -96,11 +232,7 @@ b가 같아서 접두사, 접미사를 'ab'로 만들 수 있으므로 pi[3] = 2
   />
 </ImageContainer>
 
-### t[0, 4] = 'ababa'
-
-이전 단계에서 'ab'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다.
-
-마지막 글자(a)가 같으므로 늘릴 수 있고, pi[4] = 3이 된다.
+- t[0, 4] = 'ababa' : 이전 단계에서 'ab'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다. 마지막 글자(a)가 같으므로 늘릴 수 있고, pi[4] = 3이 된다.
 
 <ImageContainer>
   <Image
@@ -114,25 +246,7 @@ b가 같아서 접두사, 접미사를 'ab'로 만들 수 있으므로 pi[3] = 2
   />
 </ImageContainer>
 
-### t[0, 5] = 'ababac'
-
-이전 단계에서 'aba'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다.
-
-그런데 마지막 글자(c와 b)가 서로 다르다.
-
-즉, t[0, 5] 부터는 'aba'를 늘려서 재사용할 수 없는 상황이 발생했다.
-
-이제 한 가지 새로운 아이디어를 사용한다.
-
-**문자열의 접두사의 접두사는 접두사고, 문자열의 접미사의 접미사도 접미사다.**
-
-t[0, 4] = 'ababa'까지 접두사 = 접미사가 되는 최대 길이의 문자열은 'aba'였다.
-
-'aba'의 접두사 = 접미사가 되는 최대 길이의 문자열은 'a'이며 위 아이디어에 따라서 'a'도 'ababa'의 접두사, 접미사가 된다.
-
-그리고 이것은 이미 pi[2]에서 구해둔 값이라는 것을 알 수 있다.
-
-이제 t[0, 4] = 'ababa'에서 두 번째로 긴 접두사 = 접미사가 되는 문자열인 'a'를 재사용하도록 변경한다.
+- t[0, 5] = 'ababac' : 이전 단계에서 'aba'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다. 그런데 마지막 글자(c와 b)가 서로 다르다. 즉, t[0, 5] 부터는 'aba'를 늘려서 재사용할 수 없는 상황이 발생했다. 이제 한 가지 새로운 아이디어를 사용한다. **문자열의 접두사의 접두사는 접두사고, 문자열의 접미사의 접미사도 접미사다.** t[0, 4] = 'ababa'까지 접두사 = 접미사가 되는 최대 길이의 문자열은 'aba'였다. 'aba'의 접두사 = 접미사가 되는 최대 길이의 문자열은 'a'이며 위 아이디어에 따라서 'a'도 'ababa'의 접두사, 접미사가 된다. 그리고 이것은 이미 pi[2]에서 구해둔 값이라는 것을 알 수 있다. 이제 t[0, 4] = 'ababa'에서 두 번째로 긴 접두사 = 접미사가 되는 문자열인 'a'를 재사용하도록 변경한다.
 
 <ImageContainer>
   <Image
@@ -146,11 +260,7 @@ t[0, 4] = 'ababa'까지 접두사 = 접미사가 되는 최대 길이의 문자�
   />
 </ImageContainer>
 
-### t[0, 5] = 'ababac'
-
-이전 단계에서 'a'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다.
-
-그런데 여전히 마지막 글자(c와 b)가 서로 다르다.
+- t[0, 5] = 'ababac' : 이전 단계에서 'a'가 같다고 확인했으니까 더 늘려서 같은지 확인하면 된다. 그런데 여전히 마지막 글자(c와 b)가 서로 다르다.
 
 <ImageContainer>
   <Image
@@ -182,11 +292,7 @@ t[0, 4] = 'ababa'까지 접두사 = 접미사가 되는 최대 길이의 문자�
   />
 </ImageContainer>
 
-### t[0, 6] = 'ababaca'
-
-이전 단계에서 접두사 = 접미사인 것이 없었으므로 새로 시작한다.
-
-'a'가 서로 같으므로 pi[6] = 1로 설정한다.
+- t[0, 6] = 'ababaca' : 이전 단계에서 접두사 = 접미사인 것이 없었으므로 새로 시작한다. 'a'가 서로 같으므로 pi[6] = 1로 설정한다.
 
 <ImageContainer>
   <Image
@@ -200,9 +306,11 @@ t[0, 4] = 'ababa'까지 접두사 = 접미사가 되는 최대 길이의 문자�
   />
 </ImageContainer>
 
+## 구현
+
 이를 코드로 작성하면 아래와 같다.
 
-<CodeSelector names={['failure function']} desc='failure' />
+<CodeSelector names={['KMP']} desc='kmp' />
 
 ```js
 function failure(t) {
@@ -215,27 +323,7 @@ function failure(t) {
   }
   return pi
 }
-```
 
-## 문자열 제곱
-
-문자열을 k번 이어 붙인 것을 문자열 제곱이라고 하자. (https://www.acmicpc.net/problem/4354)
-
-실패 함수를 사용하여 문자열 s가 어떤 문자열 a의 n제곱일 때, 가장 길이가 작은 a를 찾을 수 있다.
-
-a의 길이는 s.length - pi[s.length - 1]이며, n은 s.length / a.length가 된다.
-
-(단, s.length % a.length === 0을 만족해야 한다.)
-
-## KMP 함수
-
-실패 함수로 구한 pi 배열로 t를 찾는다.
-
-이 과정은 실패 함수와 비슷하게 진행되며, t가 등장하는 모든 위치를 찾을 수 있다.
-
-<CodeSelector names={['KMP function']} desc='KMP' />
-
-```js
 function KMP(s, t) {
   const n = s.length
   const m = t.length
@@ -259,3 +347,21 @@ function KMP(s, t) {
   return index
 }
 ```
+
+## 문자열의 주기성
+
+KMP를 직접 이용하는 것보다는 실패 함수를 응용하는 문제가 더 많은 것 같다.
+
+특히, 실패 함수를 사용해 주기성을 파악하는 것이 핵심이다.
+
+문자열 제곱 문제가 대표적이라고 할 수 있다. (https://www.acmicpc.net/problem/4354)
+
+실패 함수를 사용하여 문자열 s가 어떤 문자열 a의 n제곱일 때, 가장 길이가 작은 a를 찾을 수 있다.
+
+a의 길이는 s.length - pi[s.length - 1]이며, n은 s.length / a.length가 된다.
+
+(단, s.length % a.length === 0을 만족해야 한다.)
+
+## References
+
+- https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
