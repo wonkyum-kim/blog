@@ -1,0 +1,140 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 돌연변이
+
+[아호-코라식](/wiki/Algorithm/Aho-Corasick), 라빈-카프, 브루트포스 3가지 방법으로 풀리는 문제다.
+
+나는 아호-코라식 알고리즘으로 많은 도전에 실패하고 결국 C++로 풀었다.
+
+자바스크립트로 이 문제를 풀기 위해서는 아호-코라식에 대해서 정확하게 알고 있어야한다.
+
+이 문제에 한정해서 아호-코라식에 `딕셔너리 접미사 간선`은 필요하지 않다.
+
+딕셔너리 접미사 간선이란 결국 딕셔너리 노드를 만날 때까지 접미사 간선을 쭉 타고 올라가는 경로를 단축 시킨 간선이다.
+
+그런데 문제에서 주어지는 마커는 모두 길이가 같다.
+
+즉 패턴이 모두 같은 길이를 가지고 있어서, 딕셔너리 접미사 간선을 살펴볼 이유가 없는 것이다.
+
+정답을 받을 수 있다면 이런 것을 신경쓰지 않아도 되긴 하지만, 자바스크립트는 이렇게 코드를 작성하지 않으면 메모리초과나 시간초과에 걸리게 된다.
+
+따라서 자바스크립트를 사용한다면 아호-코라식을 사용해서 AC를 받기 위해서는 일반적인 상황에서 잘못된 답을 내는 코드를 작성해야한다.
+
+(하지만 딕셔너리 접미사 간선을 고려하지 않고 코드를 작성해도 여기서 더 최적화를 거치지 않으면 메모리초과나 시간초과를 받을 수 있다. 이것은 본인의 최적화 역량에 달린 것 같다. 나는 포기하고 C++로 넘어갔다.)
+
+사실 모든 마커의 길이가 같다는 점을 사용하면 브루트포스로도 풀린다...
+
+마커들을 set에 넣고 모든 i에 대해 dna.slice(i, i + m)을 찾아주면 답을 구할 수 있다.
+
+<CodeSelector names={['10256.cpp']} desc='ex1' />
+
+```cpp
+#include <vector>
+#include <string>
+#include <queue>
+#include <iostream>
+
+struct Trie {
+    std::vector<std::vector<int>> adj;
+    std::vector<int> suffix;
+    std::vector<int> dictSuffix;
+    std::vector<bool> valid;
+
+   Trie() {
+        newNode();
+    }
+
+    int AhoCorasick(std::string& t) {
+        int curr = 0, count = 0;
+        for (char x : t) {
+            int c = toNum(x);
+            if (adj[curr][c] != -1) {
+                curr = adj[curr][c];
+            } else {
+                if (curr == 0) continue;
+                while (curr != -1 && adj[curr][c] == -1) {
+                    curr = suffix[curr];
+                }
+                bool cantFind = curr == -1 || adj[curr][c] == -1;
+				curr = cantFind ? 0 : adj[curr][c];
+            }
+			if (valid[curr]) count++;
+			if (dictSuffix[curr] > 0) count++;
+        }
+        return count;
+    }
+
+    int newNode() {
+        adj.push_back(std::vector<int>(4, -1));  // 'A', 'C', 'G', 'T'의 자식 노드를 위한 4칸 배열
+        suffix.push_back(-1);
+        dictSuffix.push_back(-1);
+		valid.push_back(false);
+        return adj.size() - 1;
+    }
+
+    int toNum(char c) {
+        return c == 'A' ? 0 : c == 'C' ? 1 : c == 'G' ? 2 : 3;
+    }
+
+    void add(std::string& s) {
+        int node = 0;
+        for (int i = 0; i < s.length(); ++i) {
+			int c = toNum(s[i]);
+			if (adj[node][c] == -1) adj[node][c] = newNode();
+			node = adj[node][c];
+		}
+		valid[node] = true;
+    }
+
+    void bfs() {
+        std::queue<int> q;
+		q.push(0);
+		while (!q.empty()) {
+			int curr = q.front();
+			q.pop();
+			for (int i = 0; i < 4; ++i) {
+				int next = adj[curr][i];
+				if (next == -1) continue;
+				if (curr == 0) suffix[next] = 0;
+				else {
+					int parent = suffix[curr];
+					while (parent != -1 && adj[parent][i] == -1) {
+						parent = suffix[parent];
+					}
+					bool cantFind = parent == -1 || adj[parent][i] == -1;
+					int child = cantFind ? 0 : adj[parent][i];
+					suffix[next] = child;
+					dictSuffix[next] = valid[child] ? child : dictSuffix[child];
+				}
+				q.push(next);
+			}
+		}
+    }
+};
+
+int main() {
+    std::ios_base::sync_with_stdio(0);
+    std::cin.tie(0);
+    int t = 0;
+    std::cin >> t;
+    while(t--) {
+        int n, m;
+        std::cin >> n >> m;
+        std::string dna, marker;
+        std::cin >> dna >> marker;
+        Trie trie;
+
+        for (int i = 0; i <= m; i++) {
+            for (int j = i + 2; j <= m; j++) {
+                std::reverse(marker.begin() + i, marker.begin() + j);
+                trie.add(marker);
+                std::reverse(marker.begin() + i, marker.begin() + j);
+            }
+        }
+		trie.add(marker);
+
+        trie.bfs();
+		std::cout << trie.AhoCorasick(dna) << '\n';
+    }
+}
+```
