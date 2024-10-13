@@ -1,0 +1,207 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import Image from 'next/image'
+import pic1 from '/public/Algorithm/z1.jpeg'
+import pic2 from '/public/Algorithm/z2.jpeg'
+import pic3 from '/public/Algorithm/z3.jpeg'
+import pic4 from '/public/Algorithm/z4.jpeg'
+import pic5 from '/public/Algorithm/z5.jpeg'
+import pic6 from '/public/Algorithm/z6.jpeg'
+import pic7 from '/public/Algorithm/z7.jpeg'
+import pic8 from '/public/Algorithm/z8.jpeg'
+import pic9 from '/public/Algorithm/z9.jpeg'
+import pic10 from '/public/Algorithm/z10.jpeg'
+
+## Z 알고리즘
+
+`Z` 알고리즘은 문자열 S에 대해 S와 S[i..]의 최대 공통 접두사의 길이를 구하는 알고리즘이다.
+
+S = 'ABCABCABAB'에 대해서 z 배열을 구해보자.
+
+먼저 i = 0일 때는 전체 길이인 10이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 1일 때, S[0]과 S[1]이 서로 다르므로 0이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 2일 때, S[0]과 S[2]가 서로 다르므로 0이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic3}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 3일 때, S[3, 7]이 S와 최대 공통 접두사이므로 z[3] = 5가 된다.
+
+<ImageContainer>
+  <Image
+    src={pic4}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 4일 때는 i = 1일 때와 구조가 서로 같으므로 z[4] = z[1]이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic5}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 5일 때는 i = 2일 때와 구조가 서로 같으므로 z[5] = z[2]가 된다.
+
+<ImageContainer>
+  <Image
+    src={pic6}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 6일 때는 i = 3, 0일 때와 구조가 같다.
+
+현재까지 s[7]까지만 살펴보았으므로, z[6]은 최소 2 이상임이 보장된다.
+
+이어서 더 늘어날 수 있는지 확인해보기 위해 s[8]과 s[2]를 비교해보면 서로 다르므로 z[6]은 2가 된다.
+
+또한 s[6, 7]은 s와 최대 공통 접두사가 된다.
+
+<ImageContainer>
+  <Image
+    src={pic7}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 7일 때는 i = 1일 때와 구조가 서로 같으므로 z[7] = z[1]이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic8}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 8일 때, s[8, 9]는 s와 최대 공통 접두사이므로 s[8] = 2가 된다.
+
+<ImageContainer>
+  <Image
+    src={pic9}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+i = 9일 때는 i = 1일 때와 구조가 서로 같으므로 z[9] = z[1]이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic10}
+    alt='z'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+## 문자열 찾기
+
+KMP와 마찬가지로 문자열 S에서 T가 등장하는 위치를 찾을 수 있다.
+
+문자열 T + '#' + S로 z 배열을 구하고 i = T.length + 1 부터 z[i] = T.length 인 곳을 j라고 하면, j - T.length - 1이 S에서 T가 등장하는 위치가 된다.
+
+## 엄격한 접두사이면서 엄격한 접미사 찾기
+
+S[k..]가 S의 엄격한 접두사이면서 엄격한 접미사인 조건은 k + z[k] = S.length가 되는 모든 k > 0이 된다.
+
+## 구현
+
+<CodeSelector names={['z']} desc='z' />
+
+```js
+function z(s) {
+  const n = s.length
+  const zArr = new Array(n).fill(0)
+  zArr[0] = n
+  let l = 0
+  let r = 0
+  for (let i = 1; i < n; ++i) {
+    if (i > r) {
+      l = r = i
+      while (r < n && s[r - l] === s[r]) r++
+      zArr[i] = r - l
+      r--
+    } else {
+      let k = i - l
+      if (zArr[k] < r - i + 1) zArr[i] = zArr[k]
+      else {
+        l = i
+        while (r < n && s[r - l] === s[r]) r++
+        zArr[i] = r - l
+        r--
+      }
+    }
+  }
+  return zArr
+}
+```

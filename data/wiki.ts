@@ -82,6 +82,7 @@ const Algorithm = [
   `Trie`,
   `Knuth-Morris-Pratt`,
   `Aho-Corasick`,
+  `Z`,
   `Suffix array`,
   // `Centroid`,
 ]
