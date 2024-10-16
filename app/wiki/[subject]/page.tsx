@@ -6,7 +6,7 @@ import { viewTransition } from '@/lib/viewTransition'
 import { useRouter } from 'next/navigation'
 
 function replaceTitle(title: string) {
-  return title.replace(/[\s@:]/g, (match) => (match === ' ' ? '-' : ''))
+  return title.replace(/[\s@:'']/g, (match) => (match === ' ' ? '-' : ''))
 }
 
 export default function WikiPage({ params }: { params: { subject: string } }) {
