@@ -1,0 +1,30 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 확장 유클리드 알고리즘
+
+유클리드 알고리즘을 확장하면 다음 식을 만족하는 정수 $x$와 $y$를 구할 수 있다.
+
+> $ax + by = gcd(a, b)$
+
+$\gcd(a, b) = \gcd(b, a \bmod b)$이므로 식을 변경하면 $bx' + (a \bmod b)y' = \gcd(a,b)$가 된다.
+
+그러면 아래와 같이 더 변경할 수 있다.
+
+$\Rightarrow bx' + (a - \lfloor a / b \rfloor \cdot b)y' = \gcd(a,b)$
+
+$\Rightarrow ay' + b(x' - \lfloor a / b \rfloor \cdot y') = \gcd(a,b)$
+
+$x = y'$이 되고, $y = x' - \lfloor a / b \rfloor \cdot y'$이 된다.
+
+<CodeSelector names={['js']} desc='ex1' />
+
+```js
+function egcd(a, b) {
+  if (b === 0) return [1, 0, a]
+  const [x, y, g] = egcd(b, a % b)
+  return [y, x - Math.floor(a / b) * y, g]
+}
+
+const [x, y, g] = extend_Euclid(30, 12) // 1, -2, 6
+// 30 * 1 - 12 * 2 = 6
+```

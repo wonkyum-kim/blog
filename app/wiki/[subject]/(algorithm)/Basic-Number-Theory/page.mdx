@@ -1,0 +1,107 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 약수
+
+정수 $a$로 정수 $b$가 나누어 떨어지는 경우, $a$를 $b$의 `약수(divisor)` 또는 `인수(factor)`라고 한다.
+
+## 소수와 합성수
+
+어떤 정수 $n > 1$에 대해 양의 인수가 1과 $n$뿐이면 $n$을 `소수(prime number)`라고 부른다.
+
+그리고 소수가 아닌 수를 `합성수(composite number)`라고 부른다.
+
+정수 1은 기본값(unit)으로 소수도, 합성수도 아니다. 마찬가지로, 정수 0과 모든 음의 정수도 소수도, 합성수도 아니다.
+
+정수 $n$이 소수가 아니라면 두 정수의 곱 $a \cdot b$로 나타낼 수 있고 이때, $a \leq \sqrt{n}$ 또는 $b \leq \sqrt{n}$ 이 성립한다.
+
+즉, 2이상 $\lfloor{\sqrt n}\rfloor$ 이하의 인수가 반드시 존재한다.
+
+따라서 $n$을 2이상 $\lfloor{\sqrt n}\rfloor$ 이하의 모든 정수로 나누어보고 나누어 떨어지는 경우가 없으면 $n$을 소수라고 판정할 수 있다.
+
+<CodeSelector names={['js']} desc='ex1' />
+
+```js
+function isPrime(n) {
+  if (n < 2) return false
+  for (let i = 2; i <= Math.sqrt(n); ++i) {
+    if (n % i === 0) return false
+  }
+  return true
+}
+```
+
+## 소인수
+
+$a$가 정수 $n > 1$의 소수인 인수라면 이를 `소인수`라고 부른다.
+
+모든 정수 $n > 1$에 대해 다음과 같은 `소인수 분해(prime factorization)`가 존재한다.
+
+> $$n = p_1^{\alpha_1} p_2^{\alpha_2} \cdots p_k^{\alpha_k}$$
+
+$p_1, p_2, \cdots, p_k$는 서로 다른 소수이고 $\alpha_1, \alpha_2, \cdots, \alpha_k$는 양의 정수다.
+
+<CodeSelector names={['js']} desc='ex2' />
+
+```js
+function primeFactorization(n) {
+  for (let i = 2; i <= Math.sqrt(n); ++i) {
+    while (n % i === 0) {
+      console.log(i)
+      n /= i
+    }
+  }
+  if (n > 1) console.log(n)
+}
+```
+
+소인수 분해를 통해 $n$의 인수의 개수를 구할 수 있다.
+
+각각의 소수 $p_i$에 대해, 인수에 몇 번 나타날지에 대한 경우의 수가 $\alpha_i + 1$이기 때문에
+
+$n$의 인수의 개수를 $\tau(n)$이라고 한다면 다음 공식으로 구할 수 있다.
+
+> $$\tau(n) = \Pi_{i=1}^{k}(\alpha_i + 1)$$
+
+등비수열의 합 공식을 통해 $n$의 인수들의 합 $\sigma(n)$을 구할 수 있다.
+
+> $$\sigma(n) = \Pi_{i=1}^{k}(1 + p_i + \cdots + p_i^{\alpha_i}) = \Pi_{i=1}^{k}{p_i^{\alpha_i + 1} - 1 \over p_i - 1}$$
+
+## 서로소
+
+두 양수의 $a$와 $b$의 유일한 공약수가 1인 경우, $a$와 $b$를 `서로소(relatively prime, coprime)`이라고 부른다.
+
+## 모듈러 산술
+
+정수 $a$를 정수 $b$로 나눈 나머지는 $a \bmod b$로 표기한다.
+
+$a$가 $b$로 나누어 떨어질 필요충분조건은 $a \bmod b = 0$이다.
+
+$a$와 $b$를 $m$으로 나누었을 때, 나머지가 같은 경우 $a \equiv b \pmod{m}$으로 표기한다.
+
+아래와 같은 기본 성질들이 자주 이용된다.
+
+1. $a - m \equiv a \equiv a + m \pmod{m}$
+2. $(a + b) \bmod m \equiv (a \bmod m) + (b \bmod m) \pmod{m}$
+3. $(a - b) \bmod m \equiv (a \bmod m) - (b \bmod m) \pmod{m}$
+4. $(a \times b) \bmod m \equiv (a \bmod m) \times (b \bmod m) \pmod{m}$
+
+하지만, 나눗셈에 대해서 아래와 같은 성질은 적용되지 않는다.
+
+$(a \div b) \bmod m \not\equiv (a \bmod m) \div (b \bmod m) \pmod{m}$
+
+## 분할 정복을 이용한 거듭 제곱
+
+분할 정복을 사용하여 거듭 제곱을 구할 수 있다. 보통 수가 매우 커지므로 BigInt와 모듈러 연산을 사용한다.
+
+<CodeSelector names={['js']} desc='ex3' />
+
+```js
+// x^n mod m
+function pow(x, n, m) {
+  if (n === 0n) return 1n
+  let u = pow(x, n >> 1n, m)
+  u = (u * u) % m
+  if (n % 2n === 1n) u = (u * x) % m
+  return u
+}
+```

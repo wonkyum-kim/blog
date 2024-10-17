@@ -1,0 +1,52 @@
+import { Title } from '@/components/title'
+import { TOC } from '@/components/toc'
+import { getHeadingsBySlug } from '@/lib/mdx'
+
+<Title slug={'algorithms'} />
+
+<TOC headings={getHeadingsBySlug('algorithms')} />
+
+## 자료구조
+
+TODO
+
+- [Segment tree](/wiki/Algorithm/Segment-tree)
+- [Lazy segment tree](/wiki/Algorithm/Lazy-segment-tree)
+
+## 문자열
+
+문자열 s의 i부터 j index를 가져온 부분문자열(substring)을 s[i, j]로 표시한다.
+
+문자열 s의 i부터 t개의 문자를 가지는 부분문자열은 s[i..t]로 표시한다. i + t - 1가 문자열의 마지막 인덱스를 넘어간다면 s[i..]로 표시한다.
+
+Trie는 문자열의 각 문자를 노드로 설정하여 그래프로 만든다.
+
+KMP, Z, Aho-Corasick 알고리즘은 텍스트에서 패턴을 선형 시간에 찾는 방법에 대해 다룬다.
+
+KMP와 Z는 텍스트와 패턴 하나를 매칭시켜 찾는 반면, Aho-Corasick은 텍스트와 여러 패턴을 동시에 매칭 시켜 찾을 수 있다.
+
+KMP는 문제에서 그 자체로 많이 쓰이기 보다는 주로 실패 함수(failure function)를 응용하는 경우가 많기 때문에 정확한 작동 원리를 이해하는 것이 중요하다.
+
+Aho-Corasick은 KMP와 Trie를 접목시킨 것으로 두 알고리즘의 공부가 선행되어야 한다. 항상 메모리 초과의 위험이 있으므로 적절한 구현체를 잘 판단해서 사용해야 한다.
+
+Suffix array는 문자열의 모든 접미사들을 정렬시킨 것이고, LCP array는 Suffix array의 인접한 문자열들의 최장 공통 접두사의 길이를 저장한 것이다.
+
+LCP array와 문자열의 부분문자열의 등장 횟수와 연관된 문제가 많이 존재한다.
+
+LCS는 부분수열(subsequence)에 관한 것으로 여러 문자열에 공통으로 존재하는 부분수열 중 가장 긴 것을 찾는다.
+
+Manacher는 부분문자열 중에서 가장 긴 팰린드롬을 찾는다.
+
+- [Trie](/wiki/Algorithm/Trie)
+- [Knuth-Morris-Pratt](/wiki/Algorithm/Knuth-Morris-Pratt)
+- [Z](/wiki/Algorithm/Z)
+- [Aho-Corasick](/wiki/Algorithm/Aho-Corasick)
+- [Suffix array and LCP array (작성 중)](/wiki/Algorithm/Suffix-array-and-LCP-array)
+- [Longest Common Subsequence (작성 중)](/wiki/Algorithm/Longest-Common-Subsequence)
+- Longest Increasing Sequence
+- [Manacher](/wiki/Algorithm/Manacher)
+- Rabin-Karp
+
+## 정수론
+
+TODO

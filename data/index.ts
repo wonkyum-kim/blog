@@ -1,4 +1,9 @@
 export const frontmatter = {
+  ['algorithms']: {
+    title: '자바스크립트로 푸는 알고리즘 (업데이트 2024-10-17)',
+    createdAt: '2024-10-17',
+    tags: ['algorithm'],
+  },
   ['zustand-object-method-type']: {
     title: 'Zustand에서 bivariant 메서드 타입이 필요했던 이유',
     createdAt: '2024-07-03',

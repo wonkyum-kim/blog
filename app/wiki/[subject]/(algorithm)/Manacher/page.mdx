@@ -1,0 +1,270 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+import { ImageContainer } from '@/components/image-container/image-container.tsx'
+import Image from 'next/image'
+import pic1 from '/public/Algorithm/manacher1.jpeg'
+import pic2 from '/public/Algorithm/manacher2.jpeg'
+import pic3 from '/public/Algorithm/manacher3.jpeg'
+import pic4 from '/public/Algorithm/manacher4.jpeg'
+import pic5 from '/public/Algorithm/manacher5.jpeg'
+import pic6 from '/public/Algorithm/manacher6.jpeg'
+import pic7 from '/public/Algorithm/manacher7.jpeg'
+import pic8 from '/public/Algorithm/manacher8.jpeg'
+import pic9 from '/public/Algorithm/manacher9.jpeg'
+import pic10 from '/public/Algorithm/manacher10.jpeg'
+import pic11 from '/public/Algorithm/manacher11.jpeg'
+import pic12 from '/public/Algorithm/manacher12.jpeg'
+import pic13 from '/public/Algorithm/manacher13.jpeg'
+import pic14 from '/public/Algorithm/manacher14.jpeg'
+import pic15 from '/public/Algorithm/manacher15.jpeg'
+import pic16 from '/public/Algorithm/manacher16.jpeg'
+
+## Manacher
+
+팰린드롬(palindrom)이란, 뒤로 읽어도 똑같은 문자열을 의미한다.
+
+팰린드롬 문자열의 길이가 홀수이면, (n + 1) / 2 번째 문자가 중심이 되며, 짝수이면 n / 2 번째와 n / 2 + 1 번째 문자가 중심이 된다.
+
+`Manacher`은 가장 긴 팰린드롬 부분문자열을 $O(n)$ 시간에 찾는 알고리즘이다.
+
+문자열의 각 문자가 중심이 되는 팰린드롬을 찾는 방법으로 진행되는데, 문자열의 길이가 짝수인 경우 찾을 수 없다.
+
+따라서 문자열의 각 문자 앞 뒤에 더미 문자를 삽입하여 길이가 짝수인 팰린드롬도 찾도록 하는 트릭을 사용한다.
+
+예를 들어 원래 문자열이 'dcabccd' 였다면, '#d#c#a#b#c#c#d#'으로 만들고 진행하게 된다.
+
+더미 문자가 중심이 되는 팰린드롬은 길이가 짝수이고, 원래 문자가 중심이 되는 팰린드롬은 길이가 홀수가 된다.
+
+이제 알고리즘이 어떻게 동작하는지 살펴보자.
+
+- i = 0 일 때, 앞 뒤로 문자를 더 추가할 수 없으므로 0이 된다.
+
+<ImageContainer>
+  <Image
+    src={pic1}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+- i = 1 일 때, 팰린드롬 s[0, 2]를 찾았다.
+
+<ImageContainer>
+  <Image
+    src={pic2}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+- i = 2 일 때, 중심을 기준으로 i = 0과 대칭이다. 따라서 s[2]의 앞 뒤로 최소 p[0]개의 문자가 같다는 것을 알 수 있다. s[2]에서 p[0]개를 건너뛰고 s[1]과 s[3]을 비교해보면 서로 다르므로 더 이상 변경하지 않고 넘어간다.
+
+<ImageContainer>
+  <Image
+    src={pic3}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+- i = 3 ~ 9 까지는 똑같은 과정이 반복된다.
+
+<ImageContainer>
+  <Image
+    src={pic4}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic5}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic6}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic7}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic8}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic9}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic10}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+- i = 10 일 때, 중심을 기준으로 i = 8과 대칭이다. 따라서 s[10]의 앞 뒤로 최소 p[8] = 0개의 문자가 같다는 것을 알고 있으므로, p[8] + 1, p[8] + 2, ...만큼 떨어진 문자를 비교해본다. 그 결과 s[10]일 때, 반지름의 길이가 2인 팰린드롬을 발견할 수 있다.
+
+<ImageContainer>
+  <Image
+    src={pic11}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic12}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+- 이후 똑같은 과정이 반복된다.
+
+<ImageContainer>
+  <Image
+    src={pic13}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic14}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic15}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+<ImageContainer>
+  <Image
+    src={pic16}
+    alt='manacher'
+    sizes='100vw'
+    style={{
+      width: '85%',
+      height: 'auto',
+    }}
+  />
+</ImageContainer>
+
+최종적으로 p 배열에서 가장 큰 값인 2가 가장 긴 팰린드롬 부분문자열 'cc'의 길이임을 알 수 있게 된다.
+
+## 구현
+
+<CodeSelector names={['manacher.js']} desc='ex1' />
+
+```js
+function manacher(s) {
+  const n = s.length
+  const p = new Array(n).fill(0)
+  let right = 0
+  let center = 0
+  for (let i = 0; i < n; ++i) {
+    if (i <= right) p[i] = Math.min(p[2 * center - i], right - i)
+    while (i - p[i] - 1 >= 0 && i + p[i] + 1 < n && s[i - p[i] - 1] === s[i + p[i] + 1]) p[i]++
+    if (right < i + p[i]) {
+      right = i + p[i]
+      center = i
+    }
+  }
+  return Math.max(...p)
+}
+
+const s = 'dcabccd'
+let ns = '#'
+for (let i = 0; i < s.length; ++i) ns += s[i] + '#'
+console.log(manacher(ns)) // 2
+```

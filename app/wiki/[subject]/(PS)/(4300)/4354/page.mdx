@@ -1,0 +1,43 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## 문자열 제곱
+
+KMP의 실패 함수를 사용하여 가장 작은 반복되는 문자열을 찾을 수 있고 따라서 가장 큰 n을 찾을 수 있게 된다.
+
+pi 배열이 반환하는 값은 부분문자열 s[0, i]의 접두사 = 접미사의 최대 길이인데, 접두사와 접미사는 부분문자열 전체의 길이는 될 수 없다.
+
+따라서 n - pi[n - 1]가 가장 작은 반복되는 문자열의 길이가 될 수 있다.
+
+될 수 있다고 한 이유는 반례가 존재하기 때문이다. (e.g. abababa)
+
+진짜로 될 수 있는지 확인하기 위해서 n이 n - pi[n - i]의 배수인지 확인한다.
+
+<CodeSelector names={['4354']} desc='sol1' />
+
+```js
+function failure(t) {
+  const n = t.length
+  const pi = new Array(n).fill(0)
+  let j = 0
+  for (let i = 1; i < n; ++i) {
+    while (j > 0 && t[i] !== t[j]) j = pi[j - 1]
+    if (t[i] === t[j]) pi[i] = ++j
+  }
+  return pi
+}
+
+function solve() {
+  const ans = []
+  while (true) {
+    const s = input.get
+    if (s === '.') break
+    const pi = failure(s)
+    const n = s.length
+    if (n % (n - pi[n - 1]) !== 0) ans.push(1)
+    else ans.push(n / (n - pi[n - 1]))
+  }
+  console.log(ans.join('\n'))
+}
+
+solve()
+```

@@ -1,0 +1,58 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Slot Machines
+
+k 이상인 i에 대해 s[i] = s[i + p]가 되는 k와 p를 찾는 문제다.
+
+문자열을 뒤집고 접두사 = 접미사의 길이가 6이상인 것들을 찾으면 된다.
+
+<CodeSelector names={['14959']} desc='sol1' />
+
+```js
+function failure(t) {
+  const n = t.length
+  const pi = new Array(n).fill(0)
+  let j = 0
+  for (let i = 1; i < n; ++i) {
+    while (j > 0 && t[i] !== t[j]) j = pi[j - 1]
+    if (t[i] === t[j]) pi[i] = ++j
+  }
+  return pi
+}
+
+function solve() {
+  const n = input.getNumber
+  const v = []
+  for (let i = 0; i < n; ++i) {
+    const str = input.get.padStart(6, '0')
+    for (let j = 0; j < 6; ++j) v.push(str[j])
+  }
+  const pi = failure(v.reverse())
+
+  let sum = n
+  let k = n - 1
+  let p = 1
+
+  let temp = n
+  for (let i = 5; i < pi.length; i += 6) {
+    if (pi[i] >= 6) {
+      const a = temp - 1
+      const b = (i + 1 - pi[i]) / 6
+      if (a + b <= sum) {
+        if (a + b === sum && p <= b) {
+          temp--
+          continue
+        }
+        sum = a + b
+        k = a
+        p = b
+      }
+    }
+    temp--
+  }
+
+  console.log(`${k} ${p}`)
+}
+
+solve()
+```

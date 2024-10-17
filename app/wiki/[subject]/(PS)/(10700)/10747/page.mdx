@@ -1,0 +1,54 @@
+import { CodeSelector } from '@/components/code-selector.tsx'
+
+## Censoring
+
+문자열에서 특정 문자열이 나타나지 않을 때까지 계속 지워야한다.
+
+KMP에서 특정 문자열을 찾으면 찾기 이전으로 j를 되돌려서 다시 찾을 수 있도록 해준다.
+
+<CodeSelector names={['10747']} desc='sol1' />
+
+```js
+function failure(t) {
+  const n = t.length
+  const pi = new Array(n).fill(0)
+  let j = 0
+  for (let i = 1; i < n; ++i) {
+    while (j > 0 && t[i] !== t[j]) j = pi[j - 1]
+    if (t[i] === t[j]) pi[i] = ++j
+  }
+  return pi
+}
+
+function KMP(s, t) {
+  const n = s.length
+  const m = t.length
+  const pi = failure(t)
+
+  let j = 0
+  let ss = []
+  const dp = new Array(n).fill(0)
+
+  for (let i = 0; i < n; ++i) {
+    while (j > 0 && s[i] !== t[j]) j = pi[j - 1]
+
+    ss.push(s[i])
+    if (s[i] === t[j]) {
+      if (j === m - 1) {
+        for (let k = 0; k < m; ++k) ss.pop()
+        j = dp[ss.length]
+      } else j++
+    }
+    dp[ss.length] = j
+  }
+
+  return ss.join('')
+}
+
+function solve() {
+  const [s, t] = [0, 0].map(() => input.get)
+  console.log(KMP(s, t))
+}
+
+solve()
+```
